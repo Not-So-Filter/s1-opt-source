@@ -1,0 +1,35 @@
+; ---------------------------------------------------------------------------
+; Object 08 - water splash (LZ)
+; ---------------------------------------------------------------------------
+
+Splash:
+		moveq	#0,d0
+		move.b	obRoutine(a0),d0
+		move.w	Spla_Index(pc,d0.w),d1
+		jmp	Spla_Index(pc,d1.w)
+; ===========================================================================
+Spla_Index:	dc.w Spla_Main-Spla_Index
+		dc.w Spla_Display-Spla_Index
+		dc.w Spla_Delete-Spla_Index
+; ===========================================================================
+
+Spla_Main:	; Routine 0
+		addq.b	#2,obRoutine(a0)
+		move.l	#Map_Splash,obMap(a0)
+		ori.b	#4,obRender(a0)
+		move.w	#1*$80,obPriority(a0)
+		move.b	#$10,obActWid(a0)
+		move.w	#make_art_tile(ArtTile_LZ_Splash,2,0),obGfx(a0)
+		move.w	(v_player+obX).w,obX(a0) ; copy x-position from Sonic
+		move.w	(v_waterpos1).w,obY(a0) ; copy y-position from water height
+		moveq	#sfx_Splash,d0
+		jsr	(PlaySound).w
+
+Spla_Display:	; Routine 2
+		lea	Ani_Splash(pc),a1
+		jsr	(AnimateSprite).l
+		jmp	(DisplaySprite).l
+; ===========================================================================
+
+Spla_Delete:	; Routine 4
+		jmp	(DeleteObject).l	; delete when animation	is complete
