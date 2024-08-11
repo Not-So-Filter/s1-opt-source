@@ -5,7 +5,7 @@
 LevelHeaders:
 
 lhead:	macro plc1,lvlgfx,plc2,sixteen,twofivesix,pal
-	dc.l (plc1<<24)+dmaSource(lvlgfx)
+	dc.l (plc1<<24)+lvlgfx
 	dc.l (plc2<<24)+sixteen
 	dc.l twofivesix
 	dc.b pal, 0, 0, 0

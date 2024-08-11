@@ -2476,7 +2476,6 @@ Level_SkipTtlCard:
 		bsr.w	LevelSizeLoad
 		bsr.w	DeformLayers
 		bset	#2,(v_fg_scroll_flags).w
-		bsr.w	LevelLoadTiles
 		bsr.w	LevelDataLoad ; load block mappings and palettes
 		bsr.w	LoadTilesFromStart
 		bsr.w	ColIndexLoad
@@ -3481,7 +3480,6 @@ End_LoadData:
 		bsr.w	LevelSizeLoad
 		bsr.w	DeformLayers
 		bset	#2,(v_fg_scroll_flags).w
-		bsr.w	LevelLoadTiles
 		bsr.w	LevelDataLoad
 		bsr.w	LoadTilesFromStart
 		move.l	#Col_GHZ_1,(v_colladdr1).w ; load collision index
@@ -4600,43 +4598,6 @@ locj_72da:
 		bra.w	DrawBlocks_LR_3
 
 ; ---------------------------------------------------------------------------
-; Subroutine to load 8x8 level tiles
-; ---------------------------------------------------------------------------
-
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
-
-LevelLoadTiles:
-		moveq	#0,d0
-		move.b	(v_zone).w,d0
-		lsl.w	#4,d0
-		lea	(LevelHeaders).l,a2
-		lea	(a2,d0.w),a2
-		movea.l	(a2)+,a0
-		lea	(v_128x128&$FFFFFF).l,a1
-		bsr.w	KosPlusDec
-		move.w	a1,d3
-		move.w	d3,d7
-		andi.w	#$FFF,d3
-		lsr.w	#1,d3
-		rol.w	#4,d7
-		andi.w	#$F,d7
-
-.loop:		move.w	d7,d2
-		moveq	#12,d0
-		lsl.w	d0,d2
-		move.l	#$FFFFFF,d1
-		move.w	d2,d1
-		bsr.w	QueueDMATransfer
-		move.w	d7,-(sp)
-		move.w	#id_VB_0A,(v_vbla_routine).w
-		bsr.w	WaitForVBla
-		move.w	(sp)+,d7
-		move.w	#$800,d3
-		dbf	d7,.loop
-		rts
-
-; ---------------------------------------------------------------------------
 ; Subroutine to load basic level data
 ; ---------------------------------------------------------------------------
 
@@ -4650,7 +4611,15 @@ LevelDataLoad:
 		lea	(LevelHeaders).l,a2
 		lea	(a2,d0.w),a2
 		move.l	a2,-(sp)
-		addq.l	#4,a2
+		movea.l	(a2)+,a0
+		lea	(v_128x128).l,a1
+		bsr.w	KosPlusDec
+		move.w	a1,d3
+		lsr.w	#1,d3
+		move.l	#(v_128x128&$FFFFFF)/2,d1
+		moveq	#0,d2
+		bsr.w	QueueDMATransfer
+		bsr.w	ProcessDMAQueue
 		movea.l	(a2)+,a0
 		lea	(v_16x16).w,a1	; RAM address for 16x16 mappings
 		moveq	#make_art_tile(ArtTile_Level,0,FALSE),d0
