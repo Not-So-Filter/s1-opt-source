@@ -699,7 +699,7 @@ VDPSetupGame:
 		move.w	#$8A00+223,(v_hbla_hreg).w	; H-INT every 224th scanline
 		moveq	#0,d0
 		move.l	#$C0000000,(vdp_control_port).l ; set VDP to CRAM write
-		moveq	#($80)/4-1,d7
+		moveq	#bytesToLcnt($80),d7
 
 .clrCRAM:
 		move.l	d0,(a1)
@@ -2509,6 +2509,7 @@ Level_ChkWater:
 
 Level_LoadObj:
 		jsr	(ObjPosLoad).l
+		jsr	(RingsManager).l
 		jsr	(ExecuteObjects).l
 		jsr	(BuildSprites).l
 		moveq	#0,d0
@@ -2629,6 +2630,7 @@ Level_DoScroll:
 Level_SkipScroll:
 		jsr	(BuildSprites).l
 		jsr	(ObjPosLoad).l
+		jsr	(RingsManager).l
 		bsr.w	PaletteCycle
 		bsr.w	RunPLC
 		bsr.w	OscillateNumDo
@@ -2648,7 +2650,7 @@ Level_ChkDemo:
 		tst.w	(v_demolength).w ; is there time left on the demo?
 		beq.s	Level_EndDemo	; if not, branch
 		cmpi.w	#id_Demo,(v_gamemode).w
-		beq.s	Level_MainLoop	; if mode is 8 (demo), branch
+		beq.w	Level_MainLoop	; if mode is 8 (demo), branch
 		move.w	#id_Sega,(v_gamemode).w ; go to Sega screen
 		rts
 ; ===========================================================================
@@ -2673,6 +2675,7 @@ Level_FDLoop:
 		jsr	(ExecuteObjects).l
 		jsr	(BuildSprites).l
 		jsr	(ObjPosLoad).l
+		jsr	(RingsManager).l
 		subq.w	#1,(v_palchgspeed).w
 		bpl.s	loc_3BC8
 		move.w	#2,(v_palchgspeed).w
@@ -5529,6 +5532,7 @@ BuildSprites:
 		tst.b	(f_hud).w
 		beq.s	BuildPriorityLoop
 		bsr.w	BuildHUD
+		bsr.w	BuildRings
 
 BuildPriorityLoop:
 		tst.w	(a5)	; are there objects left to draw?
@@ -6076,6 +6080,7 @@ Build_1B1EC:
 ; End of function sub_1B070
 
 		include	"_incObj/sub ChkObjectVisible.asm"
+		include	"_inc/Rings Manager.asm"
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to	load a level's objects
@@ -8536,6 +8541,83 @@ ObjPos_SBZ1pf6:	binclude	"objpos/sbz1pf6.bin"
 ObjPos_End:	binclude	"objpos/ending.bin"
 		even
 ObjPos_Null:	dc.b $FF, $FF, 0, 0, 0,	0
+
+RingPos_Index:
+		; GHZ
+		dc.w RingPos_GHZ1-RingPos_Index
+		dc.w RingPos_GHZ2-RingPos_Index
+		dc.w RingPos_GHZ3-RingPos_Index
+		dc.w RingPos_GHZ1-RingPos_Index
+		; LZ
+		dc.w RingPos_LZ1-RingPos_Index
+		dc.w RingPos_LZ2-RingPos_Index
+		dc.w RingPos_LZ3-RingPos_Index
+		dc.w RingPos_SBZ3-RingPos_Index
+		; MZ
+		dc.w RingPos_MZ1-RingPos_Index
+		dc.w RingPos_MZ2-RingPos_Index
+		dc.w RingPos_MZ3-RingPos_Index
+		dc.w RingPos_MZ1-RingPos_Index
+		; SLZ
+		dc.w RingPos_SLZ1-RingPos_Index
+		dc.w RingPos_SLZ2-RingPos_Index
+		dc.w RingPos_SLZ3-RingPos_Index
+		dc.w RingPos_SLZ1-RingPos_Index
+		; SYZ
+		dc.w RingPos_SYZ1-RingPos_Index
+		dc.w RingPos_SYZ2-RingPos_Index
+		dc.w RingPos_SYZ3-RingPos_Index
+		dc.w RingPos_SYZ1-RingPos_Index
+		; SBZ
+		dc.w RingPos_SBZ1-RingPos_Index
+		dc.w RingPos_SBZ2-RingPos_Index
+		dc.w RingPos_Null-RingPos_Index
+		dc.w RingPos_SBZ1-RingPos_Index
+		zonewarning RingPos_Index,8
+		; Ending
+		dc.w RingPos_Null-RingPos_Index
+		dc.w RingPos_Null-RingPos_Index
+		dc.w RingPos_Null-RingPos_Index
+		dc.w RingPos_Null-RingPos_Index
+
+RingPos_Null:	dc.w $FFFF
+
+RingPos_GHZ1:	binclude	"ringpos/ghz1_INDIVIDUAL.bin"
+		even
+RingPos_GHZ2:	binclude	"ringpos/ghz2_INDIVIDUAL.bin"
+		even
+RingPos_GHZ3:	binclude	"ringpos/ghz3_INDIVIDUAL.bin"
+		even
+RingPos_LZ1:	binclude	"ringpos/lz1_INDIVIDUAL.bin"
+		even
+RingPos_LZ2:	binclude	"ringpos/lz2_INDIVIDUAL.bin"
+		even
+RingPos_LZ3:	binclude	"ringpos/lz3_INDIVIDUAL.bin"
+		even
+RingPos_MZ1:	binclude	"ringpos/mz1_INDIVIDUAL.bin"
+		even
+RingPos_MZ2:	binclude	"ringpos/mz2_INDIVIDUAL.bin"
+		even
+RingPos_MZ3:	binclude	"ringpos/mz3_INDIVIDUAL.bin"
+		even
+RingPos_SLZ1:	binclude	"ringpos/slz1_INDIVIDUAL.bin"
+		even
+RingPos_SLZ2:	binclude	"ringpos/slz2_INDIVIDUAL.bin"
+		even
+RingPos_SLZ3:	binclude	"ringpos/slz3_INDIVIDUAL.bin"
+		even
+RingPos_SYZ1:	binclude	"ringpos/syz1_INDIVIDUAL.bin"
+		even
+RingPos_SYZ2:	binclude	"ringpos/syz2_INDIVIDUAL.bin"
+		even
+RingPos_SYZ3:	binclude	"ringpos/syz3_INDIVIDUAL.bin"
+		even
+RingPos_SBZ1:	binclude	"ringpos/sbz1_INDIVIDUAL.bin"
+		even
+RingPos_SBZ2:	binclude	"ringpos/sbz2_INDIVIDUAL.bin"
+		even
+RingPos_SBZ3:	binclude	"ringpos/sbz3_INDIVIDUAL.bin"
+		even
 
 		include	"sound/MegaPCM.asm"
 		include	"sound/SampleTable.asm"

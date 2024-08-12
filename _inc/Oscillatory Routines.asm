@@ -9,7 +9,7 @@
 OscillateNumInit:
 		lea	(v_oscillate).w,a1
 		lea	.baselines(pc),a2
-		moveq	#$20,d1
+		moveq	#bytesToWcnt(.baselines_end-.baselines),d1
 
 .loop:
 		move.w	(a2)+,(a1)+	; copy baseline values to RAM
@@ -35,7 +35,7 @@ OscillateNumInit:
 		dc.w $7080, $276
 		dc.w $80, 0
 		dc.w $80, 0
-		even
+.baselines_end:	even
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 

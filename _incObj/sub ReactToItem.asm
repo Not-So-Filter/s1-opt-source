@@ -7,6 +7,7 @@
 
 ReactToItem:
 		nop
+		jsr	(Touch_Rings).l
 		move.w	obX(a0),d2	; load Sonic's x-axis position
 		move.w	obY(a0),d3	; load Sonic's y-axis position
 		subq.w	#8,d2
@@ -321,7 +322,7 @@ KillSonic:
 		bne.s	.dontdie	; if yes, branch
 		clr.b	(v_invinc).w	; remove invincibility
 		move.b	#6,obRoutine(a0)
-		bsr.w	Sonic_ResetOnFloor
+		jsr	(Sonic_ResetOnFloor).l
 		bset	#1,obStatus(a0)
 		move.w	#-$700,obVelY(a0)
 		move.w	#0,obVelX(a0)

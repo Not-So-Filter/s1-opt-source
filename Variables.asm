@@ -10,6 +10,13 @@ priority5:		ds.b	$80
 priority6:		ds.b	$80
 priority7:		ds.b	$80
 	endstruct
+	
+Max_Rings = 511 ; default. maximum number possible is 759
+    if Max_Rings > 759
+    fatal "Maximum number of rings possible is 759"
+    endif
+
+Rings_Space = (Max_Rings+1)*2
 
 ; sign-extends a 32-bit integer to 64-bit
 ; all RAM addresses are run through this function to allow them to work in both 16-bit and 32-bit addressing modes
@@ -45,7 +52,16 @@ v_128x128_end:
 ;Kos_module_destination: =	Kos_module_queue+4	; word ; the VRAM destination for the first module in the queue
 
 ;			ds.b	$13A0		; unused
-			ds.b	$2400		; unused
+Ring_Positions:		ds.b	$600
+Ring_Positions_End:
+Ring_start_addr_ROM:	ds.l	1
+Ring_end_addr_ROM:	ds.l	1
+Ring_start_addr_RAM:	ds.w	1
+Perfect_rings_left:	ds.w	1
+Rings_manager_routine:	ds.w	1
+Ring_consumption_table:	ds.b	$80
+Ring_consumption_table_End:
+			ds.b	$1772		; unused
 v_endflowerbuffer:
 
 v_lvllayoutfg:		ds.l	1		; level layout ROM address (4 bytes)
@@ -216,21 +232,21 @@ v_limitleft2:		ds.w	1		; left level boundary
 v_limitright2:		ds.w	1		; right level boundary
 v_limittop2:		ds.w	1		; top level boundary
 v_limitbtm2:		ds.w	1		; bottom level boundary
-v_unused11:		ds.w	1		; unused
+			ds.w	1		; unused
 v_limitleft3:		ds.w	1		; left level boundary, at the end of an act
 			ds.b	6		; unused
 v_scrshiftx:		ds.w	1		; x-screen shift (new - last) * $100
 v_scrshifty:		ds.w	1		; y-screen shift (new - last) * $100
 v_lookshift:		ds.w	1		; screen shift when Sonic looks up/down
-v_unused7:		ds.b	1		; unused
-v_unused8:		ds.b	1		; unused
+			ds.b	1		; unused
+			ds.b	1		; unused
 v_dle_routine:		ds.b	1		; dynamic level event - routine counter
 			ds.b	1		; unused
 f_nobgscroll:		ds.b	1		; flag set to cancel background scrolling
 			ds.b	1		; unused
-v_unused9:		ds.b	1		; unused
 			ds.b	1		; unused
-v_unused10:		ds.b	1		; unused
+			ds.b	1		; unused
+			ds.b	1		; unused
 			ds.b	1		; unused
 v_fg_xblock:		ds.b	1		; foreground x-block parity (for redraw)
 v_fg_yblock:		ds.b	1		; foreground y-block parity (for redraw)
@@ -240,7 +256,7 @@ v_bg2_xblock:		ds.b	1		; secondary background x-block parity (for redraw)
 v_bg2_yblock:		ds.b	1		; secondary background y-block parity (unused)
 v_bg3_xblock:		ds.b	1		; teritary background x-block parity (for redraw)
 v_bg3_yblock:		ds.b	1		; teritary background y-block parity (unused)
-			ds.b	2		; unused
+			ds.w	1		; unused
 v_fg_scroll_flags:	ds.w	1		; screen redraw flags for foreground
 v_bg1_scroll_flags:	ds.w	1		; screen redraw flags for background 1
 v_bg2_scroll_flags:	ds.w	1		; screen redraw flags for background 2
@@ -290,7 +306,7 @@ v_lani4_frame:		ds.b	1		; level graphics animation 4 - current frame
 v_lani4_time:		ds.b	1		; level graphics animation 4 - time until next frame
 v_lani5_frame:		ds.b	1		; level graphics animation 5 - current frame
 v_lani5_time:		ds.b	1		; level graphics animation 5 - time until next frame
-			ds.b	2		; unused
+			ds.w	1		; unused
 v_gfxbigring:		ds.w	1		; settings for giant ring graphics loading
 f_conveyrev:		ds.b	1		; flag set to reverse conveyor belts in LZ/SBZ
 v_obj63:		ds.b	6		; object 63 (LZ/SBZ platforms) variables
