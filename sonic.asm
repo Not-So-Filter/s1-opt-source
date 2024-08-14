@@ -664,13 +664,11 @@ ReadJoypads:
 		nop
 		nop
 		move.b	(a1),d0
-		lsl.b	#2,d0
-		andi.b	#$C0,d0
+		asl.b	#2,d0
 		move.b	#$40,(a1)
-		nop
-		nop
+		andi.w	#$C0,d0
 		move.b	(a1),d1
-		andi.b	#$3F,d1
+		andi.w	#$3F,d1
 		or.b	d1,d0
 		not.b	d0
 		move.b	(a0),d1
@@ -5631,8 +5629,7 @@ loc_1AE18:
 ; ---------------------------------------------------------------------------
 
 Build_1AE58:
-		moveq	#0,d2
-		move.b	mainspr_width(a0),d2
+		move.w	mainspr_width(a0),d2
 		sub.w	(a3),d0
 		move.w	d0,d3
 		add.w	d2,d3
@@ -5645,7 +5642,7 @@ Build_1AE58:
 		btst	#4,d6
 		beq.s	.assumeheight
 		sub.w	4(a3),d1
-		move.b	mainspr_height(a0),d2
+		move.w	mainspr_height(a0),d2
 		add.w	d2,d1
 		move.w	d2,d3
 		add.w	d2,d2
@@ -5688,7 +5685,7 @@ Build_1AEE4:
 Build_1AF1C:
 		moveq	#0,d3
 		move.b	mainspr_childsprites(a0),d3
-		subq.w	#1,d3
+		subq.b	#1,d3
 		bcs.w	BuildSprites_NextObj
 		lea	sub2_x_pos(a0),a0
 
@@ -6091,17 +6088,16 @@ Build_1B1EC:
 
 ObjPosLoad:
 		move.w	(v_opl_routine).w,d0
-		move.w	OPL_Index(pc,d0.w),d0
 		jmp	OPL_Index(pc,d0.w)
 ; End of function ObjPosLoad
 
 ; ===========================================================================
-OPL_Index:	dc.w OPL_Main-OPL_Index
-		dc.w OPL_Next-OPL_Index
+OPL_Index:	bra.w	OPL_Main
+		bra.w	OPL_Next
 ; ===========================================================================
 
 OPL_Main:
-		addq.w	#2,(v_opl_routine).w
+		addq.w	#4,(v_opl_routine).w
 		move.w	(v_zone).w,d0
 		lsl.b	#6,d0
 		lsr.w	#4,d0

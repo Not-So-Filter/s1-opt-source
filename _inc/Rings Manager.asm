@@ -202,7 +202,6 @@ BuildRings:
 		lea	MapUnc_Rings(pc),a1
 		move.w	4(a3),d4
 		move.w	#$F0,d5
-		move.w	#$7FF,d3
 
 BuildRings_Loop:
 		tst.w	(a4)+		; has this ring been consumed?
@@ -210,7 +209,7 @@ BuildRings_Loop:
 		move.w	2(a0),d1		; get ring X pos
 		sub.w	d4,d1		; subtract camera X pos
 		addq.w	#8,d1
-		and.w	d3,d1
+		andi.w	#$7FF,d1
 		cmp.w	d5,d1
 		bhs.s	BuildRings_NextRing	; if the ring is not on-screen, branch
 		addi.w	#128-8,d1
@@ -257,7 +256,7 @@ RingsManager_Setup:
 
 		move.w	(v_zone).w,d0	; get the current zone and act
 		lsl.b	#6,d0
-		lsr.w	#4,d0
+		lsr.w	#5,d0
 		lea	(RingPos_Index).l,a1	; get the rings for the act
 		move.w	(a1,d0.w),d0
 		lea	(a1,d0.w),a1
@@ -280,36 +279,46 @@ RingsManager_Setup:
 ; -------------------------------------------------------------------------------
 
 ; off_1736A:
-MapUnc_Rings: mappingsTable
-	mappingsTableEntry.w .frame1
-	mappingsTableEntry.w .frame2
-	mappingsTableEntry.w .frame3
-	mappingsTableEntry.w .frame4
-	mappingsTableEntry.w .frame5
-	mappingsTableEntry.w .frame6
-	mappingsTableEntry.w .frame7
-	mappingsTableEntry.w .frame8
+MapUnc_Rings:	mappingsTable
+	mappingsTableEntry.w	.front
+	mappingsTableEntry.w	.angle1
+	mappingsTableEntry.w	.edge
+	mappingsTableEntry.w	.angle2
+	mappingsTableEntry.w	.sparkle1
+	mappingsTableEntry.w	.sparkle2
+	mappingsTableEntry.w	.sparkle3
+	mappingsTableEntry.w	.sparkle4
 
-.frame1:
-	spritePiece	-8, -8, 2, 2, 0, 0, 0, 0, 0
+.front:	spriteHeader
+	spritePiece	-8, -8, 2, 2, 0, 0, 0, 0, 0	; ring front
+.front_End
 
-.frame2:
-	spritePiece	-8, -8, 2, 2, 4, 0, 0, 0, 0
+.angle1:	spriteHeader
+	spritePiece	-8, -8, 2, 2, 4, 0, 0, 0, 0	; ring angle
+.angle1_End
 
-.frame3:
-	spritePiece	-4, -8, 1, 2, 8, 0, 0, 0, 0
+.edge:	spriteHeader
+	spritePiece	-4, -8, 1, 2, 8, 0, 0, 0, 0	; ring perpendicular
+.edge_End
 
-.frame4:
-	spritePiece	-8, -8, 2, 2, 4, 1, 0, 0, 0
+.angle2:	spriteHeader
+	spritePiece	-8, -8, 2, 2, 4, 1, 0, 0, 0	; ring angle
+.angle2_End
 
-.frame5:
-	spritePiece	-8, -8, 2, 2, $A, 0, 0, 0, 0
+.sparkle1:	spriteHeader
+	spritePiece	-8, -8, 2, 2, $A, 0, 0, 0, 0	; sparkle
+.sparkle1_End
 
-.frame6:
-	spritePiece	-8, -8, 2, 2, $A, 1, 1, 0, 0
+.sparkle2:	spriteHeader
+	spritePiece	-8, -8, 2, 2, $A, 1, 1, 0, 0	; sparkle
+.sparkle2_End
 
-.frame7:
-	spritePiece	-8, -8, 2, 2, $A, 1, 0, 0, 0
+.sparkle3:	spriteHeader
+	spritePiece	-8, -8, 2, 2, $A, 1, 0, 0, 0	; sparkle
+.sparkle3_End
 
-.frame8:
-	spritePiece	-8, -8, 2, 2, $A, 0, 1, 0, 0
+.sparkle4:	spriteHeader
+	spritePiece	-8, -8, 2, 2, $A, 0, 1, 0, 0	; sparkle
+.sparkle4_End
+
+	even

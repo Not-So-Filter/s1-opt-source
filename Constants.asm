@@ -177,36 +177,47 @@ obSolid:	equ obj.2ndRout ; solid status flag
 
 ; ---------------------------------------------------------------------------
 ; when childsprites are activated (i.e. bit #6 of render_flags set)
-mainspr_width		= $A
-mainspr_height		= $B
-mainspr_mapframe	= $E
-mainspr_childsprites 	= $F	; amount of child sprites
-subspr_data		= $10
-sub2_x_pos		= $10	;x_vel
-sub2_y_pos		= $12	;y_vel
-sub2_mapframe		= $15
-sub3_x_pos		= $16	;y_radius
-sub3_y_pos		= $18	;anim
-sub3_mapframe		= $1B	;anim_frame
-sub4_x_pos		= $1C	;anim_frame_timer
-sub4_y_pos		= $1E	;angle
-sub4_mapframe		= $21	;collision_property
-sub5_x_pos		= $22	;status
-sub5_y_pos		= $24	;subtype
-sub5_mapframe		= $27
-sub6_x_pos		= $28
-sub6_y_pos		= $2A
-sub6_mapframe		= $2D
-sub7_x_pos		= $2E
-sub7_y_pos		= $30
-sub7_mapframe		= $33
-sub8_x_pos		= $34
-sub8_y_pos		= $36
-sub8_mapframe		= $39
-sub9_x_pos		= $3A
-sub9_y_pos		= $3C
-sub9_mapframe		= $3F
-next_subspr		= 6
+	phase 6
+next_subspr:		ds.l 1
+mainspr_width:		ds.w 1
+mainspr_height:		ds.w 1
+mainspr_mapframe:	ds.b 1
+mainspr_childsprites: 	ds.b 1	; amount of child sprites
+subspr_data:
+sub2_x_pos:		ds.w 1	;x_vel
+sub2_y_pos:		ds.w 1	;y_vel
+		ds.b 1
+sub2_mapframe:		ds.b 1
+sub3_x_pos:		ds.w 1	;y_radius
+sub3_y_pos:		ds.w 1	;anim
+		ds.b 1
+sub3_mapframe:		ds.b 1	;anim_frame
+sub4_x_pos:		ds.w 1	;anim_frame_timer
+sub4_y_pos:		ds.w 1	;angle
+		ds.b 1
+sub4_mapframe:		ds.b 1	;collision_property
+sub5_x_pos:		ds.w 1	;status
+sub5_y_pos:		ds.w 1	;subtype
+		ds.b 1
+sub5_mapframe:		ds.b 1
+sub6_x_pos:		ds.w 1
+sub6_y_pos:		ds.w 1
+		ds.b 1
+sub6_mapframe:		ds.b 1
+sub7_x_pos:		ds.w 1
+sub7_y_pos:		ds.w 1
+		ds.b 1
+sub7_mapframe:		ds.b 1
+sub8_x_pos:		ds.w 1
+sub8_y_pos:		ds.w 1
+		ds.b 1
+sub8_mapframe:		ds.b 1
+sub9_x_pos:		ds.w 1
+sub9_y_pos:		ds.w 1
+		ds.b 1
+sub9_mapframe:		ds.b 1
+	dephase
+	!org 0
 
 ; Object variables used by Sonic
 flashtime:	equ $30	; time between flashes after getting hit
