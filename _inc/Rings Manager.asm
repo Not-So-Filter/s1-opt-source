@@ -297,46 +297,50 @@ RingsManager_Setup:
 ; -------------------------------------------------------------------------------
 
 ; off_1736A:
-MapUnc_Rings:	mappingsTable
-	mappingsTableEntry.w	.front
-	mappingsTableEntry.w	.angle1
-	mappingsTableEntry.w	.edge
-	mappingsTableEntry.w	.angle2
-	mappingsTableEntry.w	.sparkle1
-	mappingsTableEntry.w	.sparkle2
-	mappingsTableEntry.w	.sparkle3
-	mappingsTableEntry.w	.sparkle4
+MapUnc_Rings:;frame1:
+		dc.w -8
+		dc.w $0005
+		dc.w $0000+make_art_tile(ArtTile_Ring,1,0)
+		dc.w -8
 
-.front:	spriteHeader
-	spritePiece	-8, -8, 2, 2, 0, 0, 0, 0, 0	; ring front
-.front_End
+;frame2:
+		dc.w -8
+		dc.w $0005
+		dc.w $0004+make_art_tile(ArtTile_Ring,1,0)
+		dc.w -8
 
-.angle1:	spriteHeader
-	spritePiece	-8, -8, 2, 2, 4, 0, 0, 0, 0	; ring angle
-.angle1_End
+;frame3:
+		dc.w -8
+		dc.w $0001
+		dc.w $0008+make_art_tile(ArtTile_Ring,1,0)
+		dc.w -4
 
-.edge:	spriteHeader
-	spritePiece	-4, -8, 1, 2, 8, 0, 0, 0, 0	; ring perpendicular
-.edge_End
+;frame4:
+		dc.w -8
+		dc.w $0005
+		dc.w $0804+make_art_tile(ArtTile_Ring,1,0)
+		dc.w -8
 
-.angle2:	spriteHeader
-	spritePiece	-8, -8, 2, 2, 4, 1, 0, 0, 0	; ring angle
-.angle2_End
+;frame5:
+		dc.w -8
+		dc.w $0005
+		dc.w $000A+make_art_tile(ArtTile_Ring,1,0)
+		dc.w -8
 
-.sparkle1:	spriteHeader
-	spritePiece	-8, -8, 2, 2, $A, 0, 0, 0, 0	; sparkle
-.sparkle1_End
+;frame6:
+		dc.w -8
+		dc.w $0005
+		dc.w $180A+make_art_tile(ArtTile_Ring,1,0)
+		dc.w -8
 
-.sparkle2:	spriteHeader
-	spritePiece	-8, -8, 2, 2, $A, 1, 1, 0, 0	; sparkle
-.sparkle2_End
+;frame7:
+		dc.w -8
+		dc.w $0005
+		dc.w $080A+make_art_tile(ArtTile_Ring,1,0)
+		dc.w -8
 
-.sparkle3:	spriteHeader
-	spritePiece	-8, -8, 2, 2, $A, 1, 0, 0, 0	; sparkle
-.sparkle3_End
-
-.sparkle4:	spriteHeader
-	spritePiece	-8, -8, 2, 2, $A, 0, 1, 0, 0	; sparkle
-.sparkle4_End
-
-	even
+;frame8:
+		dc.w -8
+		dc.w $0005
+		dc.w $100A+make_art_tile(ArtTile_Ring,1,0)
+		dc.w -8
