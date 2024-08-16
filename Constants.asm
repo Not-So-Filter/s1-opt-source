@@ -177,47 +177,36 @@ obSolid:	equ obj.2ndRout ; solid status flag
 
 ; ---------------------------------------------------------------------------
 ; when childsprites are activated (i.e. bit #6 of render_flags set)
-	phase 6
-next_subspr:		ds.l 1
-mainspr_width:		ds.w 1
-mainspr_height:		ds.w 1
-mainspr_mapframe:	ds.b 1
-mainspr_childsprites: 	ds.b 1	; amount of child sprites
-subspr_data:
-sub2_x_pos:		ds.w 1	;x_vel
-sub2_y_pos:		ds.w 1	;y_vel
-		ds.b 1
-sub2_mapframe:		ds.b 1
-sub3_x_pos:		ds.w 1	;y_radius
-sub3_y_pos:		ds.w 1	;anim
-		ds.b 1
-sub3_mapframe:		ds.b 1	;anim_frame
-sub4_x_pos:		ds.w 1	;anim_frame_timer
-sub4_y_pos:		ds.w 1	;angle
-		ds.b 1
-sub4_mapframe:		ds.b 1	;collision_property
-sub5_x_pos:		ds.w 1	;status
-sub5_y_pos:		ds.w 1	;subtype
-		ds.b 1
-sub5_mapframe:		ds.b 1
-sub6_x_pos:		ds.w 1
-sub6_y_pos:		ds.w 1
-		ds.b 1
-sub6_mapframe:		ds.b 1
-sub7_x_pos:		ds.w 1
-sub7_y_pos:		ds.w 1
-		ds.b 1
-sub7_mapframe:		ds.b 1
-sub8_x_pos:		ds.w 1
-sub8_y_pos:		ds.w 1
-		ds.b 1
-sub8_mapframe:		ds.b 1
-sub9_x_pos:		ds.w 1
-sub9_y_pos:		ds.w 1
-		ds.b 1
-sub9_mapframe:		ds.b 1
-	dephase
-	!org 0
+next_subspr:		equ 6
+mainspr_width:		equ $A
+mainspr_height:		equ $C
+mainspr_mapframe:	equ $E
+mainspr_childsprites: 	equ $F	; amount of child sprites
+subspr_data:		equ $10
+sub2_x_pos:		equ $10	;x_vel
+sub2_y_pos:		equ $12	;y_vel
+sub2_mapframe:		equ $14
+sub3_x_pos:		equ $16	;y_radius
+sub3_y_pos:		equ $18	;anim
+sub3_mapframe:		equ $1B	;anim_frame
+sub4_x_pos:		equ $1C	;anim_frame_timer
+sub4_y_pos:		equ $1E	;angle
+sub4_mapframe:		equ $21	;collision_property
+sub5_x_pos:		equ $22	;status
+sub5_y_pos:		equ $24	;subtype
+sub5_mapframe:		equ $27
+sub6_x_pos:		equ $28
+sub6_y_pos:		equ $2A
+sub6_mapframe:		equ $2D
+sub7_x_pos:		equ $2E
+sub7_y_pos:		equ $30
+sub7_mapframe:		equ $33
+sub8_x_pos:		equ $34
+sub8_y_pos:		equ $36
+sub8_mapframe:		equ $39
+sub9_x_pos:		equ $3A
+sub9_y_pos:		equ $3C
+sub9_mapframe:		equ $3F
 
 ; Object variables used by Sonic
 flashtime:	equ $30	; time between flashes after getting hit
