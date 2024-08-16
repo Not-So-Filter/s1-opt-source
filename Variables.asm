@@ -52,16 +52,16 @@ v_128x128_end:
 ;Kos_module_destination: =	Kos_module_queue+4	; word ; the VRAM destination for the first module in the queue
 
 ;			ds.b	$13A0		; unused
-Ring_Positions:		ds.b	$600
+Ring_Positions:		ds.b	Rings_Space
 Ring_Positions_End:
+
 Ring_start_addr_ROM:	ds.l	1
 Ring_end_addr_ROM:	ds.l	1
 Ring_start_addr_RAM:	ds.w	1
 Perfect_rings_left:	ds.w	1
-Rings_manager_routine:	ds.w	1
 Ring_consumption_table:	ds.b	$80
 Ring_consumption_table_End:
-			ds.b	$1772		; unused
+			ds.b	$1F74		; unused
 v_endflowerbuffer:
 
 v_lvllayoutfg:		ds.l	1		; level layout ROM address (4 bytes)
@@ -277,7 +277,8 @@ v_opl_screen:		ds.w	1		; ObjPosLoad - screen variable
 v_opl_data:		ds.b	$10		; ObjPosLoad - data buffer
 v_ssangle:		ds.w	1		; Special Stage angle
 v_ssrotate:		ds.w	1		; Special Stage rotation speed
-			ds.b	$C		; unused
+Rings_manager_routine:	ds.w	1
+			ds.b	$A		; unused
 v_btnpushtime1:		ds.w	1		; button push duration - in level
 v_btnpushtime2:		ds.w	1		; button push duration - in demo
 v_palchgspeed:		ds.w	1		; palette fade/transition speed (0 is fastest)

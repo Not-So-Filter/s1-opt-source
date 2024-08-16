@@ -73,7 +73,7 @@ Obj11_MakeBdgSegment:
 		move.w	#make_art_tile(ArtTile_GHZ_Bridge,2,0),obGfx(a1)
 		move.b	#4,obRender(a1)
 		bset	#6,obRender(a1)
-		move.b	#$40,mainspr_width(a1)
+		move.w	#$40,mainspr_width(a1)
 		move.b	d1,mainspr_childsprites(a1)
 		subq.b	#1,d1
 		lea	subspr_data(a1),a2 ; starting address for subsprite data

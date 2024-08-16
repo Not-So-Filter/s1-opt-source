@@ -6,8 +6,8 @@
 
 
 ReactToItem:
-		jsr	(Touch_Rings).l
 		nop
+		jsr	(Touch_Rings).l
 		move.w	obX(a0),d2	; load Sonic's x-axis position
 		move.w	obY(a0),d3	; load Sonic's y-axis position
 		subq.w	#8,d2
@@ -15,7 +15,7 @@ ReactToItem:
 		move.b	obHeight(a0),d5	; load Sonic's height
 		subq.b	#3,d5
 		sub.w	d5,d3
-		cmpi.b	#fr_Duck,obFrame(a0) ; is Sonic ducking?
+		cmpi.b	#fr_Duck,obAnim(a0) ; is Sonic ducking?
 		bne.s	.notducking	; if not, branch
 		addi.w	#$C,d3
 		moveq	#$A,d5

@@ -23,7 +23,7 @@ Ledge_Main:	; Routine 0
 		ori.b	#4,obRender(a0)
 		move.w	#4*$80,obPriority(a0)
 		move.b	#7,ledge_timedelay(a0) ; set time delay for collapse
-		move.b	#$34,obActWid(a0)
+		move.b	#$30,obActWid(a0)
 		move.b	obSubtype(a0),obFrame(a0)
 		move.b	#$38,obHeight(a0)
 		bset	#4,obRender(a0)

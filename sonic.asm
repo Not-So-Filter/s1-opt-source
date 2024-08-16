@@ -8576,7 +8576,7 @@ RingPos_Index:
 		dc.w RingPos_Null-RingPos_Index
 		dc.w RingPos_Null-RingPos_Index
 
-RingPos_Null:	dc.w $FFFF
+RingPos_Null:	dc.w $FFFF, 0
 
 RingPos_GHZ1:	binclude	"ringpos/ghz1_INDIVIDUAL.bin"
 		even
