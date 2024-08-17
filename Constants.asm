@@ -185,7 +185,7 @@ mainspr_childsprites: 	equ $F	; amount of child sprites
 subspr_data:		equ $10
 sub2_x_pos:		equ $10	;x_vel
 sub2_y_pos:		equ $12	;y_vel
-sub2_mapframe:		equ $14
+sub2_mapframe:		equ $15
 sub3_x_pos:		equ $16	;y_radius
 sub3_y_pos:		equ $18	;anim
 sub3_mapframe:		equ $1B	;anim_frame

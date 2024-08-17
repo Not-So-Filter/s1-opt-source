@@ -11,14 +11,12 @@
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
-sinesubtractionval	= 6
-
 CalcSine:
 		andi.w	#$FF,d0
-		addq.w	#sinesubtractionval,d0
+		addq.w	#6,d0
 		add.w	d0,d0
-		move.w	Sine_Data+$80-sinesubtractionval*2(pc,d0.w),d1
-		move.w	Sine_Data-sinesubtractionval*2(pc,d0.w),d0
+		move.w	Sine_Data+$80-12(pc,d0.w),d1
+		move.w	Sine_Data-12(pc,d0.w),d0
 		rts	
 ; End of function CalcSine
 

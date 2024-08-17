@@ -109,8 +109,8 @@ Checksum:
 		dc.b "J               " ; I/O support
 		dc.l StartOfRom		; Start address of ROM
 RomEndLoc:	dc.l EndOfRom-1		; End address of ROM
-		dc.l $FF0000		; Start address of RAM
-		dc.l $FFFFFF		; End address of RAM
+		dc.l v_ram_start	; Start address of RAM
+		dc.l v_ram_end-1	; End address of RAM
 		if EnableSRAM=1
 		dc.b $52, $41, $A0+(BackupSRAM<<6)+(AddressSRAM<<3), $20 ; SRAM support
 		else
@@ -344,10 +344,11 @@ GameInit:
 .SampleTableOk:
 		bsr.w	InitDMAQueue
 		bsr.w	VDPSetupGame
+		lea	(z80_port_1_control+1).l,a0	; init port 1 (joypad 1)
 		moveq	#$40,d0
-		move.b	d0,(z80_port_1_control+1).l	; init port 1 (joypad 1)
-		move.b	d0,(z80_port_2_control+1).l	; init port 2 (joypad 2)
-		move.b	d0,(z80_expansion_control+1).l	; init port 3 (expansion/extra)
+		move.b	d0,(a0)	; init port 1 (joypad 1)
+		move.b	d0,2(a0)	; init port 2 (joypad 2)
+		move.b	d0,4(a0)	; init port 3 (expansion/extra)
 		move.w	#id_Sega,(v_gamemode).w ; set Game Mode to Sega Screen
 
 MainGameLoop:
@@ -386,7 +387,7 @@ CheckSumError:
 		moveq	#bytesToLcnt($80),d7
 
 .fillred:
-		move.w	d0,(vdp_data_port).l ; fill palette with red
+		move.l	d0,(vdp_data_port).l ; fill palette with red
 		dbf	d7,.fillred	; repeat $3F more times
 
 .endlessloop:
@@ -743,12 +744,13 @@ ClearScreen:
 		fillVRAM	0, vram_fg, vram_fg+plane_size_64x32 ; clear foreground namespace
 		fillVRAM	0, vram_bg, vram_bg+plane_size_64x32 ; clear background namespace
 
+		move.w	#VDP_Command_Buffer,(VDP_Command_Buffer_Slot).w ; reset the DMA Queue (to prevent potential bugs)
+
 		moveq	#0,d0
 		move.l	d0,(v_scrposy_vdp).w
 		move.b	d0,(f_hud).w
 
 		lea	(v_spritetablebuffer).w,a0
-		moveq	#0,d0
 		moveq	#1,d1
 		moveq	#$50-1,d7
 
@@ -939,7 +941,6 @@ sub_1642:
 		tst.w	(v_plc_patternsleft).w
 		beq.s	Rplc_Exit
 		move.w	#9,(v_plc_framepatternsleft).w
-		moveq	#0,d0
 		move.w	(v_plc_buffer+4).w,d0
 		addi.w	#$120,(v_plc_buffer+4).w
 		bra.s	loc_1676
@@ -954,7 +955,6 @@ ProcessDPLC2:
 		tst.w	(v_plc_patternsleft).w
 		beq.s	locret_16DA
 		move.w	#3,(v_plc_framepatternsleft).w
-		moveq	#0,d0
 		move.w	(v_plc_buffer+4).w,d0
 		addi.w	#$60,(v_plc_buffer+4).w
 
@@ -2181,11 +2181,11 @@ LevSelControls:
 		move.b	(v_jpadpress1).w,d1
 		andi.b	#btnUp+btnDn,d1	; is up/down pressed and held?
 		bne.s	LevSel_UpDown	; if yes, branch
-		subq.w	#1,(v_levseldelay).w ; subtract 1 from time to next move
+		subq.b	#1,(v_levseldelay).w ; subtract 1 from time to next move
 		bpl.s	LevSel_SndTest	; if time remains, branch
 
 LevSel_UpDown:
-		move.w	#$B,(v_levseldelay).w ; reset time delay
+		move.b	#$B,(v_levseldelay).w ; reset time delay
 		move.b	(v_jpadhold1).w,d1
 		andi.b	#btnUp+btnDn,d1	; is up/down pressed?
 		beq.s	LevSel_SndTest	; if not, branch
@@ -2256,7 +2256,6 @@ LevSel_DrawAll:
 		addi.l	#$800000,d4	; jump to next line
 		dbf	d1,LevSel_DrawAll
 
-		moveq	#0,d0
 		move.w	(v_levselitem).w,d0
 		move.w	d0,d1
 		move.l	#textpos,d4
@@ -2855,7 +2854,7 @@ GM_Special:
 		moveq	#bgm_SS,d0
 		bsr.w	PlayMusic	; play special stage BG	music
 		clr.w	(v_btnpushtime1).w
-		lea	(DemoDataPtr).l,a1
+		lea	DemoDataPtr(pc),a1
 		moveq	#6,d0
 		add.w	d0,d0
 		add.w	d0,d0

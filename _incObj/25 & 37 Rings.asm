@@ -92,8 +92,8 @@ RingLoss:
 ; ===========================================================================
 RLoss_Index:	dc.w RLoss_Count-RLoss_Index
 		dc.w RLoss_Bounce-RLoss_Index
-		dc.w RLoss_Collect-RLoss_Index
-		dc.w RLoss_Sparkle-RLoss_Index
+		dc.w Ring_Collect-RLoss_Index
+		dc.w Ring_Sparkle-RLoss_Index
 		dc.w RLoss_Delete-RLoss_Index
 ; ===========================================================================
 
@@ -186,18 +186,6 @@ RLoss_Bounce:	; Routine 2
 		addi.w	#$E0,d0
 		cmp.w	obY(a0),d0	; has object moved below level boundary?
 		blo.s	RLoss_Delete	; if yes, branch
-		bra.w	DisplaySprite
-; ===========================================================================
-
-RLoss_Collect:	; Routine 4
-		addq.b	#2,obRoutine(a0)
-		clr.b	obColType(a0)
-		move.w	#1*$80,obPriority(a0)
-		bsr.w	CollectRing
-
-RLoss_Sparkle:	; Routine 6
-		lea	Ani_Ring(pc),a1
-		bsr.w	AnimateSprite
 		bra.w	DisplaySprite
 ; ===========================================================================
 

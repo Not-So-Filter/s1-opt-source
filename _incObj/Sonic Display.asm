@@ -21,7 +21,7 @@ Sonic_Display:
 		bne.s	.chkshoes
 		tst.b	(f_lockscreen).w
 		bne.s	.removeinvincible
-		cmpi.b	#$C,(v_air).w
+		cmpi.w	#$C,(v_air).w
 		blo.s	.removeinvincible
 		moveq	#0,d0
 		move.b	(v_zone).w,d0
@@ -52,4 +52,4 @@ Sonic_Display:
 		jmp	(PlayMusic).w	; run music at normal speed
 
 .exit:
-		rts	
+		rts
