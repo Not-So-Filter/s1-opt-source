@@ -17,7 +17,6 @@ Shi_Main:	; Routine 0
 		addq.b	#2,obRoutine(a0)
 		move.l	#Map_Shield,obMap(a0)
 		move.b	#4,obRender(a0)
-		move.w	#1*$80,obPriority(a0)
 		move.b	#$10,obActWid(a0)
 		tst.b	obAnim(a0)	; is object a shield?
 		bne.s	.stars		; if not, branch
@@ -41,7 +40,8 @@ Shi_Shield:	; Routine 2
 		move.b	(v_player+obStatus).w,obStatus(a0)
 		lea	Ani_Shield(pc),a1
 		jsr	(AnimateSprite).l
-		jmp	(DisplaySprite).l
+		move.w	#1*$80,d0
+		jmp	(DisplaySprite2).l
 
 .remove:
 		rts
@@ -78,4 +78,5 @@ Shi_Stars:	; Routine 4
 		move.b	(v_player+obStatus).w,obStatus(a0)
 		lea	Ani_Shield(pc),a1
 		jsr	(AnimateSprite).l
-		jmp	(DisplaySprite).l
+		move.w	#1*$80,d0
+		jmp	(DisplaySprite2).l

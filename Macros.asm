@@ -25,6 +25,20 @@ writeVRAM:	macro source,destination
 		move.w	#$80+(((destination)&$C000)>>14),(v_vdp_buffer2).w
 		move.w	(v_vdp_buffer2).w,(a5)
 		endm
+		
+; ---------------------------------------------------------------------------
+; DMA copy data from 68K (ROM/RAM) to the VRAM
+; input: source, length, destination
+; ---------------------------------------------------------------------------
+
+writeVRAMsrcdefined:	macro source,destination
+		move.l	#$94000000+((((source_end-source)>>1)&$FF00)<<8)+$9300+(((source_end-source)>>1)&$FF),(a5)
+		move.l	#$96000000+(((source>>1)&$FF00)<<8)+$9500+((source>>1)&$FF),(a5)
+		move.w	#$9700+((((source>>1)&$FF0000)>>16)&$7F),(a5)
+		move.w	#$4000+((destination)&$3FFF),(a5)
+		move.w	#$80+(((destination)&$C000)>>14),(v_vdp_buffer2).w
+		move.w	(v_vdp_buffer2).w,(a5)
+		endm
 
 ; ---------------------------------------------------------------------------
 ; DMA copy data from 68K (ROM/RAM) to the CRAM
@@ -48,6 +62,23 @@ writeCRAM:	macro source,destination
 
 fillVRAM:	macro byte,start,end
 		lea	(vdp_control_port).l,a5
+		move.w	#$8F01,(a5) ; Set increment to 1, since DMA fill writes bytes
+		move.l	#$94000000+((((end)-(start)-1)&$FF00)<<8)+$9300+(((end)-(start)-1)&$FF),(a5)
+		move.w	#$9780,(a5)
+		move.l	#$40000080+(((start)&$3FFF)<<16)+(((start)&$C000)>>14),(a5)
+		move.w	#(byte)|(byte)<<8,(vdp_data_port).l
+.wait:		move.w	(a5),d1
+		btst	#1,d1
+		bne.s	.wait
+		move.w	#$8F02,(a5) ; Set increment back to 2, since the VDP usually operates on words
+		endm
+		
+; ---------------------------------------------------------------------------
+; DMA fill VRAM with a value
+; input: value, length, destination
+; ---------------------------------------------------------------------------
+
+fillVRAMsrcdefined:	macro byte,start,end
 		move.w	#$8F01,(a5) ; Set increment to 1, since DMA fill writes bytes
 		move.l	#$94000000+((((end)-(start)-1)&$FF00)<<8)+$9300+(((end)-(start)-1)&$FF),(a5)
 		move.w	#$9780,(a5)

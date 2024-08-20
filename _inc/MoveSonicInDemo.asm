@@ -28,8 +28,7 @@ MDemo_On:
 
 .notspecial:
 		add.w	d0,d0
-		add.w	d0,d0
-		movea.l	(a1,d0.w),a1	; fetch address for demo data
+		movea.w	(a1,d0.w),a1	; fetch address for demo data
 		tst.w	(f_demo).w	; is this an ending sequence demo?
 		bpl.s	.notcredits	; if not, branch
 		lea	DemoEndDataPtr(pc),a1
@@ -63,14 +62,14 @@ MDemo_On:
 ; ---------------------------------------------------------------------------
 ; Demo sequence	pointers
 ; ---------------------------------------------------------------------------
-DemoDataPtr:	dc.l Demo_GHZ		; demos run after the title screen
-		dc.l Demo_GHZ
-		dc.l Demo_MZ
-		dc.l Demo_MZ
-		dc.l Demo_SYZ
-		dc.l Demo_SYZ
-		dc.l Demo_SS
-		dc.l Demo_SS
+DemoDataPtr:	dc.w Demo_GHZ		; demos run after the title screen
+		dc.w Demo_GHZ
+		dc.w Demo_MZ
+		dc.w Demo_MZ
+		dc.w Demo_SYZ
+		dc.w Demo_SYZ
+		dc.w Demo_SS
+		dc.w Demo_SS
 
 DemoEndDataPtr:	dc.l Demo_EndGHZ1	; demos run during the credits
 		dc.l Demo_EndMZ

@@ -39,7 +39,7 @@ LZWaterFeatures:
 		move.b	d0,(v_hbla_line).w ; set water surface as on-screen
 
 .notlabyrinth:
-		rts	
+		rts
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Initial water heights
@@ -73,7 +73,7 @@ LZDynamicWater:
 		add.w	d1,(v_waterpos2).w ; move water up/down
 
 .exit:
-		rts	
+		rts
 ; ===========================================================================
 DynWater_Index:	dc.w DynWater_LZ1-DynWater_Index
 		dc.w DynWater_LZ2-DynWater_Index
@@ -107,7 +107,7 @@ DynWater_LZ1:
 
 .setwater:
 		move.w	d1,(v_waterpos3).w
-		rts	
+		rts
 ; ===========================================================================
 
 .sonicishigh:
@@ -277,7 +277,7 @@ DynWater_SBZ3:
 LZWindTunnels:
 		tst.w	(v_debuguse).w	; is debug mode	being used?
 		bne.w	.quit	; if yes, branch
-		lea	(LZWind_Data+8).l,a2
+		lea	LZWind_Data+8(pc),a2
 		moveq	#0,d0
 		move.b	(v_act).w,d0	; get act number
 		lsl.w	#3,d0		; multiply by 8
@@ -299,33 +299,23 @@ LZWindTunnels:
 		bhs.w	.chknext
 		move.w	obY(a1),d2
 		cmp.w	2(a2),d2
-	if FixBugs
-		blo.w	.chknext
-	else
 		blo.s	.chknext
-	endif
 		cmp.w	6(a2),d2
 		bhs.s	.chknext	; branch if Sonic is outside a range
-	if FixBugs
-		; d0 is overwritten but later used as if it wasn't!
 		move.w	d0,d1
-	endif
-		move.b	(v_vbla_byte).w,d0
-		andi.b	#$3F,d0		; does VInt counter fall on 0, $40, $80 or $C0?
+		moveq	#$3F,d0		; does VInt counter fall on 0, $40, $80 or $C0?
+		and.b	(v_vbla_byte).w,d0
 		bne.s	.skipsound	; if not, branch
 		moveq	#sfx_Waterfall,d0
 		bsr.w	PlaySound	; play rushing water sound (only every $40 frames)
 
 .skipsound:
 		tst.b	(f_wtunnelallow).w ; are wind tunnels disabled?
-		bne.w	.quit	; if yes, branch
+		bne.s	.end	; if yes, branch
 		cmpi.b	#4,obRoutine(a1) ; is Sonic hurt/dying?
 		bhs.s	.clrquit	; if yes, branch
 		move.b	#1,(f_wtunnelmode).w
-	if FixBugs
-		; See above.
 		move.w	d1,d0
-	endif
 		subi.w	#$80,d0
 		cmp.w	(a2),d0
 		bhs.s	.movesonic

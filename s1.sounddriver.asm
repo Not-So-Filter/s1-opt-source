@@ -602,7 +602,7 @@ CycleSoundQueue:
 		move.b	d0,d1
 		clr.b	(a1)+				; Clear entry
 		subq.b	#bgm__First,d0			; Make it into 0-based index
-		bcs.s	.nextinput
+		blo.s	.nextinput
 		move.b	(a0,d0.w),d2			; Get sound type
 		cmp.b	d3,d2				; Is it a lower priority sound?
 		bcs.s	.nextinput			; Branch if yes

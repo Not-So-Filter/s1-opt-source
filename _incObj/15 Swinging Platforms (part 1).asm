@@ -11,8 +11,7 @@ SwingingPlatform:
 ; ===========================================================================
 Swing_Index:	dc.w Swing_Main-Swing_Index, Swing_SetSolid-Swing_Index
 		dc.w Swing_Action2-Swing_Index,	Swing_Delete-Swing_Index
-		dc.w Swing_Delete-Swing_Index, Swing_Display-Swing_Index
-		dc.w Swing_Action-Swing_Index
+		dc.w Swing_Display-Swing_Index, Swing_Action-Swing_Index
 
 swing_origX = objoff_3A		; original x-axis position
 swing_origY = objoff_38		; original y-axis position
@@ -67,7 +66,7 @@ Swing_Main:	; Routine 0
 		subq.w	#1,d1
 
 .makechain:
-		bsr.w	FindFreeObj
+		bsr.w	FindNextFreeObj
 		bne.s	.fail
 		addq.b	#1,obSubtype(a0)
 		move.w	a1,d5
@@ -75,7 +74,7 @@ Swing_Main:	; Routine 0
 		lsr.w	#object_size_bits,d5
 		andi.w	#$7F,d5
 		move.b	d5,(a2)+
-		move.b	#$A,obRoutine(a1) ; goto Swing_Display next
+		move.b	#8,obRoutine(a1) ; goto Swing_Display next
 		move.b	d4,obID(a1)	; load swinging	object
 		move.l	obMap(a0),obMap(a1)
 		move.w	obGfx(a0),obGfx(a1)
@@ -124,7 +123,6 @@ Swing_SetSolid:	; Routine 2
 
 Swing_Action:	; Routine $C
 		bsr.w	Swing_Move
-		bsr.w	DisplaySprite
 		bra.w	Swing_ChkDel
 ; ===========================================================================
 
@@ -139,5 +137,4 @@ Swing_Action2:	; Routine 4
 		move.b	obHeight(a0),d3
 		addq.b	#1,d3
 		bsr.w	MvSonicOnPtfm
-		bsr.w	DisplaySprite
 		bra.w	Swing_ChkDel

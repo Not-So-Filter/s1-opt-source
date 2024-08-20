@@ -15,8 +15,6 @@ AddressSRAM	  = 3	; 0 = odd+even; 2 = even only; 3 = odd only
 
 ZoneCount	  = 6	; discrete zones are: GHZ, MZ, SYZ, LZ, SLZ, and SBZ
 
-FixBugs		  = 1	; change to 1 to enable bugfixes
-
 zeroOffsetOptimization = 1	; if 1, makes a handful of zero-offset instructions smaller
 
 DebuggingMode = 1
@@ -501,8 +499,8 @@ VBla_08:
 .waterbelow:
 		move.w	(v_hbla_hreg).w,(a5)
 
-		writeVRAM	v_hscrolltablebuffer,vram_hscroll
-		writeVRAM	v_spritetablebuffer,vram_sprites
+		writeVRAMsrcdefined	v_hscrolltablebuffer,vram_hscroll
+		writeVRAMsrcdefined	v_spritetablebuffer,vram_sprites
 		bsr.w	ProcessDMAQueue
 		movem.l	(v_screenposx).w,d0-d7
 		movem.l	d0-d7,(v_screenposx_dup).w
@@ -538,8 +536,8 @@ Demo_Time:
 VBla_0A:
 		bsr.w	ReadJoypads
 		writeCRAM	v_palette,0
-		writeVRAM	v_spritetablebuffer,vram_sprites
-		writeVRAM	v_hscrolltablebuffer,vram_hscroll
+		writeVRAMsrcdefined	v_spritetablebuffer,vram_sprites
+		writeVRAMsrcdefined	v_hscrolltablebuffer,vram_hscroll
 		bsr.w	PalCycle_SS
 		bsr.w	ProcessDMAQueue
 		tst.w	(v_demolength).w	; is there time left on the demo?
@@ -563,8 +561,8 @@ VBla_0C:
 
 .waterbelow:
 		move.w	(v_hbla_hreg).w,(a5)
-		writeVRAM	v_hscrolltablebuffer,vram_hscroll
-		writeVRAM	v_spritetablebuffer,vram_sprites
+		writeVRAMsrcdefined	v_hscrolltablebuffer,vram_hscroll
+		writeVRAMsrcdefined	v_spritetablebuffer,vram_sprites
 		bsr.w	ProcessDMAQueue
 		movem.l	(v_screenposx).w,d0-d7
 		movem.l	d0-d7,(v_screenposx_dup).w
@@ -585,8 +583,8 @@ VBla_12:
 VBla_16:
 		bsr.w	ReadJoypads
 		writeCRAM	v_palette,0
-		writeVRAM	v_spritetablebuffer,vram_sprites
-		writeVRAM	v_hscrolltablebuffer,vram_hscroll
+		writeVRAMsrcdefined	v_spritetablebuffer,vram_sprites
+		writeVRAMsrcdefined	v_hscrolltablebuffer,vram_hscroll
 		bsr.w	ProcessDMAQueue
 		tst.w	(v_demolength).w
 		beq.s	.end
@@ -609,8 +607,8 @@ sub_106E:
 		writeCRAM	v_palette_water,0
 
 .waterbelow:
-		writeVRAM	v_spritetablebuffer,vram_sprites
-		writeVRAM	v_hscrolltablebuffer,vram_hscroll
+		writeVRAMsrcdefined	v_spritetablebuffer,vram_sprites
+		writeVRAMsrcdefined	v_hscrolltablebuffer,vram_hscroll
 		rts
 ; End of function sub_106E
 
@@ -742,7 +740,7 @@ VDPSetupArray_End:
 
 ClearScreen:
 		fillVRAM	0, vram_fg, vram_fg+plane_size_64x32 ; clear foreground namespace
-		fillVRAM	0, vram_bg, vram_bg+plane_size_64x32 ; clear background namespace
+		fillVRAMsrcdefined	0, vram_bg, vram_bg+plane_size_64x32 ; clear background namespace
 
 		move.w	#VDP_Command_Buffer,(VDP_Command_Buffer_Slot).w ; reset the DMA Queue (to prevent potential bugs)
 
@@ -941,6 +939,7 @@ sub_1642:
 		tst.w	(v_plc_patternsleft).w
 		beq.s	Rplc_Exit
 		move.w	#9,(v_plc_framepatternsleft).w
+		moveq	#0,d0
 		move.w	(v_plc_buffer+4).w,d0
 		addi.w	#$120,(v_plc_buffer+4).w
 		bra.s	loc_1676
@@ -955,6 +954,7 @@ ProcessDPLC2:
 		tst.w	(v_plc_patternsleft).w
 		beq.s	locret_16DA
 		move.w	#3,(v_plc_framepatternsleft).w
+		moveq	#0,d0
 		move.w	(v_plc_buffer+4).w,d0
 		addi.w	#$60,(v_plc_buffer+4).w
 
@@ -1078,7 +1078,7 @@ Pal_SBZCyc10:	binclude	"palette/Cycle - SBZ 10.bin"
 
 
 PaletteFadeIn:
-		move.w	#$003F,(v_pfade_start).w ; set start position = 0; size = $40
+		move.w	#($80/2)-1,(v_pfade_start).w ; set start position = 0; size = $80
 
 PalFadeIn_Alt:				; start position and size are already set
 		moveq	#0,d0
@@ -1186,7 +1186,7 @@ FadeIn_AddColour:
 
 
 PaletteFadeOut:
-		move.w	#$003F,(v_pfade_start).w ; start position = 0; size = $40
+		move.w	#($80/2)-1,(v_pfade_start).w ; start position = 0; size = $40
 		moveq	#$15,d4
 
 .mainloop:
@@ -1269,7 +1269,7 @@ FadeOut_DecColour:
 
 
 PaletteWhiteIn:
-		move.w	#$003F,(v_pfade_start).w ; start position = 0; size = $40
+		move.w	#($80/2)-1,(v_pfade_start).w ; start position = 0; size = $40
 		moveq	#0,d0
 		lea	(v_palette).w,a0
 		move.b	(v_pfade_start).w,d0
@@ -1374,7 +1374,7 @@ WhiteIn_DecColour:
 
 
 PaletteWhiteOut:
-		move.w	#$003F,(v_pfade_start).w ; start position = 0; size = $40
+		move.w	#($80/2)-1,(v_pfade_start).w ; start position = 0; size = $40
 		moveq	#$15,d4
 
 .mainloop:
@@ -2009,8 +2009,8 @@ LevelSelect:
 		cmpi.w	#$14,d0		; have you selected item $14 (sound test)?
 		bne.s	LevSel_Level_SS	; if not, go to	Level/SS subroutine
 		move.w	(v_levselsound).w,d0
-		tst.b	(f_creditscheat).w ; is Japanese Credits cheat on?
-		beq.s	LevSel_NoCheat	; if not, branch
+;		tst.b	(f_creditscheat).w ; is Japanese Credits cheat on?
+;		beq.s	LevSel_NoCheat	; if not, branch
 		cmpi.w	#$9F,d0		; is sound $9F being played?
 		beq.s	LevSel_Ending	; if yes, branch
 		cmpi.w	#$9E,d0		; is sound $9E being played?
@@ -2473,6 +2473,7 @@ Level_SkipTtlCard:
 		bsr.w	LevelSizeLoad
 		bsr.w	DeformLayers
 		bset	#2,(v_fg_scroll_flags).w
+		bsr.w	LevelLoadTiles
 		bsr.w	LevelDataLoad ; load block mappings and palettes
 		bsr.w	LoadTilesFromStart
 		bsr.w	ColIndexLoad
@@ -2536,8 +2537,7 @@ Level_SkipClr:
 		moveq	#0,d0
 		move.b	(v_zone).w,d0
 		add.w	d0,d0
-		add.w	d0,d0
-		movea.l	(a1,d0.w),a1
+		movea.w	(a1,d0.w),a1
 		tst.w	(f_demo).w	; is demo mode on?
 		bpl.s	Level_Demo	; if yes, branch
 		lea	DemoEndDataPtr(pc),a1 ; load ending demo data
@@ -2662,7 +2662,7 @@ Level_EndDemo:
 
 Level_FadeDemo:
 		move.w	#60,(v_demolength).w
-		move.w	#$3F,(v_pfade_start).w
+		move.w	#($80/2)-1,(v_pfade_start).w
 		clr.w	(v_palchgspeed).w
 
 Level_FDLoop:
@@ -2857,8 +2857,7 @@ GM_Special:
 		lea	DemoDataPtr(pc),a1
 		moveq	#6,d0
 		add.w	d0,d0
-		add.w	d0,d0
-		movea.l	(a1,d0.w),a1
+		movea.w	(a1,d0.w),a1
 		move.b	1(a1),(v_btnpushtime2).w
 		subq.b	#1,(v_btnpushtime2).w
 		moveq	#0,d0
@@ -3480,14 +3479,12 @@ End_LoadData:
 		bsr.w	LevelSizeLoad
 		bsr.w	DeformLayers
 		bset	#2,(v_fg_scroll_flags).w
+		bsr.w	LevelLoadTiles
 		bsr.w	LevelDataLoad
 		bsr.w	LoadTilesFromStart
 		move.l	#Col_GHZ_1,(v_colladdr1).w ; load collision index
 		move.l	#Col_GHZ_2,(v_colladdr2).w ; load collision index
 		enable_ints
-		lea	(Kos_EndFlowers).l,a0 ;	load extra flower patterns
-		lea	(v_endflowerbuffer-$1000).w,a1 ; RAM address to buffer the patterns
-		bsr.w	KosPlusDec
 		moveq	#palid_Sonic,d0
 		bsr.w	PalLoad_Fade	; load Sonic's palette
 		moveq	#bgm_Ending,d0
@@ -4598,6 +4595,44 @@ locj_72da:
 		bra.w	DrawBlocks_LR_3
 
 ; ---------------------------------------------------------------------------
+; Subroutine to load 8x8 level tiles
+; ---------------------------------------------------------------------------
+
+; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
+
+
+LevelLoadTiles:
+		moveq	#0,d0
+		move.b	(v_zone).w,d0
+		lsl.w	#4,d0
+		lea	(LevelHeaders).l,a2
+		lea	(a2,d0.w),a2
+		movea.l	(a2)+,a0
+		lea	(v_128x128).l,a1
+		bsr.w	KosPlusDec
+		move.w	a1,d3
+		move.w	d3,d7
+		andi.w	#$FFF,d3
+		lsr.w	#1,d3
+		rol.w	#4,d7
+		andi.w	#$F,d7
+
+.loop:		move.w	d7,d2
+		moveq	#12,d0
+		lsl.w	d0,d2
+		move.l	#$FFFFFF,d1
+		move.w	d2,d1
+		lsr.l	#1,d1
+		bsr.w	QueueDMATransfer
+		move.w	d7,-(sp)
+		move.w	#id_VB_0A,(v_vbla_routine).w
+		bsr.w	WaitForVBla
+		move.w	(sp)+,d7
+		move.w	#$800,d3
+		dbf	d7,.loop
+		rts
+
+; ---------------------------------------------------------------------------
 ; Subroutine to load basic level data
 ; ---------------------------------------------------------------------------
 
@@ -4611,15 +4646,7 @@ LevelDataLoad:
 		lea	(LevelHeaders).l,a2
 		lea	(a2,d0.w),a2
 		move.l	a2,-(sp)
-		movea.l	(a2)+,a0
-		lea	(v_128x128).l,a1
-		bsr.w	KosPlusDec
-		move.w	a1,d3
-		lsr.w	#1,d3
-		move.l	#(v_128x128&$FFFFFF)/2,d1
-		moveq	#0,d2
-		bsr.w	QueueDMATransfer
-		bsr.w	ProcessDMAQueue
+		addq.l	#4,a2
 		movea.l	(a2)+,a0
 		lea	(v_16x16).w,a1	; RAM address for 16x16 mappings
 		moveq	#make_art_tile(ArtTile_Level,0,FALSE),d0
@@ -6489,9 +6516,8 @@ loc_12C58:
 loc_12C64:
 		btst	#0,(f_playerctrl).w ; are controls locked?
 		bne.s	loc_12C7E	; if yes, branch
-		moveq	#0,d0
-		move.b	obStatus(a0),d0
-		andi.w	#6,d0
+		moveq	#6,d0
+		and.b	obStatus(a0),d0
 		move.w	Sonic_Modes(pc,d0.w),d1
 		jsr	Sonic_Modes(pc,d1.w)
 
@@ -6521,19 +6547,6 @@ Sonic_Modes:	dc.w Sonic_MdNormal-Sonic_Modes
 		dc.w Sonic_MdJump-Sonic_Modes
 		dc.w Sonic_MdRoll-Sonic_Modes
 		dc.w Sonic_MdJump-Sonic_Modes
-; ---------------------------------------------------------------------------
-; Music	to play	after invincibility wears off
-; ---------------------------------------------------------------------------
-MusicList2:
-		dc.b bgm_GHZ
-		dc.b bgm_LZ
-		dc.b bgm_MZ
-		dc.b bgm_SLZ
-		dc.b bgm_SYZ
-		dc.b bgm_SBZ
-		zonewarning MusicList2,1
-		; The ending doesn't get an entry
-		even
 
 		include	"_incObj/Sonic Display.asm"
 		include	"_incObj/Sonic RecordPosition.asm"
@@ -8256,8 +8269,6 @@ Nem_EndEm:	binclude	"artnem/Ending - Emeralds.nem"
 Nem_EndSonic:	binclude	"artnem/Ending - Sonic.nem"
 		even
 Nem_TryAgain:	binclude	"artnem/Ending - Try Again.nem"
-		even
-Kos_EndFlowers:	binclude	"artkosp/Flowers at Ending.kosp" ; ending sequence animated flowers
 		even
 Nem_EndFlower:	binclude	"artnem/Ending - Flowers.nem"
 		even

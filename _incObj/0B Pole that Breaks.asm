@@ -62,7 +62,7 @@ Pole_Action:	; Routine 2
 
 .letgo:
 		move.b	(v_jpadpress2).w,d0
-		andi.w	#btnABC,d0	; is A/B/C pressed?
+		andi.b	#btnABC,d0	; is A/B/C pressed?
 		beq.s	Pole_Display	; if not, branch
 
 .release:

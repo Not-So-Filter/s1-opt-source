@@ -40,7 +40,7 @@ Pow_Move:	; Routine 2
 
 Pow_Checks:
 		addq.b	#2,obRoutine(a0)
-		move.w	#30,obTimeFrame(a0) ; display icon for half a second
+		move.w	#29,obTimeFrame(a0) ; display icon for half a second
 		moveq	#0,d0
 		move.b	obAnim(a0),d0
 		add.w	d0,d0
@@ -70,7 +70,7 @@ ExtraLife:
 
 Pow_ChkShoes:
 		move.b	#1,(v_shoes).w	; speed up the BG music
-		move.w	#$4B0,(v_player+shoetime).w	; time limit for the power-up
+		move.w	#1200,(v_player+shoetime).w	; time limit for the power-up
 		move.w	#$C00,(v_sonspeedmax).w ; change Sonic's top speed
 		move.w	#$18,(v_sonspeedacc).w	; change Sonic's acceleration
 		move.w	#$80,(v_sonspeeddec).w	; change Sonic's deceleration
@@ -87,14 +87,15 @@ Pow_ChkShield:
 
 Pow_ChkInvinc:
 		move.b	#1,(v_invinc).w	; make Sonic invincible
-		move.w	#$4B0,(v_player+invtime).w ; time limit for the power-up
-		move.b	#id_ShieldItem,(v_starsobj1).w ; load stars object ($3801)
+		move.w	#1200,(v_player+invtime).w ; time limit for the power-up
+		moveq	#id_ShieldItem,d1
+		move.b	d1,(v_starsobj1).w ; load stars object ($3801)
 		move.b	#1,(v_starsobj1+obAnim).w
-		move.b	#id_ShieldItem,(v_starsobj2).w ; load stars object ($3802)
+		move.b	d1,(v_starsobj2).w ; load stars object ($3802)
 		move.b	#2,(v_starsobj2+obAnim).w
-		move.b	#id_ShieldItem,(v_starsobj3).w ; load stars object ($3803)
+		move.b	d1,(v_starsobj3).w ; load stars object ($3803)
 		move.b	#3,(v_starsobj3+obAnim).w
-		move.b	#id_ShieldItem,(v_starsobj4).w ; load stars object ($3804)
+		move.b	d1,(v_starsobj4).w ; load stars object ($3804)
 		move.b	#4,(v_starsobj4+obAnim).w
 		tst.b	(f_lockscreen).w ; is boss mode on?
 		bne.s	Pow_NoMusic	; if yes, branch

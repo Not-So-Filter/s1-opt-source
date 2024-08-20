@@ -329,7 +329,7 @@ v_lz_deform:		ds.w	1		; LZ deformation offset, in units of $80
 			ds.b	4		; unused
 f_switch:		ds.b	$10		; flags set when Sonic stands on a switch
 v_scroll_block_1_size:	ds.w	1
-Anim_Counters:		ds.b	$10		; unused
+Anim_Counters:		ds.b	$10
 v_levelvariables_end:
 
 v_spritetablebuffer:	ds.b	$280		; sprite table (last $80 bytes are overwritten by v_palette_water_fading)
@@ -433,8 +433,7 @@ HUD_scroll_vertical:	ds.w	1		; vertical movement buffer for hud (2 bytes)
 			ds.b	8		; unused
 v_timingvariables_end:
 
-			ds.w	1		; very subtly (and perhaps unintentionally) used by FindNearestTile when encountering chunk 0
-			ds.b	$E		; unused
+			ds.b	$10		; unused
 v_screenposx_dup:	ds.l	1		; screen position x (duplicate)
 v_screenposy_dup:	ds.l	1		; screen position y (duplicate)
 v_bgscreenposx_dup:	ds.l	1		; background screen position x (duplicate)
