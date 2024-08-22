@@ -69,7 +69,7 @@ Bub_ChkWater:	; Routine 4
 		move.b	obAngle(a0),d0
 		addq.b	#1,obAngle(a0)
 		andi.w	#$7F,d0
-		lea	(Drown_WobbleData).l,a1
+		lea	Drown_WobbleData(pc),a1
 		move.b	(a1,d0.w),d0
 		ext.w	d0
 		add.w	bub_origX(a0),d0
@@ -92,7 +92,7 @@ Bub_ChkWater:	; Routine 4
 		bclr	#5,obStatus(a1)
 		bclr	#4,obStatus(a1)
 		btst	#2,obStatus(a1)
-		beq.w	.burst
+		beq.s	.burst
 		bclr	#2,obStatus(a1)
 		move.b	#$13,obHeight(a1)
 		move.b	#9,obWidth(a1)

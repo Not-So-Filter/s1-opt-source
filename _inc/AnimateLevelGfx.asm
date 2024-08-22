@@ -36,10 +36,8 @@ DynAnimCue_Index:
 		dc.w AnimCue_Null-DynCue_Index
 		dc.w Dynamic_Null-DynCue_Index
 		dc.w AnimCue_Null-DynCue_Index
-		dc.w Dynamic_Null-DynCue_Index
-		dc.w AnimCue_Null-DynCue_Index
-		dc.w Dynamic_Null-DynCue_Index
-		dc.w AnimCue_Null-DynCue_Index
+		dc.w Dynamic_Normal-DynCue_Index
+		dc.w AnimCue_SBZ-DynCue_Index
 ; ===========================================================================
 
 Dynamic_Null:
@@ -154,15 +152,46 @@ AnimCue_MZ:	zoneanimstart
 		; Lava surface
 		zoneanimdecl $13, Art_MzLava1, ArtTile_MZ_Animated_Lava, 3, 8
 		dc.b   0
+		dc.b   8
+		dc.b   16
+		even
+		
+		; Magma
+		zoneanimdecl 1, Art_MzLava2, ArtTile_MZ_Animated_Magma, 13, 16
+		dc.b   0
 		dc.b   2
 		dc.b   4
+		dc.b   6
+		dc.b   8
+		dc.b   10
+		dc.b   12
+		dc.b   14
+		dc.b   16
+		dc.b   18
+		dc.b   20
+		dc.b   22
+		dc.b   24
 		even
 		
 		; Torch
 		zoneanimdecl $13, Art_MzTorch, ArtTile_MZ_Torch, 3, 6
 		dc.b   0
-		dc.b   2
-		dc.b   4
+		dc.b   6
+		dc.b   12
+		even
+
+		zoneanimend
+		
+AnimCue_SBZ:	zoneanimstart
+		; Smoke puff 1
+		zoneanimdecl 7, Art_SbzSmoke, ArtTile_SBZ_Smoke_Puff_1, 7, 12
+		dc.b   0
+		dc.b   12
+		dc.b   24
+		dc.b   36
+		dc.b   48
+		dc.b   60
+		dc.b   72
 		even
 
 		zoneanimend

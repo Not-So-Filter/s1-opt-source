@@ -22,5 +22,5 @@ lhead:	macro plc1,lvlgfx,plc2,sixteen,twofivesix,pal
 	lhead	plcid_MZ,	Nem_MZ,		plcid_MZ2,	Blk16_MZ,	Blk256_MZ,	palid_MZ	; Marble
 	lhead	plcid_SLZ,	Nem_SLZ,	plcid_SLZ2,	Blk16_SLZ,	Blk256_SLZ,	palid_SLZ	; Star Light
 	lhead	plcid_SYZ,	Nem_SYZ,	plcid_SYZ2,	Blk16_SYZ,	Blk256_SYZ,	palid_SYZ	; Spring Yard
-	lhead	plcid_SBZ,	Nem_SBZ,	plcid_SBZ2,	Blk16_SBZ,	Blk256_SBZ,	palid_SBZ1	; Scrap Brain
+	lhead	plcid_SBZ,	Nem_SBZ,	plcid_SBZ2,	Blk16_SBZ,	Blk256_SBZ,	palid_SBZ2	; Scrap Brain
 	even

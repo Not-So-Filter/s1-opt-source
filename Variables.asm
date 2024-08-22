@@ -238,8 +238,7 @@ v_scrshiftx:		ds.w	1		; x-screen shift (new - last) * $100
 v_scrshifty:		ds.w	1		; y-screen shift (new - last) * $100
 v_lookshift:		ds.w	1		; screen shift when Sonic looks up/down
 			ds.b	2		; unused
-v_dle_routine:		ds.b	1		; dynamic level event - routine counter
-			ds.b	1		; unused
+v_dle_routine:		ds.w	1		; dynamic level event - routine counter
 f_nobgscroll:		ds.b	1		; flag set to cancel background scrolling
 			ds.b	5		; unused
 v_fg_xblock:		ds.b	1		; foreground x-block parity (for redraw)

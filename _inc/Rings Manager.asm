@@ -12,13 +12,38 @@ RingsManager:
 ; ===========================================================================
 ; off_16F96:
 RingsManager_States:
-		bra.s	RingsManager_Init
-		bra.s	RingsManager_Main
+		bra.w	RingsManager_Init
+		bra.w	RingsManager_Main
 ; ===========================================================================
 ; loc_16F9A:
 RingsManager_Init:
-		addq.w	#2,(Rings_manager_routine).w ; => RingsManager_Main
-		bsr.w	RingsManager_Setup	; perform initial setup
+		addq.w	#4,(Rings_manager_routine).w ; => RingsManager_Main
+; loc_172A4:
+;RingsManager_Setup:
+		clearRAM Ring_Positions,Ring_Positions_End
+		; d0 = 0
+		lea	(Ring_consumption_table).w,a1
+		moveq	#bytesToLcnt(Ring_consumption_table_End-Ring_consumption_table),d1
+-		move.l	d0,(a1)+
+		dbf	d1,-
+
+		move.w	(v_zone).w,d0	; get the current zone and act
+		lsl.b	#6,d0
+		lsr.w	#5,d0
+		lea	(RingPos_Index).l,a1	; get the rings for the act
+		move.w	(a1,d0.w),d0
+		lea	(a1,d0.w),a1
+		move.l	a1,(Ring_start_addr_ROM).w
+		addq.w	#4,a1
+		moveq	#0,d5
+		move.w	#(Max_Rings-1),d0
+-
+		tst.l	(a1)+	; get the next ring
+		bmi.s	+		; if there's no more, carry on
+		addq.w	#1,d5	; increment perfect counter
+		dbf	d0,-
++
+		move.w	d5,(Perfect_rings_left).w	; set the perfect ring amount for the act
 		movea.l	(Ring_start_addr_ROM).w,a1
 		lea	(Ring_Positions).w,a2
 		move.w	(v_screenposx).w,d4
@@ -255,42 +280,6 @@ BuildRings_NextRing:
 		bne.s	BuildRings_Loop
 +
 		rts
-
-; ---------------------------------------------------------------------------
-; Subroutine to perform initial rings manager setup
-; ---------------------------------------------------------------------------
-
-; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
-
-; loc_172A4:
-RingsManager_Setup:
-		clearRAM Ring_Positions,Ring_Positions_End
-		; d0 = 0
-		lea	(Ring_consumption_table).w,a1
-		moveq	#bytesToLcnt(Ring_consumption_table_End-Ring_consumption_table),d1
--		move.l	d0,(a1)+
-		dbf	d1,-
-
-		moveq	#0,d0
-		move.w	(v_zone).w,d0	; get the current zone and act
-		lsl.b	#6,d0
-		lsr.w	#5,d0
-		lea	(RingPos_Index).l,a1	; get the rings for the act
-		move.w	(a1,d0.w),d0
-		lea	(a1,d0.w),a1
-		move.l	a1,(Ring_start_addr_ROM).w
-		addq.w	#4,a1
-		moveq	#0,d5
-		move.w	#(Max_Rings-1),d0
--
-		tst.l	(a1)+	; get the next ring
-		bmi.s	+		; if there's no more, carry on
-		addq.w	#1,d5	; increment perfect counter
-		dbf	d0,-
-+
-		move.w	d5,(Perfect_rings_left).w	; set the perfect ring amount for the act
-		rts
-; ===========================================================================
 
 ; -------------------------------------------------------------------------------
 ; sprite mappings

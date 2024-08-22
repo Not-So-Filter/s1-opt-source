@@ -2363,7 +2363,6 @@ Level_WaterPal:
 		move.b	(v_lamp_wtrstat).w,(f_wtr_state).w
 
 Level_GetBgm:
-		moveq	#0,d0
 		move.w	(v_zone).w,d0
 		ror.b	#2,d0
 		lsr.w	#6,d0
@@ -3580,13 +3579,9 @@ LevelDataLoad:
 		moveq	#palid_SBZ3,d0	; use SB3 palette
 
 .notSBZ3:
-		cmpi.w	#(id_SBZ<<8)+1,(v_zone).w ; is level SBZ2?
-		beq.s	.isSBZorFZ	; if yes, branch
-		cmpi.w	#(id_SBZ<<8)+2,(v_zone).w ; is level FZ?
+		cmpi.w	#(id_SBZ<<8)+0,(v_zone).w ; is level SBZ1?
 		bne.s	.normalpal	; if not, branch
-
-.isSBZorFZ:
-		moveq	#palid_SBZ2,d0	; use SBZ2/FZ palette
+		moveq	#palid_SBZ1,d0	; use SBZ1 palette
 
 .normalpal:
 		bsr.w	PalLoad_Fade	; load palette (based on d0)
@@ -3609,7 +3604,6 @@ LevelDataLoad:
 
 
 LevelLayoutLoad:
-		moveq	#0,d0
 		move.w	(v_zone).w,d0
 		lsl.b	#6,d0
 		lsr.w	#4,d0
@@ -4935,7 +4929,6 @@ OPL_Index:	bra.w	OPL_Main
 
 OPL_Main:
 		addq.w	#4,(v_opl_routine).w
-		moveq	#0,d0
 		move.w	(v_zone).w,d0
 		lsl.b	#6,d0
 		lsr.w	#4,d0
@@ -4949,7 +4942,7 @@ OPL_Main:
 		move.l	a1,(v_opl_data+$C).w
 		lea	(v_objstate).w,a2
 		move.w	#$101,(a2)+
-		moveq	#(v_objstate_end-v_objstate-2)/4-1,d0
+		moveq	#bytesToLcnt(v_objstate_end-v_objstate-2),d0
 		moveq	#0,d1
 
 OPL_ClrList:
