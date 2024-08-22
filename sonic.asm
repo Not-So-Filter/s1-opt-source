@@ -1687,7 +1687,6 @@ GM_Sega:
 		move.w	#-$A,(v_pcyc_num).w
 		moveq	#0,d0
 		move.w	d0,(v_pcyc_time).w
-		move.w	d0,(v_pal_buffer+$12).w
 		move.w	d0,(v_pal_buffer+$10).w
 		move.w	(v_vdp_buffer1).w,d0
 		ori.b	#$40,d0
