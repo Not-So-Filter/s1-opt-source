@@ -54,10 +54,7 @@ id_Sega:	equ ptr_GM_Sega-GameModeArray	; $00
 id_Title:	equ ptr_GM_Title-GameModeArray	; $04
 id_Demo:	equ ptr_GM_Demo-GameModeArray	; $08
 id_Level:	equ ptr_GM_Level-GameModeArray	; $0C
-id_Special:	equ ptr_GM_Special-GameModeArray; $10
-id_Continue:	equ ptr_GM_Cont-GameModeArray	; $14
-id_Ending:	equ ptr_GM_Ending-GameModeArray	; $18
-id_Credits:	equ ptr_GM_Credits-GameModeArray; $1C
+id_Continue:	equ ptr_GM_Cont-GameModeArray	; $10
 
 ; Vertical interrupt modes
 id_VB_00:	equ ptr_VB_00-VBla_Index	; $00
@@ -67,9 +64,6 @@ id_VB_06:	equ ptr_VB_06-VBla_Index	; $06
 id_VB_08:	equ ptr_VB_08-VBla_Index	; $08
 id_VB_0A:	equ ptr_VB_0A-VBla_Index	; $0A
 id_VB_0C:	equ ptr_VB_0C-VBla_Index	; $0C
-id_VB_0E:	equ ptr_VB_0E-VBla_Index	; $0E
-id_VB_10:	equ ptr_VB_10-VBla_Index	; $10
-id_VB_12:	equ ptr_VB_12-VBla_Index	; $12
 
 ; Levels
 id_GHZ:		equ 0

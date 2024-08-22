@@ -271,6 +271,7 @@ RingsManager_Setup:
 -		move.l	d0,(a1)+
 		dbf	d1,-
 
+		moveq	#0,d0
 		move.w	(v_zone).w,d0	; get the current zone and act
 		lsl.b	#6,d0
 		lsr.w	#5,d0

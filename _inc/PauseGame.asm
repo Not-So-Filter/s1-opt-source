@@ -19,7 +19,7 @@ Pause_StopGame:
 		move.b	d0,(v_snddriver_ram.f_pausemusic).w ; pause music
 
 Pause_Loop:
-		move.w	#id_VB_0C,(v_vbla_routine).w
+		move.w	#id_VB_08,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		tst.b	(f_slomocheat).w ; is slow-motion cheat on?
 		beq.s	Pause_ChkStart	; if not, branch

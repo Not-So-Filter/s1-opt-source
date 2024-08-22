@@ -24,7 +24,6 @@ ptr_PLC_SBZ2:		dc.w PLC_SBZ2-ArtLoadCues
 ptr_PLC_TitleCard:	dc.w PLC_TitleCard-ArtLoadCues
 ptr_PLC_Boss:		dc.w PLC_Boss-ArtLoadCues
 ptr_PLC_Signpost:	dc.w PLC_Signpost-ArtLoadCues
-ptr_PLC_SpecialStage:	dc.w PLC_SpecialStage-ArtLoadCues
 PLC_Animals:
 ptr_PLC_GHZAnimals:	dc.w PLC_GHZAnimals-ArtLoadCues
 ptr_PLC_LZAnimals:	dc.w PLC_LZAnimals-ArtLoadCues
@@ -33,9 +32,6 @@ ptr_PLC_SLZAnimals:	dc.w PLC_SLZAnimals-ArtLoadCues
 ptr_PLC_SYZAnimals:	dc.w PLC_SYZAnimals-ArtLoadCues
 ptr_PLC_SBZAnimals:	dc.w PLC_SBZAnimals-ArtLoadCues
 			zonewarning PLC_Animals,2
-ptr_PLC_SSResult:	dc.w PLC_SSResult-ArtLoadCues
-ptr_PLC_Ending:		dc.w PLC_Ending-ArtLoadCues
-ptr_PLC_TryAgain:	dc.w PLC_TryAgain-ArtLoadCues
 ptr_PLC_EggmanSBZ2:	dc.w PLC_EggmanSBZ2-ArtLoadCues
 ptr_PLC_FZBoss:		dc.w PLC_FZBoss-ArtLoadCues
 
@@ -242,23 +238,6 @@ PLC_Signpost:	dc.w ((PLC_Signpostend-PLC_Signpost-2)/6)-1
 		plcm	Nem_BigFlash, ArtTile_Giant_Ring_Flash ; giant ring flash effect
 PLC_Signpostend:
 ; ---------------------------------------------------------------------------
-; Pattern load cues - special stage
-; ---------------------------------------------------------------------------
-PLC_SpecialStage:	dc.w ((PLC_SpeStageend-PLC_SpecialStage-2)/6)-1
-		plcm	Nem_SSBgCloud,  ArtTile_SS_Background_Clouds ; bubble and cloud background
-		plcm	Nem_SSBgFish,   ArtTile_SS_Background_Fish   ; bird and fish background
-		plcm	Nem_SSWalls,    ArtTile_SS_Wall              ; walls
-		plcm	Nem_Bumper,     ArtTile_SS_Bumper            ; bumper
-		plcm	Nem_SSGOAL,     ArtTile_SS_Goal              ; GOAL block
-		plcm	Nem_SSUpDown,   ArtTile_SS_Up_Down           ; UP and DOWN blocks
-		plcm	Nem_SSRBlock,   ArtTile_SS_R_Block           ; R block
-		plcm	Nem_SSEmStars,  ArtTile_SS_Emerald_Sparkle   ; emerald collection stars
-		plcm	Nem_SSRedWhite, ArtTile_SS_Red_White_Block   ; red and white block
-		plcm	Nem_SSGhost,    ArtTile_SS_Ghost_Block       ; ghost block
-		plcm	Nem_SSGlass,    ArtTile_SS_Glass             ; glass block
-		plcm	Nem_SSEmerald,  ArtTile_SS_Emerald           ; emeralds
-PLC_SpeStageend:
-; ---------------------------------------------------------------------------
 ; Pattern load cues - GHZ animals
 ; ---------------------------------------------------------------------------
 PLC_GHZAnimals:	dc.w ((PLC_GHZAnimalsend-PLC_GHZAnimals-2)/6)-1
@@ -301,38 +280,6 @@ PLC_SBZAnimals:	dc.w ((PLC_SBZAnimalsend-PLC_SBZAnimals-2)/6)-1
 		plcm	Nem_Chicken, ArtTile_Animal_2 ; chicken
 PLC_SBZAnimalsend:
 ; ---------------------------------------------------------------------------
-; Pattern load cues - special stage results screen
-; ---------------------------------------------------------------------------
-PLC_SSResult:dc.w ((PLC_SpeStResultend-PLC_SSResult-2)/6)-1
-		plcm	Nem_ResultEm,  ArtTile_SS_Results_Emeralds ; emeralds
-		plcm	Nem_MiniSonic, ArtTile_Mini_Sonic          ; mini Sonic
-PLC_SpeStResultend:
-; ---------------------------------------------------------------------------
-; Pattern load cues - ending sequence
-; ---------------------------------------------------------------------------
-PLC_Ending:	dc.w ((PLC_Endingend-PLC_Ending-2)/6)-1
-		plcm	Nem_Stalk,     ArtTile_GHZ_Flower_Stalk ; flower stalk
-		plcm	Nem_EndFlower, ArtTile_Ending_Flowers   ; flowers
-		plcm	Nem_EndEm,     ArtTile_Ending_Emeralds  ; emeralds
-		plcm	Nem_EndSonic,  ArtTile_Ending_Sonic     ; Sonic
-		plcm	Nem_Rabbit,    ArtTile_Ending_Rabbit    ; rabbit
-		plcm	Nem_Chicken,   ArtTile_Ending_Chicken   ; chicken
-		plcm	Nem_Penguin,   ArtTile_Ending_Penguin   ; penguin
-		plcm	Nem_Seal,      ArtTile_Ending_Seal      ; seal
-		plcm	Nem_Pig,       ArtTile_Ending_Pig       ; pig
-		plcm	Nem_Flicky,    ArtTile_Ending_Flicky    ; flicky
-		plcm	Nem_Squirrel,  ArtTile_Ending_Squirrel  ; squirrel
-		plcm	Nem_EndStH,    ArtTile_Ending_STH       ; "SONIC THE HEDGEHOG"
-PLC_Endingend:
-; ---------------------------------------------------------------------------
-; Pattern load cues - "TRY AGAIN" and "END" screens
-; ---------------------------------------------------------------------------
-PLC_TryAgain:	dc.w ((PLC_TryAgainend-PLC_TryAgain-2)/6)-1
-		plcm	Nem_EndEm,      ArtTile_Try_Again_Emeralds ; emeralds
-		plcm	Nem_TryAgain,   ArtTile_Try_Again_Eggman   ; Eggman
-		plcm	Nem_CreditText, ArtTile_Credits_Font       ; credits alphabet
-PLC_TryAgainend:
-; ---------------------------------------------------------------------------
 ; Pattern load cues - Eggman on SBZ 2
 ; ---------------------------------------------------------------------------
 PLC_EggmanSBZ2:	dc.w ((PLC_EggmanSBZ2end-PLC_EggmanSBZ2-2)/6)-1
@@ -373,15 +320,11 @@ plcid_SBZ2:		equ (ptr_PLC_SBZ2-ArtLoadCues)/2	; $F
 plcid_TitleCard:	equ (ptr_PLC_TitleCard-ArtLoadCues)/2	; $10
 plcid_Boss:		equ (ptr_PLC_Boss-ArtLoadCues)/2	; $11
 plcid_Signpost:		equ (ptr_PLC_Signpost-ArtLoadCues)/2	; $12
-plcid_SpecialStage:	equ (ptr_PLC_SpecialStage-ArtLoadCues)/2 ; $13
-plcid_GHZAnimals:	equ (ptr_PLC_GHZAnimals-ArtLoadCues)/2	; $14
-plcid_LZAnimals:	equ (ptr_PLC_LZAnimals-ArtLoadCues)/2	; $15
-plcid_MZAnimals:	equ (ptr_PLC_MZAnimals-ArtLoadCues)/2	; $16
-plcid_SLZAnimals:	equ (ptr_PLC_SLZAnimals-ArtLoadCues)/2	; $17
-plcid_SYZAnimals:	equ (ptr_PLC_SYZAnimals-ArtLoadCues)/2	; $18
-plcid_SBZAnimals:	equ (ptr_PLC_SBZAnimals-ArtLoadCues)/2	; $19
-plcid_SSResult:		equ (ptr_PLC_SSResult-ArtLoadCues)/2	; $1A
-plcid_Ending:		equ (ptr_PLC_Ending-ArtLoadCues)/2	; $1B
-plcid_TryAgain:		equ (ptr_PLC_TryAgain-ArtLoadCues)/2	; $1C
-plcid_EggmanSBZ2:	equ (ptr_PLC_EggmanSBZ2-ArtLoadCues)/2	; $1D
-plcid_FZBoss:		equ (ptr_PLC_FZBoss-ArtLoadCues)/2	; $1E
+plcid_GHZAnimals:	equ (ptr_PLC_GHZAnimals-ArtLoadCues)/2	; $13
+plcid_LZAnimals:	equ (ptr_PLC_LZAnimals-ArtLoadCues)/2	; $14
+plcid_MZAnimals:	equ (ptr_PLC_MZAnimals-ArtLoadCues)/2	; $15
+plcid_SLZAnimals:	equ (ptr_PLC_SLZAnimals-ArtLoadCues)/2	; $16
+plcid_SYZAnimals:	equ (ptr_PLC_SYZAnimals-ArtLoadCues)/2	; $17
+plcid_SBZAnimals:	equ (ptr_PLC_SBZAnimals-ArtLoadCues)/2	; $18
+plcid_EggmanSBZ2:	equ (ptr_PLC_EggmanSBZ2-ArtLoadCues)/2	; $19
+plcid_FZBoss:		equ (ptr_PLC_FZBoss-ArtLoadCues)/2	; $1A

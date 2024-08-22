@@ -10,7 +10,7 @@ priority5:		ds.b	$80
 priority6:		ds.b	$80
 priority7:		ds.b	$80
 	endstruct
-	
+
 Max_Rings = 511 ; default. maximum number possible is 759
     if Max_Rings > 759
     fatal "Maximum number of rings possible is 759"
@@ -179,8 +179,7 @@ v_pfade_start:		ds.b	1		; palette fading - start position in bytes
 v_pfade_size:		ds.b	1		; palette fading - number of colours
 
 v_misc_variables:
-v_vbla_0e_counter:	ds.b	1		; tracks how many times vertical interrupts routine 0E occured (pretty much unused because routine 0E is unused)
-			ds.b	1		; unused
+			ds.b	2		; unused
 v_vbla_routine:		ds.w	1		; VBlank - routine counter
 v_spritecount:		ds.b	1		; number of sprites on-screen
 			ds.b	5		; unused
@@ -232,22 +231,17 @@ v_limitleft2:		ds.w	1		; left level boundary
 v_limitright2:		ds.w	1		; right level boundary
 v_limittop2:		ds.w	1		; top level boundary
 v_limitbtm2:		ds.w	1		; bottom level boundary
-			ds.w	1		; unused
+			ds.b	2		; unused
 v_limitleft3:		ds.w	1		; left level boundary, at the end of an act
 			ds.b	6		; unused
 v_scrshiftx:		ds.w	1		; x-screen shift (new - last) * $100
 v_scrshifty:		ds.w	1		; y-screen shift (new - last) * $100
 v_lookshift:		ds.w	1		; screen shift when Sonic looks up/down
-			ds.b	1		; unused
-			ds.b	1		; unused
+			ds.b	2		; unused
 v_dle_routine:		ds.b	1		; dynamic level event - routine counter
 			ds.b	1		; unused
 f_nobgscroll:		ds.b	1		; flag set to cancel background scrolling
-			ds.b	1		; unused
-			ds.b	1		; unused
-			ds.b	1		; unused
-			ds.b	1		; unused
-			ds.b	1		; unused
+			ds.b	5		; unused
 v_fg_xblock:		ds.b	1		; foreground x-block parity (for redraw)
 v_fg_yblock:		ds.b	1		; foreground y-block parity (for redraw)
 v_bg1_xblock:		ds.b	1		; background x-block parity (for redraw)
@@ -283,11 +277,7 @@ v_btnpushtime1:		ds.w	1		; button push duration - in level
 v_btnpushtime2:		ds.w	1		; button push duration - in demo
 v_palchgspeed:		ds.w	1		; palette fade/transition speed (0 is fastest)
 v_collindex:		ds.l	1		; ROM address for collision index of current level
-v_palss_num:		ds.w	1		; palette cycling in Special Stage - reference number
-v_palss_time:		ds.w	1		; palette cycling in Special Stage - time until next change
-v_palss_index:		ds.w	1		; palette cycling in Special Stage - index into palette cycle 2 (unused?)
-v_ssbganim:		ds.w	1		; Special Stage background animation
-			ds.b	2		; unused
+			ds.b	$A		; unused
 v_obj31ypos:		ds.w	1		; y-position of object 31 (MZ stomper)
 			ds.b	1		; unused
 v_bossstatus:		ds.b	1		; status of boss and prison capsule (01 = boss defeated; 02 = prison opened)
@@ -326,7 +316,8 @@ v_ringbonus:		ds.w	1		; ring bonus at the end of an act
 f_endactbonus:		ds.b	1		; time/ring bonus update flag at the end of an act
 v_sonicend:		ds.b	1		; routine counter for Sonic in the ending sequence
 v_lz_deform:		ds.w	1		; LZ deformation offset, in units of $80
-			ds.b	4		; unused
+Camera_X_pos_coarse:	ds.w	1		; (Camera_X_pos - 128) / 256
+			ds.b	2		; unused
 f_switch:		ds.b	$10		; flags set when Sonic stands on a switch
 v_scroll_block_1_size:	ds.w	1
 Anim_Counters:		ds.b	$10
@@ -363,7 +354,6 @@ v_act:			ds.b	1		; current act number
 v_lives:		ds.b	1		; number of lives
 			ds.b	1		; unused
 v_air:			ds.w	1		; air remaining while underwater
-v_airbyte = v_air+1				; low byte for air
 v_lastspecial:		ds.b	1		; last special stage number
 			ds.b	1		; unused
 v_continues:		ds.b	1		; number of continues
@@ -385,7 +375,7 @@ v_score:		ds.l	1		; score
 v_shield:		ds.b	1		; shield status (00 = no; 01 = yes)
 v_invinc:		ds.b	1		; invinciblity status (00 = no; 01 = yes)
 v_shoes:		ds.b	1		; speed shoes status (00 = no; 01 = yes)
-v_unused1:		ds.b	1		; an unused fourth player status (Goggles?)
+			ds.b	1		; unused
 
 v_lastlamp:		ds.b	2		; number of the last lamppost you hit
 v_lamp_xpos:		ds.w	1		; x-axis for Sonic to respawn at lamppost
@@ -466,22 +456,16 @@ f_debugcheat:		ds.b	1		; debug mode cheat flag
 f_creditscheat:		ds.b	1		; hidden credits & press start cheat flag
 v_title_dcount:		ds.w	1		; number of times the d-pad is pressed on title screen
 v_title_ccount:		ds.w	1		; number of times C is pressed on title screen
-			ds.b	2		; unused
-v_unused2:		ds.w	1		; unused
-v_unused3:		ds.b	1		; unused
-v_unused4:		ds.b	1		; unused
-v_unused5:		ds.b	1		; unused
+			ds.b	7		; unused
 f_hud:			ds.b	1		; flag to enable/disable HUD
 f_demo:			ds.w	1		; demo mode flag (0 = no; 1 = yes; $8001 = ending)
 v_demonum:		ds.w	1		; demo level number (not the same as the level number)
-v_creditsnum:		ds.w	1		; credits index number
-			ds.b	2		; unused
+			ds.b	4		; unused
 v_megadrive:		ds.b	1		; Megadrive machine type
 			ds.b	1		; unused
 f_debugmode:		ds.w	1		; debug mode flag
 v_init:			ds.b	1		; 'init' text string
-			ds.b	1		; unused
-			ds.b	1		; unused
+			ds.b	2		; unused
 f_palmode:		ds.b	1		; pal flag
 v_ram_end:
     if * > 0	; Don't declare more space than the RAM can contain!

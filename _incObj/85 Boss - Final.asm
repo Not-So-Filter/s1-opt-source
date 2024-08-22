@@ -443,7 +443,7 @@ loc_1A248:
 		blo.s	loc_1A260
 		tst.b	obRender(a0)
 		bmi.s	loc_1A260
-		move.w	#id_Ending,(v_gamemode).w
+		move.w	#id_Sega,(v_gamemode).w
 		jmp	(DeleteObject).l
 ; ===========================================================================
 

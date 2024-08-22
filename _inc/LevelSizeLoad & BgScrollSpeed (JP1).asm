@@ -6,7 +6,8 @@
 
 
 LevelSizeLoad:
-		clr.b	(v_dle_routine).w
+		moveq	#0,d0
+		move.b	d0,(v_dle_routine).w
 		move.w	(v_zone).w,d0
 		lsl.b	#6,d0
 		lsr.w	#3,d0
@@ -58,18 +59,6 @@ LevelSizeArray:
 		dc.w $0000, $1E40, $FF00, $0800
 		dc.w $2080, $2460, $0510, $0510
 		dc.w $0000, $3EC0, $0000, $0720
-		zonewarning LevelSizeArray,$20
-		; Ending
-		dc.w $0000, $0500, $0110, $0110
-		dc.w $0000, $0DC0, $0110, $0110
-		dc.w $0000, $2FFF, $0000, $0320
-		dc.w $0000, $2FFF, $0000, $0320
-
-; ---------------------------------------------------------------------------
-; Ending start location array
-; ---------------------------------------------------------------------------
-EndingStLocArray:
-		include	"_inc/Start Location Array - Ending.asm"
 
 ; ===========================================================================
 
@@ -88,14 +77,6 @@ LevSz_StartLoc:
 		lsl.b	#6,d0
 		lsr.w	#4,d0
 		lea	StartLocArray(pc,d0.w),a1 ; load Sonic's start location
-		tst.w	(f_demo).w	; is ending demo mode on?
-		bpl.s	LevSz_SonicPos	; if not, branch
-
-		move.w	(v_creditsnum).w,d0
-		subq.w	#1,d0
-		add.w	d0,d0
-		add.w	d0,d0
-		lea	EndingStLocArray(pc,d0.w),a1 ; load Sonic's start location
 
 LevSz_SonicPos:
 		moveq	#0,d1
@@ -166,8 +147,6 @@ loc_6206:
 BgScroll_Index:	dc.w BgScroll_GHZ-BgScroll_Index, BgScroll_LZ-BgScroll_Index
 		dc.w BgScroll_MZ-BgScroll_Index, BgScroll_SLZ-BgScroll_Index
 		dc.w BgScroll_SYZ-BgScroll_Index, BgScroll_SBZ-BgScroll_Index
-		zonewarning BgScroll_Index,2
-		dc.w BgScroll_End-BgScroll_Index
 ; ===========================================================================
 
 BgScroll_GHZ:
@@ -216,25 +195,4 @@ BgScroll_SBZ:
 		asr.w	#3,d0
 		addq.w	#1,d0
 		move.w	d0,(v_bgscreenposy).w
-		rts
-; ===========================================================================
-
-BgScroll_End:
-		move.w	(v_screenposx).w,d0
-		asr.w	#1,d0
-		move.w	d0,(v_bgscreenposx).w
-		move.w	d0,(v_bg2screenposx).w
-		asr.w	#2,d0
-		move.w	d0,d1
-		add.w	d0,d0
-		add.w	d1,d0
-		move.w	d0,(v_bg3screenposx).w
-		moveq	#0,d0
-		move.l	d0,(v_bgscreenposy).w
-		move.l	d0,(v_bg2screenposy).w
-		move.l	d0,(v_bg3screenposy).w
-		lea	(v_bgscroll_buffer).w,a2
-		move.l	d0,(a2)+
-		move.l	d0,(a2)+
-		move.l	d0,(a2)+
 		rts

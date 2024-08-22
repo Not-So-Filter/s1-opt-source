@@ -23,16 +23,6 @@ Debug_Main:	; Routine 0
 		andi.w	#$3FF,(v_bgscreenposy).w
 		move.b	#0,obFrame(a0)
 		move.b	#id_Walk,obAnim(a0)
-		cmpi.w	#id_Special,(v_gamemode).w ; is game mode $10 (special stage)?
-		bne.s	.islevel	; if not, branch
-
-		move.w	#0,(v_ssrotate).w ; stop special stage rotating
-		move.w	#0,(v_ssangle).w ; make	special	stage "upright"
-		moveq	#6,d0		; use 6th debug	item list
-		bra.s	.selectlist
-; ===========================================================================
-
-.islevel:
 		moveq	#0,d0
 		move.b	(v_zone).w,d0
 
@@ -51,14 +41,8 @@ Debug_Main:	; Routine 0
 		move.b	#1,(v_debugyspeed).w
 
 Debug_Action:	; Routine 2
-		moveq	#6,d0
-		cmpi.w	#id_Special,(v_gamemode).w
-		beq.s	.isntlevel
-
 		moveq	#0,d0
 		move.b	(v_zone).w,d0
-
-.isntlevel:
 		lea	DebugList(pc),a2
 		add.w	d0,d0
 		adda.w	(a2,d0.w),a2
@@ -187,19 +171,9 @@ Debug_ChgItem:
 		move.w	d0,obY+2(a0)
 		move.w	(v_limittopdb).w,(v_limittop2).w ; restore level boundaries
 		move.w	(v_limitbtmdb).w,(v_limitbtm1).w
-		cmpi.w	#id_Special,(v_gamemode).w ; are you in the special stage?
-		bne.s	.stayindebug	; if not, branch
-
-		clr.w	(v_ssangle).w
-		move.w	#$40,(v_ssrotate).w ; set new level rotation speed
-		move.l	#Map_Sonic,(v_player+obMap).w
-		move.w	#$780,(v_player+obGfx).w
-		move.b	#id_Roll,(v_player+obAnim).w
-		bset	#2,(v_player+obStatus).w
-		bset	#1,(v_player+obStatus).w
 
 .stayindebug:
-		rts	
+		rts
 ; End of function Debug_Control
 
 

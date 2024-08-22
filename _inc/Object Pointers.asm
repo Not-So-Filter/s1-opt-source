@@ -9,7 +9,7 @@ ptr_Obj05:		dc.l NullObject
 ptr_Obj06:		dc.l NullObject
 ptr_Obj07:		dc.l NullObject
 ptr_Splash:		dc.l Splash		; $08
-ptr_SonicSpecial:	dc.l SonicSpecial
+ptr_SonicSpecial:	dc.l NullObject
 ptr_DrownCount:		dc.l DrownCount
 ptr_Pole:		dc.l Pole
 ptr_FlapDoor:		dc.l FlapDoor
@@ -126,8 +126,8 @@ ptr_BossStarLight:	dc.l BossStarLight
 ptr_BossSpikeball:	dc.l BossSpikeball
 ptr_RingFlash:		dc.l RingFlash
 ptr_HiddenBonus:	dc.l HiddenBonus
-ptr_SSResult:		dc.l SSResult
-ptr_SSRChaos:		dc.l SSRChaos
+ptr_SSResult:		dc.l NullObject
+ptr_SSRChaos:		dc.l NullObject
 ptr_ContScrItem:	dc.l ContScrItem	; $80
 ptr_ContSonic:		dc.l ContSonic
 ptr_ScrapEggman:	dc.l ScrapEggman
@@ -135,12 +135,12 @@ ptr_FalseFloor:		dc.l FalseFloor
 ptr_EggmanCylinder:	dc.l EggmanCylinder
 ptr_BossFinal:		dc.l BossFinal
 ptr_BossPlasma:		dc.l BossPlasma
-ptr_EndSonic:		dc.l EndSonic
-ptr_EndChaos:		dc.l EndChaos		; $88
-ptr_EndSTH:		dc.l EndSTH
+ptr_EndSonic:		dc.l NullObject
+ptr_EndChaos:		dc.l NullObject		; $88
+ptr_EndSTH:		dc.l NullObject
 ptr_CreditsText:	dc.l CreditsText
-ptr_EndEggman:		dc.l EndEggman
-ptr_TryChaos:		dc.l TryChaos
+ptr_EndEggman:		dc.l NullObject
+ptr_TryChaos:		dc.l NullObject
 
 NullObject:
 		bra.w	DeleteObject	; It would be safer to have this instruction here, but instead it just falls through to ObjectFall

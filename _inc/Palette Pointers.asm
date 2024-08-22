@@ -30,9 +30,7 @@ ptr_Pal_SBZ3Water:	palp	0,Pal_SBZ3Water		; $D (13) - SBZ3 underwater
 ptr_Pal_SBZ2:		palp	1,Pal_SBZ2		; $E (14) - SBZ2
 ptr_Pal_LZSonWater:	palp	0,Pal_LZSonWater	; $F (15) - LZ Sonic underwater
 ptr_Pal_SBZ3SonWat:	palp	0,Pal_SBZ3SonWat	; $10 (16) - SBZ3 Sonic underwater
-ptr_Pal_SSResult:	palp	0,Pal_SSResult		; $11 (17) - special stage results
-ptr_Pal_Continue:	palp	0,Pal_Continue		; $12 (18) - special stage results continue
-ptr_Pal_Ending:		palp	0,Pal_Ending		; $13 (19) - ending sequence
+ptr_Pal_Continue:	palp	0,Pal_Continue		; $11 (17) - special stage results continue
 			even
 
 
@@ -53,6 +51,4 @@ palid_SBZ3Water:	equ (ptr_Pal_SBZ3Water-PalPointers)/8
 palid_SBZ2:		equ (ptr_Pal_SBZ2-PalPointers)/8
 palid_LZSonWater:	equ (ptr_Pal_LZSonWater-PalPointers)/8
 palid_SBZ3SonWat:	equ (ptr_Pal_SBZ3SonWat-PalPointers)/8
-palid_SSResult:		equ (ptr_Pal_SSResult-PalPointers)/8
 palid_Continue:		equ (ptr_Pal_Continue-PalPointers)/8
-palid_Ending:		equ (ptr_Pal_Ending-PalPointers)/8

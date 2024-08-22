@@ -91,21 +91,11 @@ ptr_musend
 ; SoundTypes:
 SoundPriorities:
 		dc.b     $90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90	; $01
-		dc.b $90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90	; $10
-		dc.b $90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90	; $20
-		dc.b $90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90	; $30
-		dc.b $90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90	; $40
-		dc.b $90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90	; $50
-		dc.b $90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90	; $60
-		dc.b $90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90	; $70
-		dc.b $90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90	; $80
-		dc.b $90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90	; $90
-		dc.b $80,$70,$70,$70,$70,$70,$70,$70,$70,$70,$68,$70,$70,$70,$60,$70	; $A0
-		dc.b $70,$60,$70,$60,$70,$70,$70,$70,$70,$70,$70,$70,$70,$70,$70,$7F	; $B0
-		dc.b $60,$70,$70,$70,$70,$70,$70,$70,$70,$70,$70,$70,$70,$70,$70,$70	; $C0
-		dc.b $80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80	; $D0
-		dc.b $90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90	; $E0
-		dc.b $90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90	; $F0
+		dc.b $90,$90,$90,$90,$80,$70,$70,$70,$70,$70,$70,$70,$70,$70,$68,$70	; $10
+		dc.b $70,$70,$60,$70,$70,$60,$70,$60,$70,$70,$70,$70,$70,$70,$70,$70	; $20
+		dc.b $70,$70,$70,$7F,$60,$70,$70,$70,$70,$70,$70,$70,$70,$70,$70,$70	; $30
+		dc.b $70,$70,$70,$70,$80,$80,$80,$80					; $40
+		even
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to update music more than once per frame
@@ -225,7 +215,7 @@ TempoWait:
 DACUpdateTrack:
 		subq.b	#1,SMPS_Track.DurationTimeout(a5)	; Has DAC sample timeout expired?
 		bne.s	.locret					; Return if not
-		move.b	#$80,SMPS_RAM.f_updating_dac(a6)	; Set flag to indicate this is the DAC
+		st.b	SMPS_RAM.f_updating_dac(a6)	; Set flag to indicate this is the DAC
 ;DACDoNext:
 		movea.l	SMPS_Track.DataPointer(a5),a4		; DAC track data pointer
 ; loc_71C5E:
@@ -594,7 +584,7 @@ PauseMusic:
 ; Sound_Play:
 CycleSoundQueue:
 		lea	SoundPriorities(pc),a0
-		move.b	SMPS_RAM.v_sndprio(a6),d3	; Get priority of currently playing SFX
+		move.b	SMPS_RAM.v_sndprio(a6),d3
 		moveq	#SMPS_RAM.v_soundqueue_end-SMPS_RAM.v_soundqueue_start-1,d4
 ; loc_71F12:
 .inputloop:
@@ -604,10 +594,11 @@ CycleSoundQueue:
 		subq.b	#bgm__First,d0			; Make it into 0-based index
 		blo.s	.nextinput
 		move.b	(a0,d0.w),d2			; Get sound type
-		cmp.b	d3,d2				; Is it a lower priority sound?
-		bcs.s	.nextinput			; Branch if yes
+		cmp.b	d3,d2	; Is it a lower priority sound?
+		blo.s	.nextinput			; Branch if yes
 		move.b	d2,d3				; Store new priority
-		move.b	d1,SMPS_RAM.v_sound_id(a6)	; Queue sound for playing
+		move.b	d1,SMPS_RAM.v_sound_id(a6)
+
 ; loc_71F3E:
 .nextinput:
 		dbf	d4,.inputloop
@@ -624,14 +615,12 @@ CycleSoundQueue:
 PlaySoundID:
 		moveq	#0,d7
 		move.b	SMPS_RAM.v_sound_id(a6),d7
-		beq.w	StopAllSound
+		beq.s	.locret
 		clr.b	SMPS_RAM.v_sound_id(a6)	; reset	music flag
 		cmpi.b	#bgm__Last,d7		; Is this music ($81-$93)?
 		bls.s	Sound_PlayBGM		; Branch if yes
 		cmpi.b	#sfx__Last,d7		; Is this sfx ($A0-$CF)?
 		bls.w	Sound_PlaySFX		; Branch if yes
-		cmpi.b	#flg__First,d7		; Is this after sfx but before $E0?
-		blo.s	.locret			; Return if yes
 		cmpi.b	#flg__Last,d7		; Is this $E0-$E4?
 		bls.s	Sound_E0toE4		; Branch if yes
 ; locret_71F8C:
@@ -661,7 +650,7 @@ Sound_PlayBGM:
 		cmpi.b	#bgm_ExtraLife,d7			; is the "extra life" music to be played?
 		bne.s	.bgmnot1up				; if not, branch
 		tst.b	SMPS_RAM.f_1up_playing(a6)	; Is a 1-up music playing?
-		bne.w	.locdblret				; if yes, branch
+		bne.s	.bgm_loadMusic				; if yes, branch
 		lea	SMPS_RAM.v_music_track_ram(a6),a5
 		moveq	#SMPS_MUSIC_TRACK_COUNT-1,d0		; 1 DAC + 6 FM + 3 PSG tracks
 ; loc_71FE6:
@@ -686,15 +675,16 @@ Sound_PlayBGM:
 		move.l	(a0)+,(a1)+
 		dbf	d0,.backupramloop
 
-		move.b	#$80,SMPS_RAM.f_1up_playing(a6)
+		st.b	SMPS_RAM.f_1up_playing(a6)
 		clr.b	SMPS_RAM.v_sndprio(a6)	; Clear priority
 		bra.s	.bgm_loadMusic
 ; ===========================================================================
 ; loc_72024:
 .bgmnot1up:
 		moveq	#0,d0
-		move.b	d0,(SMPS_RAM.f_1up_playing).w
-		move.b	d0,(SMPS_RAM.v_fadein_counter).w
+		move.b	d0,SMPS_RAM.f_1up_playing(a6)
+		move.b	d0,SMPS_RAM.v_fadein_counter(a6)
+		move.b	d0,SMPS_RAM.v_fadeout_counter(a6)
 ; loc_7202C:
 .bgm_loadMusic:
 		bsr.w	InitMusicPlayback
@@ -1154,14 +1144,14 @@ SpeedUpMusic:
 		bne.s	.speedup_1up
 		move.b	SMPS_RAM.v_speeduptempo(a6),SMPS_RAM.v_main_tempo(a6)
 		move.b	SMPS_RAM.v_speeduptempo(a6),SMPS_RAM.v_main_tempo_timeout(a6)
-		move.b	#$80,SMPS_RAM.f_speedup(a6)
+		st.b	SMPS_RAM.f_speedup(a6)
 		rts
 ; ===========================================================================
 ; loc_7263E:
 .speedup_1up:
 		move.b	SMPS_RAM.v_1up_ram_copy+SMPS_RAM.v_speeduptempo(a6),SMPS_RAM.v_1up_ram_copy+SMPS_RAM.v_main_tempo(a6)
 		move.b	SMPS_RAM.v_1up_ram_copy+SMPS_RAM.v_speeduptempo(a6),SMPS_RAM.v_1up_ram_copy+SMPS_RAM.v_main_tempo_timeout(a6)
-		move.b	#$80,SMPS_RAM.v_1up_ram_copy+SMPS_RAM.f_speedup(a6)
+		st.b	SMPS_RAM.v_1up_ram_copy+SMPS_RAM.f_speedup(a6)
 		rts
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -1731,7 +1721,7 @@ cfFadeInToPrevious:
 		dbf	d7,.psgloop
 
 		movea.l	a3,a5
-		move.b	#$80,SMPS_RAM.f_fadein_flag(a6)		; Trigger fade-in
+		st.b	SMPS_RAM.f_fadein_flag(a6)		; Trigger fade-in
 		move.b	#$28,SMPS_RAM.v_fadein_counter(a6)	; Fade-in delay
 		clr.b	SMPS_RAM.f_1up_playing(a6)
 		addq.w	#8,sp		; Tamper return value so we don't return to caller

@@ -24,8 +24,6 @@ PalCycle_Index:	dc.w PalCycle_GHZ
 		dc.w PalCycle_SLZ
 		dc.w PalCycle_SYZ
 		dc.w PalCycle_SBZ
-		zonewarning PalCycle_Index,2
-		dc.w PalCycle_GHZ	; Ending
 
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
