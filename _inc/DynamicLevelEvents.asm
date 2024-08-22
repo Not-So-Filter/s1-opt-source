@@ -335,11 +335,10 @@ locret_7088:
 
 DLE_MZ3:
 		move.w	(v_dle_routine).w,d0
-		move.w	off_7098(pc,d0.w),d0
 		jmp	off_7098(pc,d0.w)
 ; ===========================================================================
-off_7098:	dc.w DLE_MZ3boss-off_7098
-		dc.w DLE_MZ3end-off_7098
+off_7098:	bra.s	DLE_MZ3boss
+		bra.s	DLE_MZ3end
 ; ===========================================================================
 
 DLE_MZ3boss:
@@ -376,12 +375,11 @@ locret_70E8:
 
 DLE_SLZ3:
 		move.w	(v_dle_routine).w,d0
-		move.w	off_7118(pc,d0.w),d0
 		jmp	off_7118(pc,d0.w)
 ; ===========================================================================
-off_7118:	dc.w DLE_SLZ3main-off_7118
-		dc.w DLE_SLZ3boss-off_7118
-		dc.w DLE_SLZ3end-off_7118
+off_7118:	bra.s	DLE_SLZ3main
+		bra.s	DLE_SLZ3boss
+		bra.s	DLE_SLZ3end
 ; ===========================================================================
 
 DLE_SLZ3main:
@@ -435,12 +433,11 @@ locret_71A2:
 
 DLE_SYZ3:
 		move.w	(v_dle_routine).w,d0
-		move.w	off_71B2(pc,d0.w),d0
 		jmp	off_71B2(pc,d0.w)
 ; ===========================================================================
-off_71B2:	dc.w DLE_SYZ3main-off_71B2
-		dc.w DLE_SYZ3boss-off_71B2
-		dc.w DLE_SYZ3end-off_71B2
+off_71B2:	bra.s	DLE_SYZ3main
+		bra.s	DLE_SYZ3boss
+		bra.s	DLE_SYZ3end
 ; ===========================================================================
 
 DLE_SYZ3main:
@@ -533,7 +530,7 @@ DLE_SBZ2boss:
 
 DLE_SBZ2boss2:
 		cmpi.w	#boss_sbz2_x-$F0,(v_screenposx).w
-		blo.s	loc_72B6
+		blo.s	loc_72C2
 		bsr.w	FindFreeObj
 		bne.s	loc_72B0
 		move.b	#id_ScrapEggman,obID(a1) ; load SBZ2 Eggman object
@@ -541,8 +538,6 @@ DLE_SBZ2boss2:
 
 loc_72B0:
 		move.b	#1,(f_lockscreen).w ; lock screen
-
-loc_72B6:
 		bra.s	loc_72C2
 ; ===========================================================================
 
@@ -569,34 +564,28 @@ off_72D8:	dc.w DLE_FZmain-off_72D8, DLE_FZboss-off_72D8
 
 DLE_FZmain:
 		cmpi.w	#boss_fz_x-$308,(v_screenposx).w
-		blo.s	loc_72F4
+		blo.s	loc_72C2
 		addq.w	#2,(v_dle_routine).w
 		moveq	#plcid_FZBoss,d0
 		bsr.w	AddPLC		; load FZ boss patterns
-
-loc_72F4:
 		bra.s	loc_72C2
 ; ===========================================================================
 
 DLE_FZboss:
 		cmpi.w	#boss_fz_x-$150,(v_screenposx).w
-		blo.s	loc_7312
+		blo.s	loc_72C2
 		bsr.w	FindFreeObj
-		bne.s	loc_7312
+		bne.s	loc_72C2
 		move.b	#id_BossFinal,obID(a1) ; load FZ boss object
 		addq.w	#2,(v_dle_routine).w
 		move.b	#1,(f_lockscreen).w ; lock screen
-
-loc_7312:
 		bra.s	loc_72C2
 ; ===========================================================================
 
 DLE_FZend:
 		cmpi.w	#boss_fz_x,(v_screenposx).w
-		blo.s	loc_7320
+		blo.s	loc_72C2
 		addq.w	#2,(v_dle_routine).w
-
-loc_7320:
 		bra.s	loc_72C2
 ; ===========================================================================
 
