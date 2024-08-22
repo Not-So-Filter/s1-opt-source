@@ -974,28 +974,28 @@ loc_16E2:
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
 
-QuickPLC:
-		lea	(ArtLoadCues).l,a1 ; load the PLC index
-		add.w	d0,d0
-		move.w	(a1,d0.w),d0
-		lea	(a1,d0.w),a1
-		move.w	(a1)+,d1	; get length of PLC
+;QuickPLC:
+;		lea	(ArtLoadCues).l,a1 ; load the PLC index
+;		add.w	d0,d0
+;		move.w	(a1,d0.w),d0
+;		lea	(a1,d0.w),a1
+;		move.w	(a1)+,d1	; get length of PLC
 
-Qplc_Loop:
-		movea.l	(a1)+,a0	; get art pointer
-		moveq	#0,d0
-		move.w	(a1)+,d0	; get VRAM address
-		lsl.l	#2,d0
-		lsr.w	#2,d0
-		ori.w	#$4000,d0
-		swap	d0
-		move.l	d0,(vdp_control_port).l ; converted VRAM address to VDP format
-		movem.l	d1/a1,-(sp)
-		bsr.w	NemDec		; decompress
-		move.l	(sp)+,d1
-		movea.l	(sp)+,a1
-		dbf	d1,Qplc_Loop	; repeat for length of PLC
-		rts
+;Qplc_Loop:
+;		movea.l	(a1)+,a0	; get art pointer
+;		moveq	#0,d0
+;		move.w	(a1)+,d0	; get VRAM address
+;		lsl.l	#2,d0
+;		lsr.w	#2,d0
+;		ori.w	#$4000,d0
+;		swap	d0
+;		move.l	d0,(vdp_control_port).l ; converted VRAM address to VDP format
+;		movem.l	d1/a1,-(sp)
+;		bsr.w	NemDec		; decompress
+;		move.l	(sp)+,d1
+;		movea.l	(sp)+,a1
+;		dbf	d1,Qplc_Loop	; repeat for length of PLC
+;		rts
 ; End of function QuickPLC
 
 		include	"_inc/Enigma Decompression.asm"
