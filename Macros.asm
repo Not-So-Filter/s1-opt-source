@@ -140,7 +140,11 @@ clearRAM:	macro startAddress,endAddress
 ; ---------------------------------------------------------------------------
 
 copyTilemap:	macro source,destination,width,height
+	if ((source)&$8000)==0
 		lea	(source).l,a1
+	else
+		lea	(source).w,a1
+	endif
 		locVRAM	destination,d0
 		moveq	#(width)-1,d1
 		moveq	#(height)-1,d2
