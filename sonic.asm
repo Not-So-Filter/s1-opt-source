@@ -1606,7 +1606,6 @@ __LABEL__:	binclude	path
 __LABEL___end:
 	endm
 
-Pal_SegaBG:	bincludePalette	"palette/Sega Background.bin"
 Pal_Title:	bincludePalette	"palette/Title Screen.bin"
 Pal_LevelSel:	bincludePalette	"palette/Level Select.bin"
 Pal_Sonic:	bincludePalette	"palette/Sonic.bin"
@@ -1618,7 +1617,6 @@ Pal_SLZ:	bincludePalette	"palette/Star Light Zone.bin"
 Pal_SYZ:	bincludePalette	"palette/Spring Yard Zone.bin"
 Pal_SBZ1:	bincludePalette	"palette/SBZ Act 1.bin"
 Pal_SBZ2:	bincludePalette	"palette/SBZ Act 2.bin"
-Pal_Special:	bincludePalette	"palette/Special Stage.bin"
 Pal_SBZ3:	bincludePalette	"palette/SBZ Act 3.bin"
 Pal_SBZ3Water:	bincludePalette	"palette/SBZ Act 3 Underwater.bin"
 Pal_LZSonWater:	bincludePalette	"palette/Sonic - LZ Underwater.bin"
@@ -1682,8 +1680,13 @@ GM_Sega:
 		copyTilemap	(v_128x128_end+$A40),vram_fg+$53A,3,2 ; hide "TM" with a white rectangle
 
 .loadpal:
-		moveq	#palid_SegaBG,d0
-		bsr.w	PalLoad	; load Sega logo palette
+		lea	(v_palette).w,a0
+		move.l	#$0EEE0EEE,d0
+		moveq	#bytesToLcnt(v_palette_end-v_palette),d1
+
+.loop:
+		move.l	d0,(a0)+	; move data to RAM
+		dbf	d1,.loop
 		move.w	#-$A,(v_pcyc_num).w
 		moveq	#0,d0
 		move.w	d0,(v_pcyc_time).w
@@ -1702,13 +1705,21 @@ Sega_WaitPal:
 		jsr	MegaPCM_PlaySample
 		move.w	#id_VB_0C,(v_vbla_routine).w
 		bsr.w	WaitForVBla
-		move.w	#135,(v_demolength).w
+		tst.b	(f_palmode).w
+		beq.s	.NTSC
+		move.w	#113,(v_demolength).w ; run title screen for 113 frames (2.25 seconds for PAL)
+		bra.s	.skip
+
+.NTSC:
+		move.w	#135,(v_demolength).w ; wait 2.25 seconds
+
+.skip:
 
 Sega_WaitEnd:
 		move.w	#id_VB_02,(v_vbla_routine).w
 		bsr.w	WaitForVBla
-		tst.w	(v_demolength).w
-		beq.s	Sega_GotoTitle
+		tst.w	(v_demolength).w ; has demo length reached 0?
+		beq.s	Sega_GotoTitle	; if so, go to the title screen
 		tst.b	(v_jpadpress1).w ; is Start button pressed?
 		bpl.s	Sega_WaitEnd	; if not, branch
 
@@ -1822,8 +1833,15 @@ Tit_LoadText:
 		bsr.w	PalLoad_Fade
 		moveq	#bgm_Title,d0
 		bsr.w	PlayMusic	; play title screen music
-		move.w	#$178,(v_demolength).w ; run title screen for $178 frames
+		tst.b	(f_palmode).w
+		beq.s	.NTSC
+		move.w	#313,(v_demolength).w ; run title screen for 313 frames (5.26 seconds for PAL)
+		bra.s	.skip
 
+.NTSC:
+		move.w	#376,(v_demolength).w ; run title screen for 376 frames (5.26 seconds)
+
+.skip:
 		clearRAM v_sonicteam,v_sonicteam+object_size
 
 		move.b	#id_TitleSonic,(v_titlesonic).w ; load big Sonic object
