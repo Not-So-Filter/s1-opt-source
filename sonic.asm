@@ -654,7 +654,7 @@ VDPSetupGame:
 		move.w	#$8A00+223,(v_hbla_hreg).w	; H-INT every 224th scanline
 		moveq	#0,d0
 		move.l	#$C0000000,(vdp_control_port).l ; set VDP to CRAM write
-		moveq	#bytesToLcnt($80),d7
+		moveq	#bytesToLcnt(v_palette_end-v_palette),d7
 
 .clrCRAM:
 		move.l	d0,(a1)
@@ -840,12 +840,12 @@ NewPLC:
 
 ClearPLC:
 		lea	(v_plc_buffer).w,a2 ; PLC buffer space in RAM
-		moveq	#bytesToLcnt(v_plc_buffer_end-v_plc_buffer),d0
-		moveq	#0,d1
+		moveq	#0,d0
+		moveq	#bytesToLcnt(v_plc_buffer_end-v_plc_buffer),d1
 
 .loop:
-		move.l	d1,(a2)+
-		dbf	d0,.loop
+		move.l	d0,(a2)+
+		dbf	d1,.loop
 		rts
 ; End of function ClearPLC
 
