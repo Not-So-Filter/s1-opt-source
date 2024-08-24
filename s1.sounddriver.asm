@@ -366,15 +366,7 @@ FMFrequencies:
 SetDuration:
 		move.b	d5,d0
 		move.b	SMPS_Track.TempoDivider(a5),d1	; Get dividing timing
-; loc_71D46:
-.multloop:
-		subq.b	#1,d1
-		beq.s	.donemult
-		add.b	d5,d0
-		bra.s	.multloop
-; ===========================================================================
-; loc_71D4E:
-.donemult:
+		mulu.w	d1,d0
 		move.b	d0,SMPS_Track.SavedDuration(a5)		; Save duration
 		move.b	d0,SMPS_Track.DurationTimeout(a5)	; Save duration timeout
 		rts
@@ -411,23 +403,14 @@ FinishTrackUpdate:
 ; sub_71D9E: NoteFillUpdate
 NoteTimeoutUpdate:
 		tst.b	SMPS_Track.NoteTimeout(a5)		; Is note fill on?
-		beq.s	.locret
+		beq.s	FinishTrackUpdate.locret
 		subq.b	#1,SMPS_Track.NoteTimeout(a5)		; Update note fill timeout
-		bne.s	.locret					; Return if it hasn't expired
+		bne.s	FinishTrackUpdate.locret		; Return if it hasn't expired
 		bset	#1,SMPS_Track.PlaybackControl(a5)	; Put track at rest
-		tst.b	SMPS_Track.VoiceControl(a5)		; Is this a PSG track?
-		bmi.s	.psgnoteoff				; If yes, branch
-		bsr.w	FMNoteOff
 		addq.w	#4,sp					; Do not return to caller
-		rts
-; ===========================================================================
-; loc_71DBE:
-.psgnoteoff:
-		bsr.w	PSGNoteOff
-		addq.w	#4,sp		; Do not return to caller
-; locret_71DC4:
-.locret:
-		rts
+		tst.b	SMPS_Track.VoiceControl(a5)		; Is this a PSG track?
+		bmi.w	PSGNoteOff				; If yes, branch
+		bra.w	FMNoteOff
 ; End of function NoteTimeoutUpdate
 
 

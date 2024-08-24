@@ -219,6 +219,7 @@ objoff_2C:	equ $2C
 objoff_2E:	equ $2E
 objoff_2F:	equ $2F
 objoff_30:	equ $30
+objoff_31:	equ $31
 objoff_32:	equ $32
 objoff_33:	equ $33
 objoff_34:	equ $34
@@ -235,7 +236,7 @@ objoff_3E:	equ $3E
 objoff_3F:	equ $3F
 
 object_size_bits:	equ 6
-object_size:	equ 1<<object_size_bits
+object_size:	equ $40
 
 ; Animation flags
 afEnd:		equ $FF	; return to beginning of animation

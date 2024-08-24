@@ -107,7 +107,7 @@ Drown_Delete:	; Routine 8, Routine $10
 Drown_AirLeft:	; Routine $C
 		cmpi.w	#$C,(v_air).w	; check air remaining
 		bhi.s	Drown_Delete		; if higher than $C, branch
-		subq.w	#1,drown_time(a0)
+		subq.b	#1,drown_time(a0)
 		bne.s	.display
 		move.b	#id_Drown_Display+8,obRoutine(a0) ; goto Drown_Display next
 		addq.b	#7,obAnim(a0)
@@ -123,14 +123,14 @@ Drown_AirLeft:	; Routine $C
 ; ===========================================================================
 
 Drown_ShowNumber:
-		tst.w	drown_time(a0)
+		tst.b	drown_time(a0)
 		beq.s	.nonumber
-		subq.w	#1,drown_time(a0)	; decrement timer
+		subq.b	#1,drown_time(a0)	; decrement timer
 		bne.s	.nonumber	; if time remains, branch
 		cmpi.b	#7,obAnim(a0)
 		bhs.s	.nonumber
 
-		move.w	#15,drown_time(a0)
+		move.b	#15,drown_time(a0)
 		clr.w	obVelY(a0)
 		move.b	#$80,obRender(a0)
 		move.w	obX(a0),d0
@@ -166,16 +166,16 @@ Drown_WobbleData:
 ; ===========================================================================
 
 Drown_Countdown:; Routine $A
-		tst.w	objoff_2C(a0)
+		tst.b	objoff_2C(a0)
 		bne.w	.loc_13F86
 		cmpi.b	#6,(v_player+obRoutine).w
 		bhs.w	.nocountdown
 		btst	#6,(v_player+obStatus).w ; is Sonic underwater?
 		beq.w	.nocountdown	; if not, branch
 
-		subq.w	#1,drown_time(a0)	; decrement timer
+		subq.b	#1,drown_time(a0)	; decrement timer
 		bpl.w	.nochange	; branch if time remains
-		move.w	#59,drown_time(a0)
+		move.b	#59,drown_time(a0)
 		move.w	#1,objoff_36(a0)
 		jsr	(RandomNumber).w
 		andi.w	#1,d0
@@ -217,7 +217,7 @@ Drown_Countdown:; Routine $A
 		jsr	(PlaySound).w	; play drowning sound
 		move.b	#$A,objoff_34(a0)
 		move.w	#1,objoff_36(a0)
-		move.w	#$78,objoff_2C(a0)
+		move.b	#120,objoff_2C(a0)
 		move.l	a0,-(sp)
 		lea	(v_player).w,a0
 		bsr.w	Sonic_ResetOnFloor
@@ -227,13 +227,13 @@ Drown_Countdown:; Routine $A
 		move.w	#0,obVelY(a0)
 		move.w	#0,obVelX(a0)
 		move.w	#0,obInertia(a0)
-		move.b	#1,(f_nobgscroll).w
+		st.b	(f_nobgscroll).w
 		movea.l	(sp)+,a0
 		rts
 ; ===========================================================================
 
 .loc_13F86:
-		subq.w	#1,objoff_2C(a0)
+		subq.b	#1,objoff_2C(a0)
 		bne.s	.loc_13F94
 		move.b	#6,(v_player+obRoutine).w
 		rts
@@ -270,7 +270,7 @@ Drown_Countdown:; Routine $A
 		add.w	d0,obX(a1)
 		move.w	(v_player+obY).w,obY(a1)
 		move.b	#6,obSubtype(a1)
-		tst.w	objoff_2C(a0)
+		tst.b	objoff_2C(a0)
 		beq.s	.loc_1403E
 		andi.w	#7,objoff_3A(a0)
 		move.w	(v_player+obY).w,d0
@@ -296,7 +296,7 @@ Drown_Countdown:; Routine $A
 		bset	#6,objoff_36(a0)
 		bne.s	.loc_14082
 		move.b	d2,obSubtype(a1)
-		move.w	#$1C,drown_time(a1)
+		move.b	#28,drown_time(a1)
 
 .loc_1406A:
 		tst.b	objoff_34(a0)
@@ -304,7 +304,7 @@ Drown_Countdown:; Routine $A
 		bset	#6,objoff_36(a0)
 		bne.s	.loc_14082
 		move.b	d2,obSubtype(a1)
-		move.w	#$1C,drown_time(a1)
+		move.b	#28,drown_time(a1)
 
 .loc_14082:
 		subq.b	#1,objoff_34(a0)

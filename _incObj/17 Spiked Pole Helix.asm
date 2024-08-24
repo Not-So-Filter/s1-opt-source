@@ -10,9 +10,8 @@ Helix:
 ; ===========================================================================
 Hel_Index:	dc.w Hel_Main-Hel_Index
 		dc.w Hel_Action-Hel_Index
-		dc.w Hel_Action-Hel_Index
-		dc.w Hel_Delete-Hel_Index
 		dc.w Hel_Display-Hel_Index
+		dc.w Hel_Delete-Hel_Index
 
 hel_frame = objoff_3E		; start frame (different for each spike)
 
@@ -33,7 +32,7 @@ Hel_Main:	; Routine 0
 		lea	obSubtype(a0),a2 ; move helix length to a2
 		moveq	#0,d1
 		move.b	(a2),d1		; move helix length to d1
-		move.b	#0,(a2)+	; clear subtype
+		clr.b	(a2)+	; clear subtype
 		move.w	d1,d0
 		lsr.w	#1,d0
 		lsl.w	#4,d0
@@ -51,7 +50,7 @@ Hel_Build:
 		lsr.w	#object_size_bits,d5
 		andi.w	#$7F,d5
 		move.b	d5,(a2)+	; copy child address to parent RAM
-		move.b	#8,obRoutine(a1)
+		move.b	#4,obRoutine(a1)
 		move.b	d4,obID(a1)
 		move.w	d2,obY(a1)
 		move.w	d3,obX(a1)
@@ -76,7 +75,7 @@ Hel_Build:
 Hel_NotCentre:
 		dbf	d1,Hel_Build ; repeat d1 times (helix length)
 
-Hel_Action:	; Routine 2, 4
+Hel_Action:	; Routine 2
 		bsr.s	Hel_RotateSpikes
 		bra.s	Hel_ChkDel
 
@@ -123,6 +122,6 @@ Hel_Delete:	; Routine 6
 		bra.w	DeleteObject
 ; ===========================================================================
 
-Hel_Display:	; Routine 8
-		bsr.w	Hel_RotateSpikes
+Hel_Display:	; Routine 4
+		bsr.s	Hel_RotateSpikes
 		bra.w	DisplaySprite

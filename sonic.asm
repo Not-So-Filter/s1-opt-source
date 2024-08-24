@@ -1800,6 +1800,7 @@ Tit_LoadText:
 		move.w	d0,(f_demo).w	; disable debug mode
 		move.w	d0,(v_zone).w	; set level to GHZ (00)
 		move.w	d0,(v_pcyc_time).w ; disable palette cycling
+		move.b	d0,(f_nobgscroll).w ; this fixes a bug in which the background won't scroll if you get a game over by drowning
 		bsr.w	LevelSizeLoad
 		bsr.w	DeformLayers
 		lea	(Blk16_GHZ).l,a0 ; load	GHZ 16x16 mappings
@@ -2428,8 +2429,8 @@ Level_ChkWater:
 		moveq	#0,d0
 		move.w	d0,(v_jpadhold2).w
 		move.w	d0,(v_jpadhold1).w
-		cmpi.b	#id_LZ,(v_zone).w ; is level LZ?
-		bne.s	Level_LoadObj	; if not, branch
+		tst.b	(f_water).w ; does level have water?
+		beq.s	Level_LoadObj	; if not, branch
 		move.b	#id_WaterSurface,(v_watersurface1).w ; load water surface object
 		move.w	#$60,(v_watersurface1+obX).w
 		move.b	#id_WaterSurface,(v_watersurface2).w
@@ -2804,7 +2805,7 @@ Map_ContScr:	include	"_maps/Continue Screen.asm"
 ; sub_6886:
 LoadTilesAsYouMove_BGOnly:
 		lea	(vdp_data_port).l,a6
-		lea	4(a6),a5
+		lea	vdp_control_port-vdp_data_port(a6),a5
 		lea	(v_bg1_scroll_flags).w,a2
 		lea	(v_bgscreenposx).w,a3
 		movea.l	(v_lvllayoutbg).w,a4
@@ -2824,7 +2825,7 @@ LoadTilesAsYouMove_BGOnly:
 
 LoadTilesAsYouMove:
 		lea	(vdp_data_port).l,a6
-		lea	4(a6),a5
+		lea	vdp_control_port-vdp_data_port(a6),a5
 		; First, update the background
 		lea	(v_bg1_scroll_flags_dup).w,a2	; Scroll block 1 scroll flags
 		lea	(v_bgscreenposx_dup).w,a3	; Scroll block 1 X coordinate
@@ -3416,7 +3417,7 @@ Calc_VRAM_Pos_2:
 
 LoadTilesFromStart:
 		lea	(vdp_data_port).l,a6
-		lea	4(a6),a5
+		lea	vdp_control_port-vdp_data_port(a6),a5
 		lea	(v_screenposx).w,a3
 		movea.l	(v_lvllayoutfg).w,a4
 		move.w	#$4000,d2
@@ -4315,7 +4316,7 @@ ExecuteObjects:
 		bhs.s	loc_D362
 
 loc_D348:
-		moveq	#0,d0
+		moveq	#0,d0		; clear high bit of d0
 		move.b	obID(a0),d0		; load object number from RAM
 		beq.s	loc_D358
 		add.w	d0,d0

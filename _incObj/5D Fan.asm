@@ -12,7 +12,7 @@ Fan_Index:	dc.w Fan_Main-Fan_Index
 		dc.w Fan_Delay-Fan_Index
 
 fan_time = objoff_30		; time between switching on/off
-fan_switch = objoff_32		; on/off switch
+fan_switch = objoff_31		; on/off switch
 ; ===========================================================================
 
 Fan_Main:	; Routine 0
@@ -26,12 +26,12 @@ Fan_Main:	; Routine 0
 Fan_Delay:	; Routine 2
 		btst	#1,obSubtype(a0) ; is object type 02/03 (always on)?
 		bne.s	.blow		; if yes, branch
-		subq.w	#1,fan_time(a0)	; subtract 1 from time delay
+		subq.b	#1,fan_time(a0)	; subtract 1 from time delay
 		bpl.s	.blow		; if time remains, branch
-		move.w	#120,fan_time(a0) ; set delay to 2 seconds
+		move.b	#120,fan_time(a0) ; set delay to 2 seconds
 		bchg	#0,fan_switch(a0) ; switch fan on/off
 		beq.s	.blow		; if fan is off, branch
-		move.w	#180,fan_time(a0) ; set delay to 3 seconds
+		move.b	#180,fan_time(a0) ; set delay to 3 seconds
 
 .blow:
 		tst.b	fan_switch(a0)	; is fan switched on?
