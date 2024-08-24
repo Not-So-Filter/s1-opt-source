@@ -901,7 +901,7 @@ Sound_PlaySFX:
 .sfxoverridedone:
 		movea.w	SFX_SFXChannelRAM(pc,d3.w),a5
 		movea.w	a5,a2
-		moveq	#(SMPS_Track.len/4)-1,d0	; $30 bytes
+		moveq	#bytesToLcnt(SMPS_Track.len),d0	; $30 bytes
 		moveq	#0,d2
 ; loc_72276:
 .clearsfxtrackram:

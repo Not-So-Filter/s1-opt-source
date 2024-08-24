@@ -117,7 +117,7 @@ Y:		ds.l 1	; y-axis position (2-4 bytes)
 VelX:		ds.w 1	; x-axis velocity (2 bytes)
 VelY:		ds.w 1	; y-axis velocity (2 bytes)
 ActWid:		ds.b 1	; action width
-		ds.b 1
+		ds.b 1	; unused
 Height:		ds.b 1	; height/2
 Width:		ds.b 1	; width/2
 Priority:	ds.w 1	; sprite stack priority -- 0 is front
@@ -133,10 +133,36 @@ ColProp:	ds.b 1	; collision extra property
 Status:		ds.b 1	; orientation or mode
 RespawnNo:	ds.b 1	; respawn list index number
 Routine:	ds.b 1	; routine number
-2ndRout:	ds.b 1	; secondary routine number
-Angle:		ds.b 1	; angle
-		ds.b 1
+2ndRout:
+off_25:		ds.b 1	; secondary routine number
+Angle:
+off_26:		ds.b 1	; angle
+		ds.b 1	; unused
 Subtype:	ds.b 1	; object subtype
+off_29:		ds.b 1
+off_2A:		ds.b 1
+off_2B:		ds.b 1
+off_2C:		ds.b 1
+off_2D:		ds.b 1
+off_2E:		ds.b 1
+off_2F:		ds.b 1
+off_30:		ds.b 1
+off_31:		ds.b 1
+off_32:		ds.b 1
+off_33:		ds.b 1
+off_34:		ds.b 1
+off_35:		ds.b 1
+off_36:		ds.b 1
+off_37:		ds.b 1
+off_38:		ds.b 1
+off_39:		ds.b 1
+off_3A:		ds.b 1
+off_3B:		ds.b 1
+off_3C:		ds.b 1
+off_3D:		ds.b 1
+off_3E:		ds.b 1
+off_3F:		ds.b 1
+
 	endstruct
 
 obID:		equ obj.ID
@@ -203,40 +229,40 @@ sub9_y_pos:		equ $3C
 sub9_mapframe:		equ $3F
 
 ; Object variables used by Sonic
-flashtime:	equ $30	; time between flashes after getting hit
-invtime:	equ $32	; time left for invincibility
-shoetime:	equ $34	; time left for speed shoes
+flashtime:	equ objoff_30	; time between flashes after getting hit
+invtime:	equ objoff_32	; time left for invincibility
+shoetime:	equ objoff_34	; time left for speed shoes
 stick_to_convex:equ objoff_38
-standonobject:	equ $3D	; object Sonic stands on
+standonobject:	equ objoff_3D	; object Sonic stands on
 
 ; Miscellaneous object scratch-RAM
-objoff_25:	equ $25
-objoff_26:	equ $26
-objoff_29:	equ $29
-objoff_2A:	equ $2A
-objoff_2B:	equ $2B
-objoff_2C:	equ $2C
-objoff_2E:	equ $2E
-objoff_2F:	equ $2F
-objoff_30:	equ $30
-objoff_31:	equ $31
-objoff_32:	equ $32
-objoff_33:	equ $33
-objoff_34:	equ $34
-objoff_35:	equ $35
-objoff_36:	equ $36
-objoff_37:	equ $37
-objoff_38:	equ $38
-objoff_39:	equ $39
-objoff_3A:	equ $3A
-objoff_3B:	equ $3B
-objoff_3C:	equ $3C
-objoff_3D:	equ $3D
-objoff_3E:	equ $3E
-objoff_3F:	equ $3F
+objoff_25:	equ obj.off_25
+objoff_26:	equ obj.off_26
+objoff_29:	equ obj.off_29
+objoff_2A:	equ obj.off_2A
+objoff_2B:	equ obj.off_2B
+objoff_2C:	equ obj.off_2C
+objoff_2E:	equ obj.off_2E
+objoff_2F:	equ obj.off_2F
+objoff_30:	equ obj.off_30
+objoff_31:	equ obj.off_31
+objoff_32:	equ obj.off_32
+objoff_33:	equ obj.off_33
+objoff_34:	equ obj.off_34
+objoff_35:	equ obj.off_35
+objoff_36:	equ obj.off_36
+objoff_37:	equ obj.off_37
+objoff_38:	equ obj.off_38
+objoff_39:	equ obj.off_39
+objoff_3A:	equ obj.off_3A
+objoff_3B:	equ obj.off_3B
+objoff_3C:	equ obj.off_3C
+objoff_3D:	equ obj.off_3D
+objoff_3E:	equ obj.off_3E
+objoff_3F:	equ obj.off_3F
 
 object_size_bits:	equ 6
-object_size:	equ $40
+object_size:	equ obj.len
 
 ; Animation flags
 afEnd:		equ $FF	; return to beginning of animation
