@@ -1626,13 +1626,11 @@ cfPanningAMSFMS:
 		move.b	#$B4,d0				; Command to set AMS/FMS/panning
 		bra.w	WriteFMIorIIMain
 ; ===========================================================================
-
-locret_72AEA:
-		rts
-; ===========================================================================
 ; loc_72AEC: cfAlterNotes:
 cfDetune:
 		move.b	(a4)+,SMPS_Track.Detune(a5)	; Set detune value
+
+locret_72AEA:
 		rts
 ; ===========================================================================
 ; loc_72AF2: cfUnknown1:
@@ -1760,7 +1758,7 @@ cfChangePSGVolume:
 ; loc_72BEE:
 cfClearPush:
 		clr.b	SMPS_RAM.f_push_playing(a6)	; Allow push sound to be played once more
-		
+
 locret_72CAA:
 		rts
 ; ===========================================================================
@@ -1785,10 +1783,9 @@ cfSetVoice:
 SetVoice:
 		subq.w	#1,d0
 		bmi.s	.havevoiceptr
-		moveq	#25,d1
 ; loc_72C56:
 .voicemultiply:
-		adda.w	d1,a1
+		lea	25(a1),a1
 		dbf	d0,.voicemultiply
 ; loc_72C5C:
 .havevoiceptr:
@@ -1857,10 +1854,9 @@ SendVoiceTL:
 .gotvoiceptr:
 		subq.w	#1,d0
 		bmi.s	.gotvoice
-		moveq	#25,d1
 ; loc_72CE0:
 .voicemultiply:
-		adda.w	d1,a1
+		lea	25(a1),a1
 		dbf	d0,.voicemultiply
 ; loc_72CE6:
 .gotvoice:

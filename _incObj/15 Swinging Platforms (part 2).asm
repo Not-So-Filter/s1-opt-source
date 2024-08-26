@@ -58,7 +58,11 @@ Swing_Move2:
 loc_7BCE:
 		moveq	#0,d4
 		move.b	(a2)+,d4
+	if object_size=$40
 		lsl.w	#object_size_bits,d4
+	else
+		mulu.w	#object_size,d4
+	endif
 		addi.l	#v_objspace,d4
 		movea.l	d4,a1
 		moveq	#0,d4
@@ -93,7 +97,11 @@ Swing_DelAll:
 Swing_DelLoop:
 		moveq	#0,d0
 		move.b	(a2)+,d0
+	if object_size=$40
 		lsl.w	#object_size_bits,d0
+	else
+		mulu.w	#object_size,d0
+	endif
 		addi.l	#v_objspace,d0
 		movea.l	d0,a1
 		bsr.w	DeleteChild

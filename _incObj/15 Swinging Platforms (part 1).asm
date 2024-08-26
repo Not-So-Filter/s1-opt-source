@@ -71,7 +71,11 @@ Swing_Main:	; Routine 0
 		addq.b	#1,obSubtype(a0)
 		move.w	a1,d5
 		subi.w	#v_objspace,d5
+	if object_size=$40
 		lsr.w	#object_size_bits,d5
+	else
+		divu.w	#object_size,d5
+	endif
 		andi.w	#$7F,d5
 		move.b	d5,(a2)+
 		move.b	#8,obRoutine(a1) ; goto Swing_Display next
@@ -96,7 +100,11 @@ Swing_Main:	; Routine 0
 .fail:
 		move.w	a0,d5
 		subi.w	#v_objspace,d5
+	if object_size=$40
 		lsr.w	#object_size_bits,d5
+	else
+		divu.w	#object_size,d5
+	endif
 		andi.w	#$7F,d5
 		move.b	d5,(a2)+
 		move.w	#$4080,obAngle(a0)

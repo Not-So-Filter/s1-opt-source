@@ -47,7 +47,11 @@ Hel_Build:
 		addq.b	#1,obSubtype(a0)
 		move.w	a1,d5
 		subi.w	#v_objspace,d5
+	if object_size=$40
 		lsr.w	#object_size_bits,d5
+	else
+		divu.w	#object_size,d5
+	endif
 		andi.w	#$7F,d5
 		move.b	d5,(a2)+	; copy child address to parent RAM
 		move.b	#4,obRoutine(a1)
@@ -112,7 +116,11 @@ Hel_DelAll:
 Hel_DelLoop:
 		moveq	#0,d0
 		move.b	(a2)+,d0
+	if object_size=$40
 		lsl.w	#object_size_bits,d0
+	else
+		mulu.w	#object_size,d0
+	endif
 		addi.l	#v_objspace,d0
 		movea.l	d0,a1		; get child address
 		bsr.w	DeleteChild	; delete object

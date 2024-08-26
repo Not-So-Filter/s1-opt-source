@@ -54,7 +54,6 @@ id_Sega:	equ ptr_GM_Sega-GameModeArray	; $00
 id_Title:	equ ptr_GM_Title-GameModeArray	; $04
 id_Demo:	equ ptr_GM_Demo-GameModeArray	; $08
 id_Level:	equ ptr_GM_Level-GameModeArray	; $0C
-id_Continue:	equ ptr_GM_Cont-GameModeArray	; $10
 
 ; Vertical interrupt modes
 id_VB_00:	equ ptr_VB_00-VBla_Index	; $00

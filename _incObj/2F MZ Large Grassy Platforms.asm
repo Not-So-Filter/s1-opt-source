@@ -177,8 +177,7 @@ loc_B01C:
 		move.b	#id_GrassFire,obID(a1) ; load sitting flame object
 		move.w	obX(a0),obX(a1)
 		move.w	lgrass_origY(a0),lgrass_origY(a1)
-		addq.w	#8,lgrass_origY(a1)
-		subq.w	#3,lgrass_origY(a1)
+		addq.w	#5,lgrass_origY(a1)
 		subi.w	#$40,obX(a1)
 		move.l	objoff_30(a0),objoff_30(a1)
 		move.l	a0,objoff_38(a1)
@@ -195,7 +194,11 @@ loc_B07A:
 loc_B086:
 		moveq	#0,d0
 		move.b	(a2)+,d0
+	if object_size=$40
 		lsl.w	#object_size_bits,d0
+	else
+		mulu.w	#object_size,d0
+	endif
 		addi.w	#v_objspace,d0
 		movea.w	d0,a1
 		move.w	d1,objoff_3C(a1)
@@ -215,7 +218,11 @@ sub_B09C:
 		lea	1(a2,d0.w),a2
 		move.w	a1,d0
 		subi.w	#v_objspace,d0
+	if object_size=$40
 		lsr.w	#object_size_bits,d0
+	else
+		divu.w	#object_size,d0
+	endif
 		andi.w	#$7F,d0
 		move.b	d0,(a2)
 		rts
@@ -248,7 +255,11 @@ loc_B0F4:
 		moveq	#0,d0
 		move.b	(a2),d0
 		clr.b	(a2)+
+	if object_size=$40
 		lsl.w	#object_size_bits,d0
+	else
+		mulu.w	#object_size,d0
+	endif
 		addi.w	#v_objspace,d0
 		movea.w	d0,a1
 		bsr.w	DeleteChild

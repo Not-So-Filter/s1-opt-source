@@ -129,30 +129,8 @@ v_lvlobjspace	= v_objspace+object_size*32	; level object variable space ($1800 b
 v_lvlobjend	= v_lvlobjspace+object_size*96
 v_objspace_end	= v_lvlobjend
 
-; Special Stage objects
-v_ssrescard	= v_objspace+object_size*23	; object variable space for the Special Stage results card ($140 bytes)
-v_ssrestext	= v_ssrescard+object_size*0	; object variable space for the Special Stage results card text ($40 bytes)
-v_ssresscore	= v_ssrescard+object_size*1	; object variable space for the Special Stage results card score tally ($40 bytes)
-v_ssresring	= v_ssrescard+object_size*2	; object variable space for the Special Stage results card ring bonus tally ($40 bytes)
-v_ssresoval	= v_ssrescard+object_size*3	; object variable space for the Special Stage results card oval ($40 bytes)
-v_ssrescontinue	= v_ssrescard+object_size*4	; object variable space for the Special Stage results card continue icon ($40 bytes)
-v_ssresemeralds	= v_objspace+object_size*32	; object variable space for the emeralds in the Special Stage results ($180 bytes)
-
-; Continue screen objects
-v_continuetext	= v_objspace+object_size*1	; object variable space for the continue screen text ($40 bytes)
-v_continuelight	= v_objspace+object_size*2	; object variable space for the continue screen light spot ($40 bytes)
-v_continueicon	= v_objspace+object_size*3	; object variable space for the continue screen icon ($40 bytes)
-
-; Ending objects
-v_endemeralds	= v_objspace+object_size*16	; object variable space for the emeralds in the ending ($180 bytes)
-v_endemeralds_end	= v_objspace+object_size*32
-v_endlogo	= v_objspace+object_size*16	; object variable space for the logo in the ending ($40 bytes)
-
 ; Credits objects
 v_credits	= v_objspace+object_size*2	; object variable space for the credits text ($40 bytes)
-v_endeggman	= v_objspace+object_size*2	; object variable space for Eggman after the credits ($40 bytes)
-v_tryagain	= v_objspace+object_size*3	; object variable space for the "TRY AGAIN" text ($40 bytes)
-v_eggmanchaos	= v_objspace+object_size*32	; object variable space for the emeralds juggled by Eggman ($180 bytes)
 
 v_snddriver_ram:	SMPS_RAM		; sound driver state
 			ds.b	$A0		; unused
@@ -268,8 +246,7 @@ v_anglebuffer2:		ds.b	1		; other angle of collision block that Sonic or object i
 v_opl_routine:		ds.w	1		; ObjPosLoad - routine counter
 v_opl_screen:		ds.w	1		; ObjPosLoad - screen variable
 v_opl_data:		ds.b	$10		; ObjPosLoad - data buffer
-v_ssangle:		ds.w	1		; Special Stage angle
-v_ssrotate:		ds.w	1		; Special Stage rotation speed
+			ds.b	4		; unused
 Rings_manager_routine:	ds.w	1
 			ds.b	$A		; unused
 v_btnpushtime1:		ds.w	1		; button push duration - in level
@@ -283,20 +260,7 @@ v_bossstatus:		ds.b	1		; status of boss and prison capsule (01 = boss defeated; 
 v_trackpos:		ds.w	1		; position tracking reference number
 v_trackbyte = v_trackpos+1			; low byte for position tracking
 f_lockscreen:		ds.b	1		; flag set to lock screen during bosses
-			ds.b	5		; unused
-v_lani0_frame:		ds.b	1		; level graphics animation 0 - current frame
-v_lani0_time:		ds.b	1		; level graphics animation 0 - time until next frame
-v_lani1_frame:		ds.b	1		; level graphics animation 1 - current frame
-v_lani1_time:		ds.b	1		; level graphics animation 1 - time until next frame
-v_lani2_frame:		ds.b	1		; level graphics animation 2 - current frame
-v_lani2_time:		ds.b	1		; level graphics animation 2 - time until next frame
-v_lani3_frame:		ds.b	1		; level graphics animation 3 - current frame
-v_lani3_time:		ds.b	1		; level graphics animation 3 - time until next frame
-v_lani4_frame:		ds.b	1		; level graphics animation 4 - current frame
-v_lani4_time:		ds.b	1		; level graphics animation 4 - time until next frame
-v_lani5_frame:		ds.b	1		; level graphics animation 5 - current frame
-v_lani5_time:		ds.b	1		; level graphics animation 5 - time until next frame
-			ds.w	1		; unused
+			ds.b	$13		; unused
 v_gfxbigring:		ds.w	1		; settings for giant ring graphics loading
 f_conveyrev:		ds.b	1		; flag set to reverse conveyor belts in LZ/SBZ
 v_obj63:		ds.b	6		; object 63 (LZ/SBZ platforms) variables
@@ -313,7 +277,7 @@ v_itembonus:		ds.w	1		; item bonus from broken enemies, blocks etc.
 v_timebonus:		ds.w	1		; time bonus at the end of an act
 v_ringbonus:		ds.w	1		; ring bonus at the end of an act
 f_endactbonus:		ds.b	1		; time/ring bonus update flag at the end of an act
-v_sonicend:		ds.b	1		; routine counter for Sonic in the ending sequence
+			ds.b	1		; unused
 v_lz_deform:		ds.w	1		; LZ deformation offset, in units of $80
 Camera_X_pos_coarse:	ds.w	1		; (Camera_X_pos - 128) / 256
 			ds.b	2		; unused
@@ -353,10 +317,7 @@ v_act:			ds.b	1		; current act number
 v_lives:		ds.b	1		; number of lives
 			ds.b	1		; unused
 v_air:			ds.w	1		; air remaining while underwater
-v_lastspecial:		ds.b	1		; last special stage number
-			ds.b	1		; unused
-v_continues:		ds.b	1		; number of continues
-			ds.b	1		; unused
+			ds.b	4		; unused
 f_timeover:		ds.b	1		; time over flag
 v_lifecount:		ds.b	1		; lives counter value (for actual number, see "v_lives")
 f_lifecount:		ds.b	1		; lives counter update flag
@@ -396,9 +357,7 @@ v_lamp_wtrpos:		ds.w	1		; water position at lamppost
 v_lamp_wtrrout:		ds.b	1		; water routine at lamppost
 v_lamp_wtrstat:		ds.b	1		; water state at lamppost
 v_lamp_lives:		ds.b	1		; lives counter at lamppost
-			ds.b	2		; unused
-v_emeralds:		ds.b	1		; number of chaos emeralds
-v_emldlist:		ds.b	6		; which individual emeralds you have (00 = no; 01 = yes)
+			ds.b	9		; unused
 v_oscillate:		ds.w	1		; oscillation bitfield
 v_timingandscreenvariables:
 v_timingvariables:
@@ -410,10 +369,8 @@ v_ani1_time:		ds.b	1		; synchronised sprite animation 1 - time until next frame
 v_ani1_frame:		ds.b	1		; synchronised sprite animation 1 - current frame
 v_ani2_time:		ds.b	1		; synchronised sprite animation 2 - time until next frame
 v_ani2_frame:		ds.b	1		; synchronised sprite animation 2 - current frame
-v_ani3_time:		ds.b	1		; synchronised sprite animation 3 - time until next frame
-v_ani3_frame:		ds.b	1		; synchronised sprite animation 3 - current frame
-v_ani3_buf:		ds.w	1		; synchronised sprite animation 3 - info buffer
-			ds.b	$26		; unused
+v_ani2_buf:		ds.w	1		; synchronised sprite animation 3 - info buffer
+			ds.b	$28		; unused
 v_limittopdb:		ds.w	1		; level upper boundary, buffered for debug mode
 v_limitbtmdb:		ds.w	1		; level bottom boundary, buffered for debug mode
 HUD_scroll_flag:	ds.b	1		; enable/disable hud via scrolling (1 byte)

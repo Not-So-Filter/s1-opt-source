@@ -242,7 +242,11 @@ RideObject_SetRide:
 		beq.s	loc_19E30
 		moveq	#0,d0
 		move.b	standonobject(a1),d0
+	if object_size=$40
 		lsl.w	#object_size_bits,d0
+	else
+		mulu.w	#object_size,d0
+	endif
 		addi.l	#v_objspace,d0
 		movea.l	d0,a3	; a3=object
 		bclr	#3,obStatus(a3)
@@ -250,7 +254,11 @@ RideObject_SetRide:
 loc_19E30:
 		move.w	a0,d0
 		subi.w	#v_objspace,d0
+	if object_size=$40
 		lsr.w	#object_size_bits,d0
+	else
+		divu.w	#object_size,d0
+	endif
 		andi.w	#$7F,d0
 		move.b	d0,standonobject(a1)
 		move.b	#0,obAngle(a1)

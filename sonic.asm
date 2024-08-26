@@ -368,8 +368,6 @@ ptr_GM_Demo:	bra.w	GM_Level	; Demo Mode ($08)
 
 ptr_GM_Level:	bra.w	GM_Level	; Normal Level ($0C)
 
-ptr_GM_Cont:	bra.w	GM_Continue	; Continue Screen ($10)
-
 ; ===========================================================================
 
 CheckSumError:
@@ -1621,7 +1619,6 @@ Pal_SBZ3:	bincludePalette	"palette/SBZ Act 3.bin"
 Pal_SBZ3Water:	bincludePalette	"palette/SBZ Act 3 Underwater.bin"
 Pal_LZSonWater:	bincludePalette	"palette/Sonic - LZ Underwater.bin"
 Pal_SBZ3SonWat:	bincludePalette	"palette/Sonic - SBZ3 Underwater.bin"
-Pal_Continue:	bincludePalette	"palette/Special Stage Continue Bonus.bin"
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to	wait for VBlank routines to complete
@@ -1983,18 +1980,11 @@ LevelSelect:
 		move.w	(v_levselsound).w,d0
 ;		tst.b	(f_creditscheat).w ; is Japanese Credits cheat on?
 ;		beq.s	LevSel_NoCheat	; if not, branch
-		cmpi.w	#$FF,d0		; is sound $FF being played?
-		beq.s	LevSel_Continue	; if yes, branch
 
 LevSel_NoCheat:
 LevSel_PlaySnd:
 		bsr.w	PlayMusic
 		bra.s	LevelSelect
-; ===========================================================================
-
-LevSel_Continue:
-		move.w	#id_Continue,(v_gamemode).w ; set screen mode to $18 (Ending)
-		rts
 ; ===========================================================================
 
 LevSel_Level:
@@ -2011,7 +2001,6 @@ PlayLevel:
 		move.w	d0,(v_rings).w	; clear rings
 		move.l	d0,(v_time).w	; clear time
 		move.l	d0,(v_score).w	; clear score
-		move.b	d0,(v_continues).w ; clear continues
 		move.l	#5000,(v_scorelife).w ; extra life is awarded at 50000 points
 		moveq	#bgm_Fade,d0
 		bra.w	PlayMusic ; fade out music
@@ -2649,16 +2638,16 @@ Sync2:
 
 ; Used for bouncing rings
 Sync3:
-		tst.b	(v_ani3_time).w
+		tst.b	(v_ani2_time).w
 		beq.s	SyncEnd
 		moveq	#0,d0
-		move.b	(v_ani3_time).w,d0
-		add.w	(v_ani3_buf).w,d0
-		move.w	d0,(v_ani3_buf).w
+		move.b	(v_ani2_time).w,d0
+		add.w	(v_ani2_buf).w,d0
+		move.w	d0,(v_ani2_buf).w
 		rol.w	#7,d0
 		andi.w	#3,d0
-		move.b	d0,(v_ani3_frame).w
-		subq.b	#1,(v_ani3_time).w
+		move.b	d0,(v_ani2_frame).w
+		subq.b	#1,(v_ani2_time).w
 
 SyncEnd:
 		rts
@@ -2701,101 +2690,6 @@ Demo_GHZ:	binclude	"demodata/Intro - GHZ.bin"
 Demo_MZ:	binclude	"demodata/Intro - MZ.bin"
 Demo_SYZ:	binclude	"demodata/Intro - SYZ.bin"
 ; ===========================================================================
-
-; ---------------------------------------------------------------------------
-; Continue screen
-; ---------------------------------------------------------------------------
-
-GM_Continue:
-		bsr.w	PaletteFadeOut
-		disable_ints
-		move.w	(v_vdp_buffer1).w,d0
-		andi.b	#$BF,d0
-		move.w	d0,(vdp_control_port).l
-		lea	(vdp_control_port).l,a6
-		move.w	#$8004,(a6)	; 8 colour mode
-		move.w	#$8700,(a6)	; background colour
-		bsr.w	ClearScreen
-
-		clearRAM v_objspace
-
-		locVRAM	ArtTile_Title_Card*tile_size
-		lea	(Nem_TitleCard).l,a0 ; load title card patterns
-		bsr.w	NemDec
-		locVRAM	ArtTile_Continue_Sonic*tile_size
-		lea	(Nem_ContSonic).l,a0 ; load Sonic patterns
-		bsr.w	NemDec
-		locVRAM	ArtTile_Mini_Sonic*tile_size
-		lea	(Nem_MiniSonic).l,a0 ; load continue screen patterns
-		bsr.w	NemDec
-		moveq	#10,d1
-		jsr	(ContScrCounter).l	; run countdown	(start from 10)
-		moveq	#palid_Continue,d0
-		bsr.w	PalLoad_Fade	; load continue	screen palette
-		moveq	#bgm_Continue,d0
-		bsr.w	PlayMusic	; play continue	music
-		move.w	#659,(v_demolength).w ; set time delay to 11 seconds
-		clr.l	(v_screenposx).w
-		move.l	#$1000000,(v_screenposy).w
-		move.b	#id_ContSonic,(v_player).w ; load Sonic object
-		move.b	#id_ContScrItem,(v_continuetext).w ; load continue screen objects
-		move.b	#id_ContScrItem,(v_continuelight).w
-		move.w	#3*$80,(v_continuelight+obPriority).w
-		move.b	#4,(v_continuelight+obFrame).w
-		move.b	#id_ContScrItem,(v_continueicon).w
-		move.b	#4,(v_continueicon+obRoutine).w
-		jsr	(ExecuteObjects).l
-		jsr	(BuildSprites).l
-		move.w	(v_vdp_buffer1).w,d0
-		ori.b	#$40,d0
-		move.w	d0,(vdp_control_port).l
-		bsr.w	PaletteFadeIn
-
-; ---------------------------------------------------------------------------
-; Continue screen main loop
-; ---------------------------------------------------------------------------
-
-Cont_MainLoop:
-		move.w	#id_VB_0A,(v_vbla_routine).w
-		bsr.w	WaitForVBla
-		cmpi.b	#6,(v_player+obRoutine).w
-		bhs.s	loc_4DF2
-		disable_ints
-		move.w	(v_demolength).w,d1
-		divu.w	#60,d1
-		andi.l	#$F,d1
-		jsr	(ContScrCounter).l
-		enable_ints
-
-loc_4DF2:
-		jsr	(ExecuteObjects).l
-		jsr	(BuildSprites).l
-		cmpi.w	#$180,(v_player+obX).w ; has Sonic run off screen?
-		bhs.s	Cont_GotoLevel	; if yes, branch
-		cmpi.b	#6,(v_player+obRoutine).w
-		bhs.s	Cont_MainLoop
-		tst.w	(v_demolength).w
-		bne.s	Cont_MainLoop
-		move.w	#id_Sega,(v_gamemode).w ; go to Sega screen
-		rts
-; ===========================================================================
-
-Cont_GotoLevel:
-		move.w	#id_Level,(v_gamemode).w ; set screen mode to $0C (level)
-		move.b	#3,(v_lives).w	; set lives to 3
-		moveq	#0,d0
-		move.w	d0,(v_rings).w	; clear rings
-		move.l	d0,(v_time).w	; clear time
-		move.l	d0,(v_score).w	; clear score
-		move.b	d0,(v_lastlamp).w ; clear lamppost count
-		subq.b	#1,(v_continues).w ; subtract 1 from continues
-		rts
-; ===========================================================================
-
-		include	"_incObj/80 Continue Screen Elements.asm"
-		include	"_incObj/81 Continue Screen Sonic.asm"
-		include	"_anim/Continue Screen Sonic.asm"
-Map_ContScr:	include	"_maps/Continue Screen.asm"
 
 		include	"_inc/LevelSizeLoad & BgScrollSpeed (JP1).asm"
 		include	"_inc/DeformLayers (JP1).asm"
@@ -3687,7 +3581,11 @@ loc_74AE:
 		beq.s	loc_74DC
 		moveq	#0,d0
 		move.b	standonobject(a1),d0
+	if object_size=$40
 		lsl.w	#object_size_bits,d0
+	else
+		mulu.w	#object_size,d0
+	endif
 		addi.l	#v_objspace,d0
 		movea.l	d0,a2
 		bclr	#3,obStatus(a2)
@@ -3699,7 +3597,11 @@ loc_74AE:
 loc_74DC:
 		move.w	a0,d0
 		subi.w	#v_objspace,d0
+	if object_size=$40
 		lsr.w	#object_size_bits,d0
+	else
+		divu.w	#object_size,d0
+	endif
 		andi.w	#$7F,d0
 		move.b	d0,standonobject(a1)
 		move.b	#0,obAngle(a1)
@@ -6376,13 +6278,6 @@ Nem_Lamp:	binclude	"artnem/Lamppost.nem"
 Nem_BigFlash:	binclude	"artnem/Giant Ring Flash.nem"
 		even
 Nem_Bonus:	binclude	"artnem/Hidden Bonuses.nem" ; hidden bonuses at end of a level
-		even
-; ---------------------------------------------------------------------------
-; Compressed graphics - continue screen
-; ---------------------------------------------------------------------------
-Nem_ContSonic:	binclude	"artnem/Continue Screen Sonic.nem"
-		even
-Nem_MiniSonic:	binclude	"artnem/Continue Screen Stuff.nem"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - animals

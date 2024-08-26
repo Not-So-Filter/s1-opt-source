@@ -28,26 +28,26 @@ Ring_Main:	; Routine 0
 		move.l	#Map_Ring,obMap(a0)
 		move.w	#make_art_tile(ArtTile_Ring,1,0),obGfx(a0)
 		move.b	#4,obRender(a0)
-		move.w	#2*$80,obPriority(a0)
 		move.b	#$47,obColType(a0)
 		move.b	#8,obActWid(a0)
 
 Ring_Animate:	; Routine 2
 		move.b	(v_ani1_frame).w,obFrame(a0) ; set frame
 		out_of_range.s	Ring_Delete,objoff_32(a0)
-		bra.w	DisplaySprite
+		move.w	#2*$80,d0
+		bra.w	DisplaySprite2
 ; ===========================================================================
 
 Ring_Collect:	; Routine 4
 		addq.b	#2,obRoutine(a0)
 		clr.b	obColType(a0)
-		move.w	#1*$80,obPriority(a0)
 		bsr.s	CollectRing
 
 Ring_Sparkle:	; Routine 6
 		lea	Ani_Ring(pc),a1
 		bsr.w	AnimateSprite
-		bra.w	DisplaySprite
+		move.w	#1*$80,d0
+		bra.w	DisplaySprite2
 ; ===========================================================================
 
 Ring_Delete:	; Routine 8
@@ -126,16 +126,17 @@ RLoss_Count:	; Routine 0
 		move.l	#Map_Ring,obMap(a1)
 		move.w	#make_art_tile(ArtTile_Ring,1,0),obGfx(a1)
 		move.b	#4,obRender(a1)
-		move.w	#3*$80,obPriority(a1)
 		move.b	#$47,obColType(a1)
 		move.b	#8,obActWid(a1)
-		st.b	(v_ani3_time).w
+		st.b	(v_ani2_time).w
 		tst.w	d4
 		bmi.s	.loc_9D62
 		move.w	d4,d0
 		bsr.w	CalcSine
 		move.w	d4,d2
-		lsr.w	#8,d2
+		move.w	d2,-(sp)
+		clr.w	d2
+		move.b	(sp)+,d2
 		asl.w	d2,d0
 		asl.w	d2,d1
 		move.w	d0,d2
@@ -162,7 +163,7 @@ RLoss_Count:	; Routine 0
 		jsr	(PlaySound).w	; play ring loss sound
 
 RLoss_Bounce:	; Routine 2
-		move.b	(v_ani3_frame).w,obFrame(a0)
+		move.b	(v_ani2_frame).w,obFrame(a0)
 		bsr.w	SpeedToPos
 		addi.w	#$18,obVelY(a0)
 		bmi.s	.chkdel
@@ -180,13 +181,14 @@ RLoss_Bounce:	; Routine 2
 		neg.w	obVelY(a0)
 
 .chkdel:
-		tst.b	(v_ani3_time).w
+		tst.b	(v_ani2_time).w
 		beq.s	RLoss_Delete
 		move.w	(v_limitbtm2).w,d0
 		addi.w	#$E0,d0
 		cmp.w	obY(a0),d0	; has object moved below level boundary?
 		blo.s	RLoss_Delete	; if yes, branch
-		bra.w	DisplaySprite
+		move.w	#3*$80,d0
+		bra.w	DisplaySprite2
 ; ===========================================================================
 
 RLoss_Delete:	; Routine 8

@@ -67,7 +67,11 @@ SBall_Main:	; Routine 0
 		addq.b	#1,sball_childs(a0) ; increment child object counter
 		move.w	a1,d5		; get child object RAM address
 		subi.w	#v_objspace,d5 ; subtract base address
-		lsr.w	#object_size_bits,d5		; divide by $40
+	if object_size=$40
+		lsr.w	#object_size_bits,d5
+	else
+		divu.w	#object_size,d5
+	endif
 		andi.w	#$7F,d5
 		move.b	d5,(a2)+	; copy child RAM number
 		move.b	#4,obRoutine(a1)
@@ -93,7 +97,11 @@ SBall_Main:	; Routine 0
 .fail:
 		move.w	a0,d5
 		subi.w	#v_objspace,d5
+	if object_size=$40
 		lsr.w	#object_size_bits,d5
+	else
+		divu.w	#object_size,d5
+	endif
 		andi.w	#$7F,d5
 		move.b	d5,(a2)+
 		cmpi.b	#id_LZ,(v_zone).w ; check if level is LZ
@@ -121,7 +129,11 @@ SBall_Move:	; Routine 2
 .loop:
 		moveq	#0,d4
 		move.b	(a2)+,d4
+	if object_size=$40
 		lsl.w	#object_size_bits,d4
+	else
+		mulu.w	#object_size,d4
+	endif
 		addi.l	#v_objspace,d4
 		movea.l	d4,a1
 		moveq	#0,d4
@@ -152,7 +164,11 @@ SBall_Move:	; Routine 2
 .deleteloop:
 		moveq	#0,d0
 		move.b	(a2)+,d0
+	if object_size=$40
 		lsl.w	#object_size_bits,d0
+	else
+		mulu.w	#object_size,d0
+	endif
 		addi.l	#v_objspace,d0
 		movea.l	d0,a1
 		bsr.w	DeleteChild
