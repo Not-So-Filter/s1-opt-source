@@ -7,15 +7,15 @@
 
 DisplaySprite:
 		lea	(v_spritequeue).w,a1
-		adda.w	obPriority(a0),a1 ; get sprite priority
-		cmpi.w	#$7E,(a1)	; is this part of the queue full?
-		bhs.s	DSpr_Full	; if yes, branch
+		adda.w	obPriority(a0),a1 ; add sprite priority to queue
+		tst.w	(a1)		; is the priority negative ($80)?
+		bmi.s	DSpr_Full	; if yes, branch
 		addq.w	#2,(a1)		; increment sprite count
 		adda.w	(a1),a1		; jump to empty position
 		move.w	a0,(a1)		; insert RAM address for object
 
 DSpr_Full:
-		rts	
+		rts
 
 ; End of function DisplaySprite
 
@@ -30,14 +30,14 @@ DSpr_Full:
 DisplaySprite1:
 		lea	(v_spritequeue).w,a2
 		adda.w	obPriority(a1),a2
-		cmpi.w	#$7E,(a2)
-		bhs.s	DSpr1_Full
+		tst.w	(a2)
+		bmi.s	DSpr1_Full
 		addq.w	#2,(a2)
 		adda.w	(a2),a2
 		move.w	a1,(a2)
 
 DSpr1_Full:
-		rts	
+		rts
 
 ; End of function DisplaySprite1
 
@@ -51,8 +51,8 @@ DSpr1_Full:
 DisplaySprite2:
 		lea	(v_spritequeue).w,a1
 		adda.w	d0,a1
-		cmpi.w	#$7E,(a1)	; is this part of the queue full?
-		bhs.s	DSpr2_End	; if yes, branch
+		tst.w	(a1)	; is this part of the queue full?
+		bmi.s	DSpr2_End	; if yes, branch
 		addq.w	#2,(a1)		; increment sprite count
 		adda.w	(a1),a1		; jump to empty position
 		move.w	a0,(a1)		; insert RAM address for object

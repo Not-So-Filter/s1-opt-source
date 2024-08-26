@@ -1,7 +1,7 @@
 Mus93_Get_Emerald_Header:
 	smpsHeaderStartSong 1, 1
 	smpsHeaderVoice     Mus93_Get_Emerald_Voices
-	smpsHeaderChan      $07, $03
+	smpsHeaderChan      $07, $02
 	smpsHeaderTempo     $01, $06
 
 	smpsHeaderDAC       Mus93_Get_Emerald_DAC
@@ -13,7 +13,6 @@ Mus93_Get_Emerald_Header:
 	smpsHeaderFM        Mus93_Get_Emerald_FM6,	$F4, $16
 	smpsHeaderPSG       Mus93_Get_Emerald_PSG1,	$F4, $02, $00, fTone_04
 	smpsHeaderPSG       Mus93_Get_Emerald_PSG2,	$F4, $02, $00, fTone_05
-	smpsHeaderPSG       Mus93_Get_Emerald_PSG3,	$F4, $00, $00, fTone_04
 
 ; FM3 Data
 Mus93_Get_Emerald_FM3:
@@ -61,7 +60,6 @@ Mus93_Get_Emerald_Loop01:
 
 ; PSG1 Data
 Mus93_Get_Emerald_PSG1:
-	smpsNop             $01
 	dc.b	nRst, $02, nRst, $2D
 
 Mus93_Get_Emerald_Loop00:
@@ -71,9 +69,6 @@ Mus93_Get_Emerald_Loop00:
 
 ; DAC Data
 Mus93_Get_Emerald_DAC:
-; PSG3 Data
-Mus93_Get_Emerald_PSG3:
-	smpsNop             $01
 	smpsStop
 
 Mus93_Get_Emerald_Voices:

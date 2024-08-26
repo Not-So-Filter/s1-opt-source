@@ -2253,7 +2253,7 @@ LevSel_CharOk:
 ; ---------------------------------------------------------------------------
 ; Level	select menu text
 ; ---------------------------------------------------------------------------
-LevelMenuText:	binclude	"misc/Level Select Text (JP1).bin"
+LevelMenuText:	binclude	"misc/Level Select Text.bin"
 		even
 ; ---------------------------------------------------------------------------
 ; Music	playlist
@@ -2691,8 +2691,8 @@ Demo_MZ:	binclude	"demodata/Intro - MZ.bin"
 Demo_SYZ:	binclude	"demodata/Intro - SYZ.bin"
 ; ===========================================================================
 
-		include	"_inc/LevelSizeLoad & BgScrollSpeed (JP1).asm"
-		include	"_inc/DeformLayers (JP1).asm"
+		include	"_inc/LevelSizeLoad & BgScrollSpeed.asm"
+		include	"_inc/DeformLayers.asm"
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
@@ -3913,7 +3913,7 @@ Map_Missile:	include	"_maps/Buzz Bomber Missile.asm"
 		include	"_incObj/7C Ring Flash.asm"
 
 		include	"_anim/Rings.asm"
-Map_Ring:	include	"_maps/Rings (JP1).asm"
+Map_Ring:	include	"_maps/Rings.asm"
 Map_GRing:	include	"_maps/Giant Ring.asm"
 Map_Flash:	include	"_maps/Ring Flash.asm"
 		include	"_incObj/26 Monitor.asm"
@@ -6055,7 +6055,7 @@ Art_LivesNums:	binclude	"artunc/Lives Counter Numbers.bin" ; 8x8 pixel numbers o
 		include	"_inc/LevelHeaders.asm"
 		include	"_inc/Pattern Load Cues.asm"
 
-Nem_SegaLogo:	binclude	"artnem/Sega Logo (JP1).nem" ; large Sega logo
+Nem_SegaLogo:	binclude	"artnem/Sega Logo.nem" ; large Sega logo
 		even
 Eni_SegaLogo:	binclude	"tilemaps/Sega Logo.eni" ; large Sega logo (mappings)
 		even
@@ -6076,6 +6076,8 @@ Map_Sonic:	include	"_maps/Sonic.asm"
 ; ---------------------------------------------------------------------------
 ; Uncompressed graphics	- Sonic
 ; ---------------------------------------------------------------------------
+
+	align $8000
 Art_Sonic:	binclude	"artunc/Sonic.bin"	; Sonic
 		even
 ; ---------------------------------------------------------------------------
@@ -6317,7 +6319,7 @@ Blk16_MZ:	binclude	"map16/MZ.eni"
 		even
 Nem_MZ:		binclude	"artkosp/8x8 - MZ.kosp"	; MZ primary patterns
 		even
-Blk256_MZ:	binclude	"map128/MZ (JP1).kosp"
+Blk256_MZ:	binclude	"map128/MZ.kosp"
 		even
 Blk16_SLZ:	binclude	"map16/SLZ.eni"
 		even
@@ -6335,7 +6337,7 @@ Blk16_SBZ:	binclude	"map16/SBZ.eni"
 		even
 Nem_SBZ:	binclude	"artkosp/8x8 - SBZ.kosp"	; SBZ primary patterns
 		even
-Blk256_SBZ:	binclude	"map128/SBZ (JP1).kosp"
+Blk256_SBZ:	binclude	"map128/SBZ.kosp"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - bosses
@@ -6535,13 +6537,13 @@ ObjPos_GHZ1:	binclude	"objpos/ghz1.bin"
 		even
 ObjPos_GHZ2:	binclude	"objpos/ghz2.bin"
 		even
-ObjPos_GHZ3:	binclude	"objpos/ghz3 (JP1).bin"
+ObjPos_GHZ3:	binclude	"objpos/ghz3.bin"
 		even
-ObjPos_LZ1:	binclude	"objpos/lz1 (JP1).bin"
+ObjPos_LZ1:	binclude	"objpos/lz1.bin"
 		even
 ObjPos_LZ2:	binclude	"objpos/lz2.bin"
 		even
-ObjPos_LZ3:	binclude	"objpos/lz3 (JP1).bin"
+ObjPos_LZ3:	binclude	"objpos/lz3.bin"
 		even
 ObjPos_SBZ3:	binclude	"objpos/sbz3.bin"
 		even
@@ -6557,7 +6559,7 @@ ObjPos_LZ3pf1:	binclude	"objpos/lz3pf1.bin"
 		even
 ObjPos_LZ3pf2:	binclude	"objpos/lz3pf2.bin"
 		even
-ObjPos_MZ1:	binclude	"objpos/mz1 (JP1).bin"
+ObjPos_MZ1:	binclude	"objpos/mz1.bin"
 		even
 ObjPos_MZ2:	binclude	"objpos/mz2.bin"
 		even
@@ -6573,9 +6575,9 @@ ObjPos_SYZ1:	binclude	"objpos/syz1.bin"
 		even
 ObjPos_SYZ2:	binclude	"objpos/syz2.bin"
 		even
-ObjPos_SYZ3:	binclude	"objpos/syz3 (JP1).bin"
+ObjPos_SYZ3:	binclude	"objpos/syz3.bin"
 		even
-ObjPos_SBZ1:	binclude	"objpos/sbz1 (JP1).bin"
+ObjPos_SBZ1:	binclude	"objpos/sbz1.bin"
 		even
 ObjPos_SBZ2:	binclude	"objpos/sbz2.bin"
 		even

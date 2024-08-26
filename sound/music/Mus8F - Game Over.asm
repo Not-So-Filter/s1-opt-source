@@ -1,7 +1,7 @@
 Mus8F_Game_Over_Header:
 	smpsHeaderStartSong 1
 	smpsHeaderVoice     Mus8F_Game_Over_Voices
-	smpsHeaderChan      $06, $03
+	smpsHeaderChan      $06, $00
 	smpsHeaderTempo     $02, $13
 
 	smpsHeaderDAC       Mus8F_Game_Over_DAC
@@ -10,9 +10,6 @@ Mus8F_Game_Over_Header:
 	smpsHeaderFM        Mus8F_Game_Over_FM3,	$F4, $0F
 	smpsHeaderFM        Mus8F_Game_Over_FM4,	$F4, $0D
 	smpsHeaderFM        Mus8F_Game_Over_FM5,	$DC, $16
-	smpsHeaderPSG       Mus8F_Game_Over_PSG1,	$D0, $03, $00, fTone_05
-	smpsHeaderPSG       Mus8F_Game_Over_PSG2,	$DC, $06, $00, fTone_05
-	smpsHeaderPSG       Mus8F_Game_Over_PSG3,	$DC, $00, $00, fTone_04
 
 ; FM1 Data
 Mus8F_Game_Over_FM1:
@@ -44,12 +41,10 @@ Mus8F_Game_Over_FM3:
 ; FM4 Data
 Mus8F_Game_Over_FM4:
 	smpsSetvoice        $02
-	smpsNop             $01
 	dc.b	nA3, $06, nRst, nA3, nRst, nE3, nRst, nE3, nRst, nG3, $15, nFs3
 	dc.b	$0C, nG3, $03, nFs3, $0C, nA3, $06, nRst, nA3, nRst, nE3, nRst
 	dc.b	nE3, nRst, nD4, $15, nCs4, $0C, nD4, $03, nCs4, $0C, nA3, $04
 	dc.b	nRst, nA3, nAb3, $06, nRst, nG3, nRst, nFs3, nRst, nFs3, $60
-	smpsNop             $01
 	smpsStop
 
 ; FM5 Data
@@ -57,13 +52,6 @@ Mus8F_Game_Over_FM5:
 	smpsSetvoice        $03
 	dc.b	nRst, $30, nD7, $12, nRst, $03, nD7, $1B, nRst, $30, nG7, $12
 	dc.b	nRst, $03, nG7, $1B
-
-; PSG1 Data
-Mus8F_Game_Over_PSG1:
-; PSG2 Data
-Mus8F_Game_Over_PSG2:
-; PSG3 Data
-Mus8F_Game_Over_PSG3:
 	smpsStop
 
 ; DAC Data

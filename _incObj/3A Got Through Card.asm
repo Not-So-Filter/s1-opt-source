@@ -210,7 +210,6 @@ LevelOrder:
 		dc.b 0, 0	; Final Zone
 		dc.b 0, 0
 		even
-		zonewarning LevelOrder,8
 ; ===========================================================================
 
 Got_Move2:	; Routine $E
