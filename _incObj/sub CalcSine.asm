@@ -17,7 +17,7 @@ CalcSine:
 		add.w	d0,d0
 		move.w	Sine_Data+$80-10(pc,d0.w),d1
 		move.w	Sine_Data-10(pc,d0.w),d0
-		rts	
+		rts
 ; End of function CalcSine
 
 ; ===========================================================================

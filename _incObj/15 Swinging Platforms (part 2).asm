@@ -3,13 +3,10 @@
 
 Swing_Move:
 		move.b	(v_oscillate+$1A).w,d0
-		move.w	#$80,d1
 		btst	#0,obStatus(a0)
-		beq.s	loc_7B78
+		beq.s	Swing_Move2
 		neg.w	d0
-		add.w	d1,d0
-
-loc_7B78:
+		addi.w	#$80,d0
 		bra.s	Swing_Move2
 ; End of function Swing_Move
 

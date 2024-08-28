@@ -30,8 +30,8 @@ Pyl_Display:	; Routine 2
 		addi.w	#$100,d1
 		move.w	d1,obScreenY(a0)
 		lea	(v_spritequeue).w,a1
-		cmpi.w	#$7E,(a1)	; is this part of the queue full?
-		bhs.s	.end		; if yes, branch
+		tst.w	(a1)	; is this part of the queue full?
+		bmi.s	.end		; if yes, branch
 		addq.w	#2,(a1)		; increment sprite count
 		adda.w	(a1),a1		; jump to empty position
 		move.w	a0,(a1)		; insert RAM address for object

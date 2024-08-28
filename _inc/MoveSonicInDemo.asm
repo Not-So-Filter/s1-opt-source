@@ -12,7 +12,7 @@ MoveSonicInDemo:
 ; ===========================================================================
 
 MDemo_On:
-		tst.b	(v_jpadhold1).w	; is start button pressed?
+		tst.b	(v_jpadhold).w	; is start button pressed?
 		bpl.s	.dontquit	; if not, branch
 		move.w	#id_Title,(v_gamemode).w ; go to title screen
 
@@ -25,9 +25,9 @@ MDemo_On:
 		move.w	(v_btnpushtime1).w,d0
 		adda.w	d0,a1
 		move.b	(a1),d0
-		lea	(v_jpadhold1).w,a0
+		lea	(v_jpadhold).w,a0
 		move.b	d0,d1
-		move.b	v_jpadhold2-v_jpadhold1(a0),d2
+		move.b	v_jpadhold_stored-v_jpadhold(a0),d2
 		eor.b	d2,d0
 		move.b	d1,(a0)+
 		and.b	d1,d0

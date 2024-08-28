@@ -13,12 +13,12 @@ Sonic_Move:
 		bne.w	loc_12FEE
 		tst.b	objoff_3E(a0)
 		bne.w	Sonic_ResetScr
-		btst	#bitL,(v_jpadhold2).w ; is left being pressed?
+		btst	#bitL,(v_jpadhold_stored).w ; is left being pressed?
 		beq.s	.notleft	; if not, branch
 		bsr.w	Sonic_MoveLeft
 
 .notleft:
-		btst	#bitR,(v_jpadhold2).w ; is right being pressed?
+		btst	#bitR,(v_jpadhold_stored).w ; is right being pressed?
 		beq.s	.notright	; if not, branch
 		bsr.w	Sonic_MoveRight
 
@@ -79,7 +79,7 @@ loc_12F70:
 ; ===========================================================================
 
 Sonic_LookUp:
-		btst	#bitUp,(v_jpadhold2).w ; is up being pressed?
+		btst	#bitUp,(v_jpadhold_stored).w ; is up being pressed?
 		beq.s	Sonic_Duck	; if not, branch
 		move.b	#id_LookUp,obAnim(a0) ; use "looking up" animation
 		cmpi.w	#$C8,(v_lookshift).w
@@ -89,7 +89,7 @@ Sonic_LookUp:
 ; ===========================================================================
 
 Sonic_Duck:
-		btst	#bitDn,(v_jpadhold2).w ; is down being pressed?
+		btst	#bitDn,(v_jpadhold_stored).w ; is down being pressed?
 		beq.s	Sonic_ResetScr	; if not, branch
 		move.b	#id_Duck,obAnim(a0) ; use "ducking" animation
 		cmpi.w	#8,(v_lookshift).w
@@ -109,7 +109,7 @@ loc_12FBE:
 
 loc_12FC2:
 		moveq	#btnL+btnR,d0
-		and.b	(v_jpadhold2).w,d0	; is left/right	pressed?
+		and.b	(v_jpadhold_stored).w,d0	; is left/right	pressed?
 		bne.s	loc_12FEE	; if yes, branch
 		move.w	obInertia(a0),d0
 		beq.s	loc_12FEE
@@ -159,7 +159,6 @@ loc_13024:
 		move.w	(sp)+,d0
 		tst.w	d1
 		bpl.s	locret_1307C
-;		asl.w	#8,d1
 		move.b	d1,-(sp)
 		move.w	(sp)+,d1
 		clr.b	d1

@@ -44,7 +44,7 @@ Pole_Action:	; Routine 2
 		lea	(v_player).w,a1
 		move.w	obY(a0),d0
 		subi.w	#$18,d0
-		btst	#bitUp,(v_jpadhold1).w ; is "up" pressed?
+		btst	#bitUp,(v_jpadhold).w ; is "up" pressed?
 		beq.s	.movedown	; if not, branch
 		subq.w	#1,obY(a1)	; move Sonic up
 		cmp.w	obY(a1),d0
@@ -53,7 +53,7 @@ Pole_Action:	; Routine 2
 
 .movedown:
 		addi.w	#$24,d0
-		btst	#bitDn,(v_jpadhold1).w ; is "down" pressed?
+		btst	#bitDn,(v_jpadhold).w ; is "down" pressed?
 		beq.s	.letgo		; if not, branch
 		addq.w	#1,obY(a1)	; move Sonic down
 		cmp.w	obY(a1),d0
@@ -61,7 +61,7 @@ Pole_Action:	; Routine 2
 		move.w	d0,obY(a1)
 
 .letgo:
-		move.b	(v_jpadpress2).w,d0
+		move.b	(v_jpadpress_stored).w,d0
 		andi.b	#btnABC,d0	; is A/B/C pressed?
 		beq.s	Pole_Display	; if not, branch
 

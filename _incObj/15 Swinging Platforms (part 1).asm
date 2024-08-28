@@ -4,10 +4,16 @@
 ; ---------------------------------------------------------------------------
 
 SwingingPlatform:
+		btst	#6,obRender(a0)	; is this a child sprite object?
+		bne.s	.childDisplay		; if yes, branch
 		moveq	#0,d0
 		move.b	obRoutine(a0),d0
 		move.w	Swing_Index(pc,d0.w),d1
 		jmp	Swing_Index(pc,d1.w)
+; ===========================================================================
+.childDisplay:	; child sprite objects only need to be drawn
+		move.w	#4*$80,d0
+		bra.w	DisplaySprite2
 ; ===========================================================================
 Swing_Index:	dc.w Swing_Main-Swing_Index, Swing_SetSolid-Swing_Index
 		dc.w Swing_Action2-Swing_Index,	Swing_Delete-Swing_Index
@@ -48,7 +54,6 @@ Swing_Main:	; Routine 0
 		move.b	#$C,obRoutine(a0) ; goto Swing_Action next
 
 .length:
-		move.b	obID(a0),d4
 		moveq	#0,d1
 		lea	obSubtype(a0),a2 ; move chain length to a2
 		move.b	(a2),d1		; move a2 to d1
@@ -79,7 +84,7 @@ Swing_Main:	; Routine 0
 		andi.w	#$7F,d5
 		move.b	d5,(a2)+
 		move.b	#8,obRoutine(a1) ; goto Swing_Display next
-		move.b	d4,obID(a1)	; load swinging	object
+		move.b	obID(a0),obID(a1)	; load swinging	object
 		move.l	obMap(a0),obMap(a1)
 		move.w	obGfx(a0),obGfx(a1)
 		bclr	#6,obGfx(a1)

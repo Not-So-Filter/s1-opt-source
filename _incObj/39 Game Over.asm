@@ -53,7 +53,7 @@ Over_SetWait:
 ; ===========================================================================
 
 Over_Wait:	; Routine 4
-		move.b	(v_jpadpress1).w,d0
+		move.b	(v_jpadpress).w,d0
 		andi.b	#btnABC,d0	; is button A, B or C pressed?
 		bne.s	Over_ChgMode	; if yes, branch
 		btst	#0,obFrame(a0)

@@ -427,11 +427,11 @@ loc_1A216:
 		cmpi.w	#boss_fz_end+$90,(v_player+obX).w
 		blt.s	loc_1A23A
 		move.b	#1,(f_lockctrl).w
-		move.w	#0,(v_jpadhold2).w
+		move.w	#0,(v_jpadhold_stored).w
 		clr.w	(v_player+obInertia).w
 		tst.w	obVelY(a0)
 		bpl.s	loc_1A248
-		move.w	#$100,(v_jpadhold2).w
+		move.w	#btnUp<<8,(v_jpadhold_stored).w
 
 loc_1A23A:
 		cmpi.w	#boss_fz_end+$E0,(v_player+obX).w

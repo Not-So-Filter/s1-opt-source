@@ -16,9 +16,9 @@ Sonic_Roll:
 		cmpi.w	#$80,d0		; is Sonic moving at $80 speed or faster?
 		blo.s	Sonic_ChkRoll.ismoving	; if not, branch
 		moveq	#btnL+btnR,d0	; is left/right	being pressed?
-		and.b	(v_jpadhold2).w,d0
+		and.b	(v_jpadhold_stored).w,d0
 		bne.s	Sonic_ChkRoll.ismoving	; if yes, branch
-		btst	#bitDn,(v_jpadhold2).w ; is down being pressed?
+		btst	#bitDn,(v_jpadhold_stored).w ; is down being pressed?
 		beq.s	Sonic_ChkRoll.ismoving	; if not, branch
 
 Sonic_ChkRoll:

@@ -26,8 +26,8 @@ MPCM_YM2612_D1:		equ	$A04003
 z80_ram:		equ $A00000	; start of Z80 RAM
 z80_ram_end:		equ $A02000	; end of non-reserved Z80 RAM
 z80_version:		equ $A10001
-z80_port_1_data:	equ $A10002
-z80_port_1_control:	equ $A10008
+z80_port_1_data:	equ $A10003
+z80_port_1_control:	equ $A10009
 z80_port_2_control:	equ $A1000A
 z80_expansion_control:	equ $A1000C
 z80_bus_request:	equ $A11100

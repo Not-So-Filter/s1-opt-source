@@ -136,10 +136,10 @@ v_snddriver_ram:	SMPS_RAM		; sound driver state
 			ds.b	$A0		; unused
 
 v_gamemode:		ds.w	1		; game mode (00=Sega; 04=Title; 08=Demo; 0C=Level; 10=SS; 14=Cont; 18=End; 1C=Credit; +8C=PreLevel)
-v_jpadhold2:		ds.b	1		; joypad input - held, duplicate
-v_jpadpress2:		ds.b	1		; joypad input - pressed, duplicate
-v_jpadhold1:		ds.b	1		; joypad input - held
-v_jpadpress1:		ds.b	1		; joypad input - pressed
+v_jpadhold_stored:	ds.b	1		; joypad input - held (storage)
+v_jpadpress_stored:	ds.b	1		; joypad input - pressed (storage)
+v_jpadhold:		ds.b	1		; joypad input - held
+v_jpadpress:		ds.b	1		; joypad input - pressed
 			ds.b	6		; unused
 v_vdp_buffer1:		ds.w	1		; VDP instruction buffer
 			ds.b	6		; unused

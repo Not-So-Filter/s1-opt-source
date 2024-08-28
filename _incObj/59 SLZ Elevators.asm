@@ -180,7 +180,6 @@ Elev_Types:
 		bset	#1,obStatus(a1)
 		bclr	#3,obStatus(a1)
 		move.b	#2,obRoutine(a1)
-
 .delete:
 		bra.w	DeleteObject
 

@@ -27,7 +27,7 @@ Surf_Action:	; Routine 2
 		move.w	(v_screenposx).w,d1
 		andi.w	#$FFE0,d1
 		add.w	surf_origX(a0),d1
-		btst	#bitStart,(v_jpadpress1).w ; is Start button pressed?
+		btst	#bitStart,(v_jpadpress).w ; is Start button pressed?
 		bne.s	.even	; if yes, branch
 		btst	#0,(v_framebyte).w
 		beq.s	.even		; branch on even frames
@@ -38,7 +38,7 @@ Surf_Action:	; Routine 2
 		move.w	(v_waterpos1).w,obY(a0)	; match	obj y-position to water	height
 		tst.b	surf_freeze(a0)
 		bne.s	.stopped
-		btst	#bitStart,(v_jpadpress1).w ; is Start button pressed?
+		btst	#bitStart,(v_jpadpress).w ; is Start button pressed?
 		beq.s	.animate	; if not, branch
 		addq.b	#3,obFrame(a0)	; use different	frames
 		move.b	#1,surf_freeze(a0) ; stop animation

@@ -7,7 +7,7 @@
 
 Sonic_Jump:
 		moveq	#btnABC,d0	; is A, B or C pressed?
-		and.b	(v_jpadpress2).w,d0
+		and.b	(v_jpadpress_stored).w,d0
 		beq.s	Sonic_ChkRoll.ismoving	; if not, branch
 		moveq	#0,d0
 		move.b	obAngle(a0),d0

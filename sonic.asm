@@ -42,12 +42,12 @@ Vectors:	dc.l 0				; Initial stack pointer value
 		dc.l ChkInstr			; CHK exception
 		dc.l TrapvInstr			; TRAPV exception (8)
 		dc.l PrivilegeViol		; Privilege violation
-		dc.l Trace				; TRACE exception
+		dc.l Trace			; TRACE exception
 		dc.l Line1010Emu		; Line-A emulator
 		dc.l Line1111Emu		; Line-F emulator (12)
 		dc.l ErrorExcept		; Unused (reserved)
-		dc.l ErrorExcept		; Unused (reserved)
-		dc.l ErrorExcept		; Unused (reserved)
+		dc.l CoProcessViol		; Co-processor protocol violation (14)
+		dc.l FormatError		; Format error
 		dc.l ErrorExcept		; Unused (reserved) (16)
 		dc.l ErrorExcept		; Unused (reserved)
 		dc.l ErrorExcept		; Unused (reserved)
@@ -129,7 +129,7 @@ ErrorTrap:
 
 EntryPoint:
 		lea	(v_systemstack).w,sp
-		tst.l	(z80_port_1_control).l ; test port A & B control registers
+		tst.l	(z80_port_1_control-1).l ; test port A & B control registers
 		bne.s	PortA_Ok
 		tst.w	(z80_expansion_control).l ; test port C control register
 
@@ -342,7 +342,7 @@ GameInit:
 .SampleTableOk:
 		bsr.w	InitDMAQueue
 		bsr.w	VDPSetupGame
-		lea	(z80_port_1_control+1).l,a0	; init port 1 (joypad 1)
+		lea	(z80_port_1_control).l,a0	; init port 1 (joypad 1)
 		moveq	#$40,d0
 		move.b	d0,(a0)	; init port 1 (joypad 1)
 		move.b	d0,2(a0)	; init port 2 (joypad 2)
@@ -613,8 +613,8 @@ HInt2_Do_Updates:
 
 
 ReadJoypads:
-		lea	(v_jpadhold1).w,a0 ; address where joypad states are written
-		lea	(z80_port_1_data+1).l,a1	; first	joypad port
+		lea	(v_jpadhold).w,a0	; address where joypad states are written
+		lea	(z80_port_1_data).l,a1	; first	joypad port
 		clr.b	(a1)
 		nop
 		nop
@@ -649,7 +649,7 @@ VDPSetupGame:
 		dbf	d7,.setreg	; set the VDP registers
 
 		move.w	VDPSetupArray+2(pc),(v_vdp_buffer1).w
-		move.w	#$8A00+223,(v_hbla_hreg).w	; H-INT every 224th scanline
+		move.w	#$8A00+224-1,(v_hbla_hreg).w	; H-INT every 224th scanline
 		moveq	#0,d0
 		move.l	#$C0000000,(vdp_control_port).l ; set VDP to CRAM write
 		moveq	#bytesToLcnt(v_palette_end-v_palette),d7
@@ -1717,7 +1717,7 @@ Sega_WaitEnd:
 		bsr.w	WaitForVBla
 		tst.w	(v_demolength).w ; has demo length reached 0?
 		beq.s	Sega_GotoTitle	; if so, go to the title screen
-		tst.b	(v_jpadpress1).w ; is Start button pressed?
+		tst.b	(v_jpadpress).w ; is Start button pressed?
 		bpl.s	Sega_WaitEnd	; if not, branch
 
 Sega_GotoTitle:
@@ -1895,7 +1895,7 @@ Tit_RegionJap:
 Tit_EnterCheat:
 		move.w	(v_title_dcount).w,d0
 		adda.w	d0,a0
-		move.b	(v_jpadpress1).w,d0 ; get button press
+		move.b	(v_jpadpress).w,d0 ; get button press
 		andi.b	#btnDir,d0	; read only UDLR buttons
 		cmp.b	(a0),d0		; does button press match the cheat code?
 		bne.s	Tit_ResetCheat	; if not, branch
@@ -1928,20 +1928,20 @@ Tit_ResetCheat:
 
 Tit_CountC:
 		moveq	#btnC,d0	; is C button pressed?
-		and.b	(v_jpadpress1).w,d0
+		and.b	(v_jpadpress).w,d0
 		beq.s	loc_3230	; if not, branch
 		addq.w	#1,(v_title_ccount).w ; increment C counter
 
 loc_3230:
 		tst.w	(v_demolength).w
 		beq.w	GotoDemo
-		tst.b	(v_jpadpress1).w ; check if Start is pressed
+		tst.b	(v_jpadpress).w ; check if Start is pressed
 		bpl.w	Tit_MainLoop	; if not, branch
 
 Tit_ChkLevSel:
 		tst.b	(f_levselcheat).w ; check if level select code is on
 		beq.w	PlayLevel	; if not, play level
-		btst	#bitA,(v_jpadhold1).w ; check if A is pressed
+		btst	#bitA,(v_jpadhold).w ; check if A is pressed
 		beq.w	PlayLevel	; if not, play level
 
 		moveq	#palid_LevelSel,d0
@@ -1972,7 +1972,7 @@ LevelSelect:
 		bsr.w	RunPLC
 		tst.l	(v_plc_buffer).w
 		bne.s	LevelSelect
-		andi.b	#btnABC+btnStart,(v_jpadpress1).w ; is A, B, C, or Start pressed?
+		andi.b	#btnABC+btnStart,(v_jpadpress).w ; is A, B, C, or Start pressed?
 		beq.s	LevelSelect	; if not, branch
 		move.w	(v_levselitem).w,d0
 		cmpi.w	#$14,d0		; have you selected item $14 (sound test)?
@@ -2062,7 +2062,7 @@ loc_33B6:
 ; ===========================================================================
 
 loc_33E4:
-		tst.b	(v_jpadpress1).w ; is Start button pressed?
+		tst.b	(v_jpadpress).w ; is Start button pressed?
 		bmi.w	Tit_ChkLevSel	; if yes, branch
 		tst.w	(v_demolength).w
 		bne.s	loc_33B6
@@ -2103,7 +2103,7 @@ Demo_Levels:	binclude	"misc/Demo Level Order - Intro.bin"
 
 
 LevSelControls:
-		move.b	(v_jpadpress1).w,d1
+		move.b	(v_jpadpress).w,d1
 		andi.b	#btnUp+btnDn,d1	; is up/down pressed and held?
 		bne.s	LevSel_UpDown	; if yes, branch
 		subq.b	#1,(v_levseldelay).w ; subtract 1 from time to next move
@@ -2111,7 +2111,7 @@ LevSelControls:
 
 LevSel_UpDown:
 		move.b	#$B,(v_levseldelay).w ; reset time delay
-		move.b	(v_jpadhold1).w,d1
+		move.b	(v_jpadhold).w,d1
 		andi.b	#btnUp+btnDn,d1	; is up/down pressed?
 		beq.s	LevSel_SndTest	; if not, branch
 		move.w	(v_levselitem).w,d0
@@ -2140,7 +2140,7 @@ LevSel_NoMove:
 LevSel_SndTest:
 		cmpi.w	#$14,(v_levselitem).w ; is item $14 selected?
 		bne.s	LevSel_NoMove	; if not, branch
-		move.b	(v_jpadpress1).w,d1
+		move.b	(v_jpadpress).w,d1
 		andi.b	#btnR+btnL,d1	; is left/right	pressed?
 		beq.s	LevSel_NoMove	; if not, branch
 		move.w	(v_levselsound).w,d0
@@ -2409,15 +2409,15 @@ Level_ChkDebug:
 	if DebuggingMode
 		tst.b	(f_debugcheat).w ; has debug cheat been entered?
 		beq.s	Level_ChkWater	; if not, branch
-		btst	#bitA,(v_jpadhold1).w ; is A button held?
+		btst	#bitA,(v_jpadhold).w ; is A button held?
 		beq.s	Level_ChkWater	; if not, branch
 		move.b	#1,(f_debugmode).w ; enable debug mode
 	endif
 
 Level_ChkWater:
 		moveq	#0,d0
-		move.w	d0,(v_jpadhold2).w
-		move.w	d0,(v_jpadhold1).w
+		move.w	d0,(v_jpadhold_stored).w
+		move.w	d0,(v_jpadhold).w
 		tst.b	(f_water).w ; does level have water?
 		beq.s	Level_LoadObj	; if not, branch
 		move.b	#id_WaterSurface,(v_watersurface1).w ; load water surface object
@@ -3888,7 +3888,6 @@ Map_ADoor:	include	"_maps/SBZ Small Door.asm"
 		include	"_incObj/24, 27 & 3F Explosions.asm"
 		include	"_anim/Ball Hog.asm"
 Map_Hog:	include	"_maps/Ball Hog.asm"
-Map_MisDissolve:include	"_maps/Buzz Bomber Missile Dissolve.asm"
 		include	"_maps/Explosions.asm"
 
 		include	"_incObj/28 Animals.asm"
@@ -5225,7 +5224,7 @@ Sonic_Control:	; Routine 2
 	if DebuggingMode
 		tst.w	(f_debugmode).w	; is debug cheat enabled?
 		beq.s	loc_12C58	; if not, branch
-		btst	#bitB,(v_jpadpress1).w ; is button B pressed?
+		btst	#bitB,(v_jpadpress).w ; is button B pressed?
 		beq.s	loc_12C58	; if not, branch
 		move.w	#1,(v_debuguse).w ; change Sonic into a ring/item
 		clr.b	(f_lockctrl).w
@@ -5236,7 +5235,7 @@ Sonic_Control:	; Routine 2
 loc_12C58:
 		tst.b	(f_lockctrl).w	; are controls locked?
 		bne.s	loc_12C64	; if yes, branch
-		move.w	(v_jpadhold1).w,(v_jpadhold2).w ; enable joypad control
+		move.w	(v_jpadhold).w,(v_jpadhold_stored).w ; enable joypad control
 
 loc_12C64:
 		tst.b	(f_playerctrl).w ; are controls locked?

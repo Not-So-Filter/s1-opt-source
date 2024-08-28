@@ -63,6 +63,12 @@ Line1111Emu:
 
 ErrorExcept:
 	__ErrorMessage "ERROR EXCEPTION", _eh_default
+	
+CoProcessViol:
+	__ErrorMessage "CO-PROCESSOR PROTOCOL VIOLATION", _eh_default
+	
+FormatError:
+	__ErrorMessage "FORMAT ERROR", _eh_default
 
 
 

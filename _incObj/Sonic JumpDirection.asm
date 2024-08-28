@@ -12,7 +12,7 @@ Sonic_JumpDirection:
 		btst	#4,obStatus(a0)
 		bne.s	Obj01_ResetScr2
 		move.w	obVelX(a0),d0
-		btst	#bitL,(v_jpadhold2).w ; is left being pressed?
+		btst	#bitL,(v_jpadhold_stored).w ; is left being pressed?
 		beq.s	loc_13278	; if not, branch
 		bset	#0,obStatus(a0)
 		sub.w	d5,d0
@@ -26,7 +26,7 @@ Sonic_JumpDirection:
 		move.w	d1,d0
 
 loc_13278:
-		btst	#bitR,(v_jpadhold2).w ; is right being pressed?
+		btst	#bitR,(v_jpadhold_stored).w ; is right being pressed?
 		beq.s	Obj01_JumpMove	; if not, branch
 		bclr	#0,obStatus(a0)
 		add.w	d5,d0

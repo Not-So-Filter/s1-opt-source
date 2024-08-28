@@ -17,7 +17,7 @@ loc_134AE:
 		cmp.w	obVelY(a0),d1
 		ble.s	locret_134C2
 		moveq	#btnABC,d0	; is A, B or C pressed?
-		and.b	(v_jpadhold2).w,d0
+		and.b	(v_jpadhold_stored).w,d0
 		bne.s	locret_134C2	; if yes, branch
 		move.w	d1,obVelY(a0)
 
