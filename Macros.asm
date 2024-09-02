@@ -1,3 +1,51 @@
+; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+; simplifying macros and functions
+
+; makes a VDP command
+vdpComm function addr,type,rwd,(((type&rwd)&3)<<30)|((addr&$3FFF)<<16)|(((type&rwd)&$FC)<<2)|((addr&$C000)>>14)
+
+; values for the type argument
+VRAM = %100001
+CRAM = %101011
+VSRAM = %100101
+
+; values for the rwd argument
+READ = %001100
+WRITE = %000111
+DMA = %100111
+
+; function to calculate the location of a tile in plane mappings
+planeLoc function width,col,line,(((width * line) + col) * 2)
+
+; macro formatting text for the game's menus
+menutxt	macro	text
+	dc.b	strlen(text)-1
+	dc.b	text
+	endm
+	
+; macros for defining animated PLC script lists
+zoneanimstart macro {INTLABEL}
+__LABEL__ label *
+zoneanimcount := 0
+zoneanimcur := "__LABEL__"
+	dc.w zoneanimcount___LABEL__	; Number of scripts for a zone (-1)
+    endm
+
+zoneanimend macro
+zoneanimcount_{"\{zoneanimcur}"} = zoneanimcount-1
+    endm
+
+zoneanimdeclanonid := 0
+
+zoneanimdecl macro duration,artaddr,vramaddr,numentries,numvramtiles
+zoneanimdeclanonid := zoneanimdeclanonid + 1
+start:
+	dc.l (duration&$FF)<<24|dmaSource(artaddr)
+	dc.w tiles_to_bytes(vramaddr)
+	dc.b numentries, numvramtiles
+zoneanimcount := zoneanimcount + 1
+    endm
+
 ; ---------------------------------------------------------------------------
 ; Set a VRAM address via the VDP control port.
 ; input: 16-bit VRAM address, control port (default is (vdp_control_port).l)

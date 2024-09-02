@@ -54,6 +54,7 @@ id_Sega:	equ ptr_GM_Sega-GameModeArray	; $00
 id_Title:	equ ptr_GM_Title-GameModeArray	; $04
 id_Demo:	equ ptr_GM_Demo-GameModeArray	; $08
 id_Level:	equ ptr_GM_Level-GameModeArray	; $0C
+id_Menu:	equ ptr_GM_Menu-GameModeArray	; $10
 
 ; Vertical interrupt modes
 id_VB_00:	equ ptr_VB_00-VBla_Index	; $00
@@ -63,6 +64,7 @@ id_VB_06:	equ ptr_VB_06-VBla_Index	; $06
 id_VB_08:	equ ptr_VB_08-VBla_Index	; $08
 id_VB_0A:	equ ptr_VB_0A-VBla_Index	; $0A
 id_VB_0C:	equ ptr_VB_0C-VBla_Index	; $0C
+VintID_Menu:	equ ptr_VB_0E-VBla_Index	; $0E
 
 ; Levels
 id_GHZ:		equ 0
@@ -474,7 +476,36 @@ boss_fz_x:	equ $2450		; Final Zone
 boss_fz_y:	equ $510
 boss_fz_end:	equ boss_fz_x+$2B0
 
+palette_line_0:	equ (0<<13)
+palette_line_1:	equ (1<<13)
+palette_line_2:	equ (2<<13)
+palette_line_3:	equ (3<<13)
+
+; Other sizes
+palette_line_size: equ	$10*2	; 16 word entries
+
+; ---------------------------------------------------------------------------
+; VRAM and tile art base addresses.
+; VRAM Reserved regions.
+VRAM_Plane_A_Name_Table:	equ $C000	; Extends until $CFFF
+VRAM_Plane_B_Name_Table:	equ $E000	; Extends until $EFFF
+
+; VRAM Reserved regions, menu screen.
+VRAM_Menu_Plane_A_Name_Table:	equ $C000	; Extends until $CFFF
+VRAM_Menu_Plane_B_Name_Table:	equ $E000	; Extends until $EFFF
+VRAM_Menu_Plane_Table_Size:	equ $1000	; 64 cells x 32 cells x 2 bytes per cell
+
 ; Tile VRAM Locations
+ArtTile_VRAM_Start:		equ $000
+
+; Common to 1p and 2p menus.
+ArtTile_ArtNem_FontStuff:	equ $010
+
+; Menu background.
+ArtTile_ArtNem_MenuBox:		equ $070
+
+; Level select icons.
+ArtTile_ArtNem_LevelSelectPics:	equ $090
 
 ; Shared
 ArtTile_GHZ_MZ_Swing:		equ $380

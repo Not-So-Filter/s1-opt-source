@@ -20,41 +20,48 @@ PSG_Index:
 		dc.l PSG4, PSG5, PSG6
 		dc.l PSG7, PSG8, PSG9
 PSG1:		binclude "sound/psg/psg1.bin"
+		even
 PSG2:		binclude "sound/psg/psg2.bin"
+		even
 PSG3:		binclude "sound/psg/psg3.bin"
+		even
 PSG4:		binclude "sound/psg/psg4.bin"
+		even
 PSG6:		binclude "sound/psg/psg6.bin"
+		even
 PSG5:		binclude "sound/psg/psg5.bin"
+		even
 PSG7:		binclude "sound/psg/psg7.bin"
+		even
 PSG8:		binclude "sound/psg/psg8.bin"
+		even
 PSG9:		binclude "sound/psg/psg9.bin"
+		even
 ; ---------------------------------------------------------------------------
 ; New tempos for songs during speed shoes
 ; ---------------------------------------------------------------------------
-; DANGER! several songs will use the first few bytes of MusicIndex as their main
-; tempos while speed shoes are active. If you don't want that, you should add
-; their "correct" sped-up main tempos to the list.
 ; byte_71A94:
 SpeedUpIndex:
-		dc.b 7		; GHZ
+		dc.b $07	; GHZ
 		dc.b $72	; LZ
 		dc.b $73	; MZ
 		dc.b $26	; SLZ
 		dc.b $15	; SYZ
-		dc.b 8		; SBZ
+		dc.b $08	; SBZ
 		dc.b $FF	; Invincibility
-		dc.b 5		; Extra Life
-		;dc.b ?		; Special Stage
-		;dc.b ?		; Title Screen
-		;dc.b ?		; Ending
-		;dc.b ?		; Boss
-		;dc.b ?		; FZ
-		;dc.b ?		; Sonic Got Through
-		;dc.b ?		; Game Over
-		;dc.b ?		; Continue Screen
-		;dc.b ?		; Credits
-		;dc.b ?		; Drowning
-		;dc.b ?		; Get Emerald
+		dc.b $05	; Extra Life
+		dc.b $08	; Special Stage
+		dc.b $05	; Title Screen
+		dc.b $05	; Ending
+		dc.b $04	; Boss
+		dc.b $06	; FZ
+		dc.b $03	; Sonic Got Through
+		dc.b $13	; Game Over
+		dc.b $07	; Continue Screen
+		dc.b $33	; Credits
+		dc.b $02	; Drowning
+		dc.b $06	; Get Emerald
+		even
 
 ; ---------------------------------------------------------------------------
 ; Music	Pointers
@@ -122,7 +129,7 @@ UpdateSMPS:
 ; loc_71BB2:
 .skipfadein:
 		lea	SMPS_RAM.v_soundqueue0(a6),a1	; load sound queues
-		tst.w	(a1)	; is a music or sound queued for playing?
+		tst.l	(a1)	; is a music or sound queued for playing?
 		beq.s	.nosndinput			; if not, branch
 		bsr.w	CycleSoundQueue
 ; loc_71BBC:
@@ -572,8 +579,8 @@ CycleSoundQueue:
 ; loc_71F12:
 .inputloop:
 		move.b	(a1),d0				; move track number to d0
-		move.b	d0,d1
 		clr.b	(a1)+				; Clear entry
+		move.b	d0,d1
 		subq.b	#bgm__First,d0			; Make it into 0-based index
 		blo.s	.nextinput
 		move.b	(a0,d0.w),d2			; Get sound type
@@ -1087,7 +1094,7 @@ InitMusicPlayback:
 		move.b	SMPS_RAM.f_1up_playing(a6),d2
 		move.b	SMPS_RAM.f_speedup(a6),d3
 		move.b	SMPS_RAM.v_fadein_counter(a6),d4
-		move.w	SMPS_RAM.v_soundqueue0(a6),d5
+		move.l	SMPS_RAM.v_soundqueue0(a6),d5
 		move.w	#((SMPS_RAM.v_1up_ram_end-SMPS_RAM.v_1up_ram)/4)-1,d0	; Clear $220 bytes: all variables and music track data
 ; loc_725E4:
 .clearramloop:
@@ -1099,7 +1106,7 @@ InitMusicPlayback:
 		move.b	d2,SMPS_RAM.f_1up_playing(a6)
 		move.b	d3,SMPS_RAM.f_speedup(a6)
 		move.b	d4,SMPS_RAM.v_fadein_counter(a6)
-		move.w	d5,SMPS_RAM.v_soundqueue0(a6)
+		move.l	d5,SMPS_RAM.v_soundqueue0(a6)
 		clr.b	SMPS_RAM.v_sound_id(a6)	; set music to $80 (silence)
 		lea	SMPS_RAM.v_music_track_ram+SMPS_Track.VoiceControl(a6),a1
 		lea	FMDACInitBytes(pc),a2

@@ -265,7 +265,6 @@ Solid_Landed:
 		tst.w	obVelY(a1)	; is Sonic moving upwards?
 		bmi.s	Solid_Miss	; if yes, branch
 		sub.w	d3,obY(a1)	; correct Sonic's position
-		subq.w	#1,obY(a1)
 		bsr.s	Solid_ResetFloor
 		move.b	#2,obSolid(a0) ; set standing flags
 		bset	#3,obStatus(a0)

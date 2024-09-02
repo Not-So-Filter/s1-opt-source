@@ -30,28 +30,29 @@ v_ram_start:
 v_128x128:		ds.b	256*128		; 128x128 tile mappings ($FF chunks)
 v_128x128_end:
 
-;Kos_decomp_buffer:	ds.b	$1000		; each module in a KosM archive is decompressed here and then DMAed to VRAM
-;Kos_decomp_buffer_end:
-;Kos_decomp_queue_count:	ds.w	1		; the number of pieces of data on the queue. Sign bit set indicates a decompression is in progress
-;Kos_decomp_stored_Wregisters:	ds.w	7	; allows decompression to be spread over multiple frames
-;Kos_decomp_stored_Lregisters:	ds.l	3	; allows decompression to be spread over multiple frames
-;Kos_decomp_stored_registers:	=	Kos_decomp_stored_Wregisters
-;Kos_decomp_stored_registers_End:	=	*
-;Kos_decomp_stored_SR:	ds.w	1
-;Kos_decomp_bookmark:	ds.l	1		; the address within the Kosinski queue processor at which processing is to be resumed
-;Kos_description_field:	ds.w	1		; used by the Kosinski queue processor the same way the stack is used by the normal Kosinski decompression routine
-;Kos_decomp_queue:	ds.l	2*4		; 2 longwords per entry, first is source location and second is decompression location
-;Kos_decomp_queue_End:
-;Kos_decomp_source: =	Kos_decomp_queue	; long ; the compressed data location for the first entry in the queue
-;Kos_decomp_destination: =	Kos_decomp_queue+4	; long ; the decompression location for the first entry in the queue
-;Kos_modules_left:	ds.w	1		; the number of modules left to decompresses. Sign bit set indicates a module is being decompressed/has been decompressed
-;Kos_last_module_size:	ds.w	1		; the uncompressed size of the last module in words. All other modules are $800 words
-;Kos_module_queue:	ds.w	3*4		; 6 bytes per entry, first longword is source location and next word is VRAM destination
-;Kos_module_queue_End:
-;Kos_module_source: =	Kos_module_queue	; long ; the compressed data location for the first module in the queue
-;Kos_module_destination: =	Kos_module_queue+4	; word ; the VRAM destination for the first module in the queue
+Kos_decomp_buffer:	ds.b	$1000		; each module in a KosM archive is decompressed here and then DMAed to VRAM
+Kos_decomp_buffer_end:
+Kos_decomp_queue_count:	ds.w	1		; the number of pieces of data on the queue. Sign bit set indicates a decompression is in progress
+Kos_decomp_stored_Wregisters:	ds.w	7	; allows decompression to be spread over multiple frames
+Kos_decomp_stored_Lregisters:	ds.l	3	; allows decompression to be spread over multiple frames
+Kos_decomp_stored_registers:	=	Kos_decomp_stored_Wregisters
+Kos_decomp_stored_registers_End:	=	*
+Kos_decomp_stored_SR:	ds.w	1
+Kos_decomp_bookmark:	ds.l	1		; the address within the Kosinski queue processor at which processing is to be resumed
+Kos_description_field:	ds.w	1		; used by the Kosinski queue processor the same way the stack is used by the normal Kosinski decompression routine
+Kos_decomp_queue:	ds.l	2*4		; 2 longwords per entry, first is source location and second is decompression location
+Kos_decomp_queue_End:
+Kos_decomp_source: =	Kos_decomp_queue	; long ; the compressed data location for the first entry in the queue
+Kos_decomp_destination: =	Kos_decomp_queue+4	; long ; the decompression location for the first entry in the queue
+Kos_modules_left:	ds.w	1		; the number of modules left to decompresses. Sign bit set indicates a module is being decompressed/has been decompressed
+Kos_last_module_size:	ds.w	1		; the uncompressed size of the last module in words. All other modules are $800 words
+Kos_module_queue:	ds.w	3*4		; 6 bytes per entry, first longword is source location and next word is VRAM destination
+Kos_module_queue_End:
+Kos_module_source: =	Kos_module_queue	; long ; the compressed data location for the first module in the queue
+Kos_module_destination: =	Kos_module_queue+4	; word ; the VRAM destination for the first module in the queue
 
-;			ds.b	$13A0		; unused
+Kos_module_end:
+
 Ring_Positions:		ds.b	Rings_Space
 Ring_Positions_End:
 
@@ -61,15 +62,13 @@ Ring_start_addr_RAM:	ds.w	1
 Perfect_rings_left:	ds.w	1
 Ring_consumption_table:	ds.b	$80
 Ring_consumption_table_End:
-			ds.b	$1F74		; unused
-v_endflowerbuffer:
+			ds.b	$F14		; unused
 
 v_lvllayoutfg:		ds.l	1		; level layout ROM address (4 bytes)
 v_lvllayoutbg:		ds.l	1		; background layout ROM address (4 bytes)
 			ds.b	$3F8		; unused
 v_bgscroll_buffer:	ds.b	$200		; background scroll buffer
-v_ngfx_buffer:		ds.b	$200		; Nemesis graphics decompression buffer
-v_ngfx_buffer_end:
+			ds.b	$200		; unused
 
 v_spritequeue:		SpriteQueue		; sprite display queue, in order of priority (in this case, there is only 0 up to 7, so multiply by 7+1)
 v_spritequeue_end:
@@ -179,18 +178,7 @@ f_doupdatesinhblank:	ds.b	1		; defers performing various tasks to the Horizontal
 v_pal_buffer:		ds.b	$30		; palette data buffer (used for palette cycling)
 v_misc_variables_end:
 
-v_plc_buffer:		ds.b	6*16		; pattern load cues buffer (maximum $10 PLCs)
-v_plc_buffer_only_end:
-v_plc_ptrnemcode:	ds.l	1		; pointer for nemesis decompression code ($1502 or $150C)
-v_plc_repeatcount:	ds.l	1
-v_plc_paletteindex:	ds.l	1
-v_plc_previousrow:	ds.l	1
-v_plc_dataword:		ds.l	1
-v_plc_shiftvalue:	ds.l	1
-v_plc_patternsleft:	ds.w	1
-v_plc_framepatternsleft:ds.w	1
-			ds.b	4		; unused
-v_plc_buffer_end:
+			ds.b	$80		; unused
 
 v_levelvariables:				; variables that are reset between levels
 v_screenposx:		ds.l	1		; screen position x
@@ -293,8 +281,10 @@ v_palette_water:	ds.b	$80		; main underwater palette
 v_palette_water_end:
 v_palette:		ds.b	$80		; main palette
 v_palette_end:
+Normal_palette_line3: = v_palette+$40
 v_palette_fading:	ds.b	$80		; duplicate palette, used for transitions
 v_palette_fading_end:
+Target_palette_line3: = v_palette_fading+$40
 v_objstate:		ds.b	$C0		; object state list
 v_objstate_end:
 			ds.b	$140		; stack
@@ -427,24 +417,6 @@ v_ram_end:
     if * > 0	; Don't declare more space than the RAM can contain!
 	fatal "The RAM variable declarations are too large by $\{*} bytes."
     endif
-	dephase
-
-; Special stage
-v_ssbuffer1		= v_128x128
-v_ssblockbuffer		= v_ssbuffer1+$1020 ; ($2000 bytes)
-v_ssblockbuffer_end	= v_ssblockbuffer+$80*$40
-v_ssbuffer2		= v_128x128+$4000
-v_ssblocktypes		= v_ssbuffer2
-v_ssitembuffer		= v_ssbuffer2+$400 ; ($100 bytes)
-v_ssitembuffer_end	= v_ssitembuffer+$100
-v_ssbuffer3		= v_128x128+$8000
-v_ssscroll_buffer	= v_ngfx_buffer+$100
-
-; Error handler
-	phase v_objstate
-v_regbuffer:	ds.b	$40	; stores registers d0-a7 during an error event
-v_spbuffer:	ds.l	1	; stores most recent sp address
-v_errortype:	ds.b	1	; error type
 	dephase
 
 	!org 0

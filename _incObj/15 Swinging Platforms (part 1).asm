@@ -54,8 +54,8 @@ Swing_Main:	; Routine 0
 		move.b	#$C,obRoutine(a0) ; goto Swing_Action next
 
 .length:
-		moveq	#0,d1
 		lea	obSubtype(a0),a2 ; move chain length to a2
+		moveq	#0,d1
 		move.b	(a2),d1		; move a2 to d1
 		move.w	d1,-(sp)
 		andi.w	#$F,d1

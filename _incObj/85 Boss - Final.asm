@@ -116,7 +116,7 @@ off_19E80:	dc.w loc_19E90-off_19E80, loc_19EA8-off_19E80
 ; ===========================================================================
 
 loc_19E90:
-		tst.l	(v_plc_buffer).w
+		tst.w	(Kos_modules_left).w
 		bne.s	loc_19EA2
 		cmpi.w	#boss_fz_x,(v_screenposx).w
 		blo.s	loc_19EA2

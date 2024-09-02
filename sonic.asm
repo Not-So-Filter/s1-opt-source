@@ -368,6 +368,8 @@ ptr_GM_Demo:	bra.w	GM_Level	; Demo Mode ($08)
 
 ptr_GM_Level:	bra.w	GM_Level	; Normal Level ($0C)
 
+ptr_GM_Menu:	bra.w	GM_MenuScreen	; Level Select ($10)
+
 ; ===========================================================================
 
 CheckSumError:
@@ -420,6 +422,7 @@ ptr_VB_06:	dc.w VBla_08
 ptr_VB_08:	dc.w VBla_0C
 ptr_VB_0A:	dc.w VBla_12
 ptr_VB_0C:	dc.w VBla_14
+ptr_VB_0E:	dc.w Vint_Menu
 ; ===========================================================================
 
 VBla_00:
@@ -461,13 +464,12 @@ VBla_14:
 VBla_04:
 		bsr.w	sub_106E
 		bsr.w	LoadTilesAsYouMove_BGOnly
-		bsr.w	sub_1642
 		tst.w	(v_demolength).w
 		beq.s	.end
 		subq.w	#1,(v_demolength).w
 
 .end:
-		rts
+		bra.w	Set_Kos_Bookmark
 ; ===========================================================================
 
 VBla_08:
@@ -494,7 +496,7 @@ VBla_08:
 		cmpi.b	#96,(v_hbla_line).w
 		bhs.s	Demo_Time
 		st.b	(f_doupdatesinhblank).w
-		rts
+		bra.w	Set_Kos_Bookmark
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to	run a demo for an amount of time
@@ -507,13 +509,12 @@ Demo_Time:
 		bsr.w	LoadTilesAsYouMove
 		jsr	(AnimateLevelGfx).l
 		jsr	(HUD_Update).l
-		bsr.w	ProcessDPLC2
 		tst.w	(v_demolength).w ; is there time left on the demo?
 		beq.s	.end		; if not, branch
 		subq.w	#1,(v_demolength).w ; subtract 1 from time left
 
 .end:
-		rts
+		bra.w	Set_Kos_Bookmark
 ; End of function Demo_Time
 
 ; ===========================================================================
@@ -541,13 +542,29 @@ VBla_0C:
 		bsr.w	LoadTilesAsYouMove
 		jsr	(AnimateLevelGfx).l
 		jsr	(HUD_Update).l
-		bra.w	sub_1642
+		bra.w	Set_Kos_Bookmark
 ; ===========================================================================
 
 VBla_12:
 		bsr.w	sub_106E
 		move.w	(v_hbla_hreg).w,(a5)
-		bra.w	sub_1642
+		rts
+; ===========================================================================
+
+Vint_Menu:
+		bsr.w	ReadJoypads
+
+		writeCRAM	v_palette,0
+		writeVRAMsrcdefined	v_spritetablebuffer,vram_sprites
+		writeVRAMsrcdefined	v_hscrolltablebuffer,vram_hscroll
+
+		bsr.w	ProcessDMAQueue
+
+		tst.w	(v_demolength).w
+		beq.s	+	; rts
+		subq.w	#1,(v_demolength).w
++
+		bra.w	Set_Kos_Bookmark
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
@@ -754,7 +771,6 @@ Tilemap_Cell:
 ; End of function TilemapToVRAM
 
 		include	"_inc/DMA-Queue.asm"
-		include	"_inc/Nemesis Decompression.asm"
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to load pattern load cues (aka to queue pattern load requests)
@@ -768,237 +784,26 @@ Tilemap_Cell:
 
 ; LoadPLC:
 AddPLC:
-		lea	(ArtLoadCues).l,a1
+		lea	(ArtLoadCues).l,a6
 		add.w	d0,d0
-		move.w	(a1,d0.w),d0
-		lea	(a1,d0.w),a1		; jump to relevant PLC
-		lea	(v_plc_buffer).w,a2 ; PLC buffer space
-
-.findspace:
-		tst.l	(a2)		; is space available in RAM?
-		beq.s	.copytoRAM	; if yes, exit
-		addq.w	#6,a2		; go to next space
-		bra.s	.findspace	; if not, try next space
-; ===========================================================================
-
-.copytoRAM:
-		move.w	(a1)+,d0	; get length of PLC
+		move.w	(a6,d0.w),d0
+		lea	(a6,d0.w),a6		; jump to relevant PLC
+		move.w	(a6)+,d6	; get length of PLC
 		bmi.s	.skip
 
 .loop:
-		move.l	(a1)+,(a2)+
-		move.w	(a1)+,(a2)+	; copy PLC to RAM
-		dbf	d0,.loop	; repeat for length of PLC
+		movea.l	(a6)+,a1
+		move.w	(a6)+,d2
+		bsr.w	Queue_Kos_Module
+		dbf	d6,.loop	; repeat for length of PLC
 
 .skip:
 		rts
 ; End of function AddPLC
 
-
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-; Queue pattern load requests, but clear the PLQ first
-
-; ARGUMENTS
-; d0 = index of PLC list (see ArtLoadCues)
-
-; NOTICE: This subroutine does not check for buffer overruns. The programmer
-;	  (or hacker) is responsible for making sure that no more than
-;	  16 load requests are copied into the buffer.
-;	  _________DO NOT PUT MORE THAN 16 LOAD REQUESTS IN A LIST!__________
-;         (or if you change the size of Plc_Buffer, the limit becomes (Plc_Buffer_Only_End-Plc_Buffer)/6)
-
-; LoadPLC2:
-NewPLC:
-		lea	(ArtLoadCues).l,a1
-		add.w	d0,d0
-		move.w	(a1,d0.w),d0
-		lea	(a1,d0.w),a1	; jump to relevant PLC
-		bsr.s	ClearPLC	; erase any data in PLC buffer space
-		lea	(v_plc_buffer).w,a2
-		move.w	(a1)+,d0	; get length of PLC
-		bmi.s	.skip		; if it's negative, skip the next loop
-
-.loop:
-		move.l	(a1)+,(a2)+
-		move.w	(a1)+,(a2)+	; copy PLC to RAM
-		dbf	d0,.loop		; repeat for length of PLC
-
-.skip:
-		rts
-; End of function NewPLC
-
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
-; ---------------------------------------------------------------------------
-; Subroutine to	clear the pattern load cues
-; ---------------------------------------------------------------------------
-
-; Clear the pattern load queue ($FFF680 - $FFF700)
-
-
-ClearPLC:
-		lea	(v_plc_buffer).w,a2 ; PLC buffer space in RAM
-		moveq	#0,d0
-		moveq	#bytesToLcnt(v_plc_buffer_end-v_plc_buffer),d1
-
-.loop:
-		move.l	d0,(a2)+
-		dbf	d1,.loop
-		rts
-; End of function ClearPLC
-
-; ---------------------------------------------------------------------------
-; Subroutine to	use graphics listed in a pattern load cue
-; ---------------------------------------------------------------------------
-
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
-
-RunPLC:
-		tst.l	(v_plc_buffer).w
-		beq.s	Rplc_Exit
-		tst.w	(v_plc_patternsleft).w
-		bne.s	Rplc_Exit
-		movea.l	(v_plc_buffer).w,a0
-		lea	NemPCD_WriteRowToVDP(pc),a3
-		lea	(v_ngfx_buffer).w,a1
-		move.w	(a0)+,d2
-		bpl.s	loc_160E
-		lea	NemPCD_WriteRowToVDP_XOR-NemPCD_WriteRowToVDP(a3),a3
-
-loc_160E:
-		andi.w	#$7FFF,d2
-		bsr.w	NemDec_BuildCodeTable
-		move.b	(a0)+,-(sp)
-		move.w	(sp)+,d5
-		move.b	(a0)+,d5
-		moveq	#$10,d6
-		moveq	#0,d0
-		move.l	a0,(v_plc_buffer).w
-		move.w	a3,(v_plc_ptrnemcode).w
-		move.l	d0,(v_plc_repeatcount).w
-		move.l	d0,(v_plc_paletteindex).w
-		move.l	d0,(v_plc_previousrow).w
-		move.l	d5,(v_plc_dataword).w
-		move.l	d6,(v_plc_shiftvalue).w
-		move.w	d2,(v_plc_patternsleft).w
-
-Rplc_Exit:
-		rts
-; End of function RunPLC
-
-
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
-
-sub_1642:
-		tst.w	(v_plc_patternsleft).w
-		beq.s	Rplc_Exit
-		move.w	#9,(v_plc_framepatternsleft).w
-		moveq	#0,d0
-		move.w	(v_plc_buffer+4).w,d0
-		addi.w	#$120,(v_plc_buffer+4).w
-		bra.s	loc_1676
-; End of function sub_1642
-
-
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
-
-; sub_165E:
-ProcessDPLC2:
-		tst.w	(v_plc_patternsleft).w
-		beq.s	locret_16DA
-		move.w	#3,(v_plc_framepatternsleft).w
-		moveq	#0,d0
-		move.w	(v_plc_buffer+4).w,d0
-		addi.w	#$60,(v_plc_buffer+4).w
-
-loc_1676:
-		lea	(vdp_control_port).l,a4
-		lsl.l	#2,d0
-		lsr.w	#2,d0
-		ori.w	#$4000,d0
-		swap	d0
-		move.l	d0,(a4)
-		subq.w	#4,a4
-		movea.l	(v_plc_buffer).w,a0
-		movea.w	(v_plc_ptrnemcode).w,a3
-		move.l	(v_plc_repeatcount).w,d0
-		move.l	(v_plc_paletteindex).w,d1
-		move.l	(v_plc_previousrow).w,d2
-		move.l	(v_plc_dataword).w,d5
-		move.l	(v_plc_shiftvalue).w,d6
-		lea	(v_ngfx_buffer).w,a1
-
-loc_16AA:
-		movea.w	#8,a5
-		bsr.w	NemPCD_NewRow
-		subq.w	#1,(v_plc_patternsleft).w
-		beq.s	loc_16DC
-		subq.w	#1,(v_plc_framepatternsleft).w
-		bne.s	loc_16AA
-		move.l	a0,(v_plc_buffer).w
-		move.w	a3,(v_plc_ptrnemcode).w
-		move.l	d0,(v_plc_repeatcount).w
-		move.l	d1,(v_plc_paletteindex).w
-		move.l	d2,(v_plc_previousrow).w
-		move.l	d5,(v_plc_dataword).w
-		move.l	d6,(v_plc_shiftvalue).w
-
-locret_16DA:
-		rts
-; ===========================================================================
-
-loc_16DC:
-		lea	(v_plc_buffer).w,a0
-		moveq	#(v_plc_buffer_only_end-v_plc_buffer-6)/4-1,d0
-
-loc_16E2:
-		move.l	6(a0),(a0)+
-		dbf	d0,loc_16E2
-
-		move.w	6(a0),(a0)
-
-		clr.l	(v_plc_buffer_only_end-6).w
-
-		rts
-; End of function ProcessDPLC2
-
-; ---------------------------------------------------------------------------
-; Subroutine to	execute	the pattern load cue
-; ---------------------------------------------------------------------------
-
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
-
-;QuickPLC:
-;		lea	(ArtLoadCues).l,a1 ; load the PLC index
-;		add.w	d0,d0
-;		move.w	(a1,d0.w),d0
-;		lea	(a1,d0.w),a1
-;		move.w	(a1)+,d1	; get length of PLC
-
-;Qplc_Loop:
-;		movea.l	(a1)+,a0	; get art pointer
-;		moveq	#0,d0
-;		move.w	(a1)+,d0	; get VRAM address
-;		lsl.l	#2,d0
-;		lsr.w	#2,d0
-;		ori.w	#$4000,d0
-;		swap	d0
-;		move.l	d0,(vdp_control_port).l ; converted VRAM address to VDP format
-;		movem.l	d1/a1,-(sp)
-;		bsr.w	NemDec		; decompress
-;		move.l	(sp)+,d1
-;		movea.l	(sp)+,a1
-;		dbf	d1,Qplc_Loop	; repeat for length of PLC
-;		rts
-; End of function QuickPLC
-
 		include	"_inc/Enigma Decompression.asm"
 		include	"_inc/KosinskiPlus.asm"
-;		include	"_inc/KosM.asm"
+		include	"_inc/KosM.asm"
 
 		include	"_inc/PaletteCycle.asm"
 
@@ -1052,7 +857,6 @@ PalFadeIn_Alt:				; start position and size are already set
 		move.w	#id_VB_0A,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		bsr.s	FadeIn_FromBlack
-		bsr.w	RunPLC
 		dbf	d4,.mainloop
 		rts
 ; End of function PaletteFadeIn
@@ -1147,7 +951,6 @@ PaletteFadeOut:
 		move.w	#id_VB_0A,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		bsr.s	FadeOut_ToBlack
-		bsr.w	RunPLC
 		dbf	d4,.mainloop
 		rts
 ; End of function PaletteFadeOut
@@ -1241,7 +1044,6 @@ PaletteWhiteIn:
 		move.w	#id_VB_0A,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		bsr.s	WhiteIn_FromWhite
-		bsr.w	RunPLC
 		dbf	d4,.mainloop
 		rts
 ; End of function PaletteWhiteIn
@@ -1335,7 +1137,6 @@ PaletteWhiteOut:
 		move.w	#id_VB_0A,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		bsr.s	WhiteOut_ToWhite
-		bsr.w	RunPLC
 		dbf	d4,.mainloop
 		rts
 ; End of function PaletteWhiteOut
@@ -1605,7 +1406,7 @@ __LABEL___end:
 	endm
 
 Pal_Title:	bincludePalette	"palette/Title Screen.bin"
-Pal_LevelSel:	bincludePalette	"palette/Level Select.bin"
+Pal_LevelSel:	bincludePalette	"palette/Menu.bin"
 Pal_Sonic:	bincludePalette	"palette/Sonic.bin"
 Pal_GHZ:	bincludePalette	"palette/Green Hill Zone.bin"
 Pal_LZ:		bincludePalette	"palette/Labyrinth Zone.bin"
@@ -1647,7 +1448,7 @@ WaitForVBla:
 GM_Sega:
 		moveq	#bgm_Stop,d0
 		bsr.w	PlayMusic ; stop music
-		bsr.w	ClearPLC
+		clearRAM Kos_decomp_stored_registers, Kos_module_end
 		bsr.w	PaletteFadeOut
 		lea	(vdp_control_port).l,a6
 		move.w	#$8004,(a6)	; use 8-colour mode
@@ -1661,9 +1462,15 @@ GM_Sega:
 		andi.b	#$BF,d0
 		move.w	d0,(vdp_control_port).l
 		bsr.w	ClearScreen
-		locVRAM	ArtTile_Sega_Tiles*tile_size
 		lea	(Nem_SegaLogo).l,a0 ; load Sega	logo patterns
-		bsr.w	NemDec
+		lea	(v_128x128).l,a1
+		bsr.w	KosPlusDec
+		move.w	a1,d3
+		lsr.w	#1,d3
+		move.l	#dmaSource(v_128x128),d1
+		moveq	#tiles_to_bytes(ArtTile_Level),d2
+		bsr.w	QueueDMATransfer
+		bsr.w	ProcessDMAQueue
 		lea	(Eni_SegaLogo).l,a0 ; load Sega	logo mappings
 		lea	(v_128x128_end).w,a1
 		moveq	#make_art_tile(ArtTile_Sega_Tiles,0,FALSE),d0
@@ -1732,7 +1539,7 @@ Sega_GotoTitle:
 GM_Title:
 		moveq	#bgm_Stop,d0
 		bsr.w	PlayMusic ; stop music
-		bsr.w	ClearPLC
+		clearRAM Kos_decomp_stored_registers, Kos_module_end
 		bsr.w	PaletteFadeOut
 		disable_ints
 		lea	(vdp_control_port).l,a6
@@ -1748,12 +1555,12 @@ GM_Title:
 
 		clearRAM v_objspace
 
-		locVRAM	ArtTile_Title_Japanese_Text*tile_size
-		lea	(Nem_JapNames).l,a0 ; load Japanese credits
-		bsr.w	NemDec
-		locVRAM	ArtTile_Sonic_Team_Font*tile_size
-		lea	(Nem_CreditText).l,a0 ;	load alphabet
-		bsr.w	NemDec
+		lea	(Nem_JapNames).l,a1 ; load Japanese credits
+		moveq	#tiles_to_bytes(ArtTile_Title_Japanese_Text),d2
+		bsr.w	Queue_Kos_Module
+		lea	(Nem_CreditText).l,a1 ;	load alphabet
+		move.w	#tiles_to_bytes(ArtTile_Sonic_Team_Font),d2
+		bsr.w	Queue_Kos_Module
 		lea	(Eni_JapNames).l,a0 ; load mappings for	Japanese credits
 		lea	(v_128x128_end).w,a1
 		moveq	#make_art_tile(ArtTile_Title_Japanese_Text,0,FALSE),d0
@@ -1770,15 +1577,15 @@ GM_Title:
 		jsr	(BuildSprites).l
 		bsr.w	PaletteFadeIn
 		disable_ints
-		locVRAM	ArtTile_Title_Foreground*tile_size
-		lea	(Nem_TitleFg).l,a0 ; load title	screen patterns
-		bsr.w	NemDec
-		locVRAM	ArtTile_Title_Sonic*tile_size
-		lea	(Nem_TitleSonic).l,a0 ;	load Sonic title screen	patterns
-		bsr.w	NemDec
-		locVRAM	ArtTile_Title_Trademark*tile_size
-		lea	(Nem_TitleTM).l,a0 ; load "TM" patterns
-		bsr.w	NemDec
+		lea	(Nem_TitleFg).l,a1 ; load title	screen patterns
+		move.w	#tiles_to_bytes(ArtTile_Title_Foreground),d2
+		bsr.w	Queue_Kos_Module
+		lea	(Nem_TitleSonic).l,a1 ;	load Sonic title screen	patterns
+		move.w	#tiles_to_bytes(ArtTile_Title_Sonic),d2
+		bsr.w	Queue_Kos_Module
+		lea	(Nem_TitleTM).l,a1 ; load "TM" patterns
+		move.w	#tiles_to_bytes(ArtTile_Title_Trademark),d2
+		bsr.w	Queue_Kos_Module
 		lea	(vdp_data_port).l,a6
 		locVRAM	ArtTile_Level_Select_Font*tile_size,4(a6)
 		lea	Art_Text(pc),a5	; load level select font
@@ -1824,9 +1631,15 @@ Tit_LoadText:
 
 		copyTilemap	v_128x128_end,vram_fg+$208,34,22
 
-		locVRAM	ArtTile_Level*tile_size
 		lea	(Nem_GHZ_1st).l,a0 ; load GHZ patterns
-		bsr.w	NemDec
+		lea	(v_128x128).l,a1
+		bsr.w	KosPlusDec
+		move.w	a1,d3
+		lsr.w	#1,d3
+		move.l	#dmaSource(v_128x128),d1
+		moveq	#tiles_to_bytes(ArtTile_Level),d2
+		bsr.w	QueueDMATransfer
+		bsr.w	ProcessDMAQueue
 		moveq	#palid_Title,d0	; load title screen palette
 		bsr.w	PalLoad_Fade
 		moveq	#bgm_Title,d0
@@ -1857,7 +1670,7 @@ Tit_LoadText:
 		bsr.w	DeformLayers
 		jsr	(BuildSprites).l
 		moveq	#plcid_Main,d0
-		bsr.w	NewPLC
+		bsr.w	AddPLC
 		moveq	#0,d0
 		move.w	d0,(v_title_dcount).w
 		move.w	d0,(v_title_ccount).w
@@ -1868,12 +1681,13 @@ Tit_LoadText:
 
 Tit_MainLoop:
 		move.w	#id_VB_04,(v_vbla_routine).w
+		bsr.w	Process_Kos_Queue
 		bsr.w	WaitForVBla
+		bsr.w	Process_Kos_Module_Queue
 		jsr	(ExecuteObjects).l
 		bsr.w	DeformLayers
 		jsr	(BuildSprites).l
 		bsr.w	PalCycle_Title
-		bsr.w	RunPLC
 		addq.w	#2,(v_player+obX).w ; move Sonic to the right
 		cmpi.w	#$1C00,(v_player+obX).w	; has Sonic object passed $1C00 on x-axis?
 		blo.s	Tit_ChkRegion	; if not, branch
@@ -1943,94 +1757,8 @@ Tit_ChkLevSel:
 		beq.w	PlayLevel	; if not, play level
 		btst	#bitA,(v_jpadhold).w ; check if A is pressed
 		beq.w	PlayLevel	; if not, play level
-
-		moveq	#palid_LevelSel,d0
-		bsr.w	PalLoad	; load level select palette
-
-		clearRAM v_hscrolltablebuffer
-
-		move.l	d0,(v_scrposy_vdp).w
-		disable_ints
-		lea	(vdp_data_port).l,a6
-		locVRAM	vram_bg
-		move.w	#plane_size_64x32/4-1,d1
-
-Tit_ClrScroll2:
-		move.l	d0,(a6)
-		dbf	d1,Tit_ClrScroll2 ; clear scroll data (in VRAM)
-
-		bsr.w	LevSelTextLoad
-
-; ---------------------------------------------------------------------------
-; Level	Select
-; ---------------------------------------------------------------------------
-
-LevelSelect:
-		move.w	#id_VB_02,(v_vbla_routine).w
-		bsr.w	WaitForVBla
-		bsr.w	LevSelControls
-		bsr.w	RunPLC
-		tst.l	(v_plc_buffer).w
-		bne.s	LevelSelect
-		andi.b	#btnABC+btnStart,(v_jpadpress).w ; is A, B, C, or Start pressed?
-		beq.s	LevelSelect	; if not, branch
-		move.w	(v_levselitem).w,d0
-		cmpi.w	#$14,d0		; have you selected item $14 (sound test)?
-		bne.s	LevSel_Level	; if not, go to	Level subroutine
-		move.w	(v_levselsound).w,d0
-;		tst.b	(f_creditscheat).w ; is Japanese Credits cheat on?
-;		beq.s	LevSel_NoCheat	; if not, branch
-
-LevSel_NoCheat:
-LevSel_PlaySnd:
-		bsr.w	PlayMusic
-		bra.s	LevelSelect
-; ===========================================================================
-
-LevSel_Level:
-		add.w	d0,d0
-		move.w	LevSel_Ptrs(pc,d0.w),d0 ; load level number
-		bmi.s	LevelSelect
-		andi.w	#$3FFF,d0
-		move.w	d0,(v_zone).w	; set level number
-
-PlayLevel:
-		move.w	#id_Level,(v_gamemode).w ; set screen mode to $0C (level)
-		move.b	#3,(v_lives).w	; set lives to 3
-		moveq	#0,d0
-		move.w	d0,(v_rings).w	; clear rings
-		move.l	d0,(v_time).w	; clear time
-		move.l	d0,(v_score).w	; clear score
-		move.l	#5000,(v_scorelife).w ; extra life is awarded at 50000 points
-		moveq	#bgm_Fade,d0
-		bra.w	PlayMusic ; fade out music
-; ===========================================================================
-; ---------------------------------------------------------------------------
-; Level	select - level pointers
-; ---------------------------------------------------------------------------
-LevSel_Ptrs:
-		dc.b id_GHZ, 0
-		dc.b id_GHZ, 1
-		dc.b id_GHZ, 2
-		dc.b id_MZ, 0
-		dc.b id_MZ, 1
-		dc.b id_MZ, 2
-		dc.b id_SYZ, 0
-		dc.b id_SYZ, 1
-		dc.b id_SYZ, 2
-		dc.b id_LZ, 0
-		dc.b id_LZ, 1
-		dc.b id_LZ, 2
-		dc.b id_SLZ, 0
-		dc.b id_SLZ, 1
-		dc.b id_SLZ, 2
-		dc.b id_SBZ, 0
-		dc.b id_SBZ, 1
-		dc.b id_LZ, 3
-		dc.b id_SBZ, 2
-		dc.b id_SS, 0		; Special Stage
-		dc.w $8000		; Sound Test
-		even
+		move.w	#id_Menu,(v_gamemode).w ; go to title screen
+		rts
 ; ---------------------------------------------------------------------------
 ; Level	select codes
 ; ---------------------------------------------------------------------------
@@ -2050,10 +1778,11 @@ GotoDemo:
 
 loc_33B6:
 		move.w	#id_VB_04,(v_vbla_routine).w
+		bsr.w	Process_Kos_Queue
 		bsr.w	WaitForVBla
+		bsr.w	Process_Kos_Module_Queue
 		bsr.w	DeformLayers
 		bsr.w	PaletteCycle
-		bsr.w	RunPLC
 		addq.w	#2,(v_player+obX).w
 		cmpi.w	#$1C00,(v_player+obX).w
 		blo.s	loc_33E4
@@ -2095,166 +1824,7 @@ loc_3422:
 Demo_Levels:	binclude	"misc/Demo Level Order - Intro.bin"
 		even
 
-; ---------------------------------------------------------------------------
-; Subroutine to	change what you're selecting in the level select
-; ---------------------------------------------------------------------------
-
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
-
-LevSelControls:
-		move.b	(v_jpadpress).w,d1
-		andi.b	#btnUp+btnDn,d1	; is up/down pressed and held?
-		bne.s	LevSel_UpDown	; if yes, branch
-		subq.b	#1,(v_levseldelay).w ; subtract 1 from time to next move
-		bpl.s	LevSel_SndTest	; if time remains, branch
-
-LevSel_UpDown:
-		move.b	#$B,(v_levseldelay).w ; reset time delay
-		move.b	(v_jpadhold).w,d1
-		andi.b	#btnUp+btnDn,d1	; is up/down pressed?
-		beq.s	LevSel_SndTest	; if not, branch
-		move.w	(v_levselitem).w,d0
-		btst	#bitUp,d1	; is up	pressed?
-		beq.s	LevSel_Down	; if not, branch
-		subq.w	#1,d0		; move up 1 selection
-		bhs.s	LevSel_Down
-		moveq	#$14,d0		; if selection moves below 0, jump to selection	$14
-
-LevSel_Down:
-		btst	#bitDn,d1	; is down pressed?
-		beq.s	LevSel_Refresh	; if not, branch
-		addq.w	#1,d0		; move down 1 selection
-		cmpi.w	#$15,d0
-		blo.s	LevSel_Refresh
-		moveq	#0,d0		; if selection moves above $14,	jump to	selection 0
-
-LevSel_Refresh:
-		move.w	d0,(v_levselitem).w ; set new selection
-		bra.s	LevSelTextLoad	; refresh text
-
-LevSel_NoMove:
-		rts
-; ===========================================================================
-
-LevSel_SndTest:
-		cmpi.w	#$14,(v_levselitem).w ; is item $14 selected?
-		bne.s	LevSel_NoMove	; if not, branch
-		move.b	(v_jpadpress).w,d1
-		andi.b	#btnR+btnL,d1	; is left/right	pressed?
-		beq.s	LevSel_NoMove	; if not, branch
-		move.w	(v_levselsound).w,d0
-		btst	#bitL,d1	; is left pressed?
-		beq.s	LevSel_Right	; if not, branch
-		subq.w	#1,d0		; subtract 1 from sound	test
-
-LevSel_Right:
-		btst	#bitR,d1	; is right pressed?
-		beq.s	LevSel_Refresh2	; if not, branch
-		addq.w	#1,d0		; add 1	to sound test
-
-LevSel_Refresh2:
-		move.w	d0,(v_levselsound).w ; set sound test number
-; End of function LevSelControls
-
-; ---------------------------------------------------------------------------
-; Subroutine to load level select text
-; ---------------------------------------------------------------------------
-
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
-
-LevSelTextLoad:
-
-textpos:	= ($40000000+(($E210&$3FFF)<<16)+(($E210&$C000)>>14))
-					; $E210 is a VRAM address
-
-		lea	LevelMenuText(pc),a1
-		lea	(vdp_data_port).l,a6
-		move.l	#textpos,d4	; text position on screen
-		move.w	#$E680,d3	; VRAM setting (4th palette, $680th tile)
-		moveq	#$14,d1		; number of lines of text
-
-LevSel_DrawAll:
-		move.l	d4,4(a6)
-		bsr.s	LevSel_ChgLine	; draw line of text
-		addi.l	#$800000,d4	; jump to next line
-		dbf	d1,LevSel_DrawAll
-
-		move.w	(v_levselitem).w,d0
-		move.w	d0,d1
-		move.l	#textpos,d4
-		lsl.w	#7,d0
-		swap	d0
-		add.l	d0,d4
-		lea	LevelMenuText(pc),a1
-		lsl.w	#3,d1
-		move.w	d1,d0
-		add.w	d1,d1
-		add.w	d0,d1
-		adda.w	d1,a1
-		move.w	#$C680,d3	; VRAM setting (3rd palette, $680th tile)
-		move.l	d4,4(a6)
-		bsr.s	LevSel_ChgLine	; recolour selected line
-		move.w	#$E680,d3
-		cmpi.w	#$14,(v_levselitem).w
-		bne.s	LevSel_DrawSnd
-		move.w	#$C680,d3
-
-LevSel_DrawSnd:
-		locVRAM	vram_bg+$C30		; sound test position on screen
-		move.w	(v_levselsound).w,d0
-		move.b	d0,d2
-		lsr.b	#4,d0
-		bsr.s	LevSel_ChgSnd	; draw 1st digit
-		move.b	d2,d0
-; End of function LevSelTextLoad
-
-
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
-
-LevSel_ChgSnd:
-		andi.w	#$F,d0
-		cmpi.b	#$A,d0		; is digit $A-$F?
-		blo.s	LevSel_Numb	; if not, branch
-		addq.b	#7,d0		; use alpha characters
-
-LevSel_Numb:
-		add.w	d3,d0
-		move.w	d0,(a6)
-		rts
-; End of function LevSel_ChgSnd
-
-
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
-
-LevSel_ChgLine:
-		moveq	#$17,d2		; number of characters per line
-
-LevSel_LineLoop:
-		moveq	#0,d0
-		move.b	(a1)+,d0	; get character
-		bpl.s	LevSel_CharOk	; branch if valid
-		move.w	#0,(a6)		; use blank character
-		dbf	d2,LevSel_LineLoop
-		rts
-
-
-LevSel_CharOk:
-		add.w	d3,d0		; combine char with VRAM setting
-		move.w	d0,(a6)		; send to VRAM
-		dbf	d2,LevSel_LineLoop
-		rts
-; End of function LevSel_ChgLine
-
-; ===========================================================================
-; ---------------------------------------------------------------------------
-; Level	select menu text
-; ---------------------------------------------------------------------------
-LevelMenuText:	binclude	"misc/Level Select Text.bin"
-		even
+		include	"_inc/Menus.asm"
 ; ---------------------------------------------------------------------------
 ; Music	playlist
 ; ---------------------------------------------------------------------------
@@ -2294,13 +1864,11 @@ GM_Level:
 		bset	#7,(v_gamemode).w ; add $80 to screen mode (for pre level sequence)
 		moveq	#bgm_Fade,d0
 		bsr.w	PlayMusic ; fade out music
-		bsr.w	ClearPLC
+		clearRAM Kos_decomp_stored_registers, Kos_module_end
 		bsr.w	PaletteFadeOut
-		disable_ints
-		locVRAM	ArtTile_Title_Card*tile_size
-		lea	(Nem_TitleCard).l,a0 ; load title card patterns
-		bsr.w	NemDec
-		enable_ints
+		lea	(Nem_TitleCard).l,a1 ; load title card patterns
+		move.w	#tiles_to_bytes(ArtTile_Title_Card),d2
+		bsr.w	Queue_Kos_Module
 		moveq	#0,d0
 		move.b	(v_zone).w,d0
 		lsl.w	#4,d0
@@ -2308,7 +1876,6 @@ GM_Level:
 		lea	(a2,d0.w),a2
 		moveq	#0,d0
 		move.b	(a2),d0
-		beq.s	loc_37FC
 		bsr.w	AddPLC		; load level patterns
 
 loc_37FC:
@@ -2380,14 +1947,15 @@ Level_GetBgm:
 
 Level_TtlCardLoop:
 		move.w	#id_VB_08,(v_vbla_routine).w
+		bsr.w	Process_Kos_Queue
 		bsr.w	WaitForVBla
+		bsr.w	Process_Kos_Module_Queue
 		jsr	(ExecuteObjects).l
 		jsr	(BuildSprites).l
-		bsr.w	RunPLC
 		move.w	(v_ttlcardact+obX).w,d0
 		cmp.w	(v_ttlcardact+card_mainX).w,d0 ; has title card sequence finished?
 		bne.s	Level_TtlCardLoop ; if not, branch
-		tst.l	(v_plc_buffer).w ; are there any items in the pattern load cue?
+		tst.w	(Kos_modules_left).w ; are there any items in the pattern load cue?
 		bne.s	Level_TtlCardLoop ; if yes, branch
 		jsr	(Hud_Base).l	; load basic HUD gfx
 		moveq	#palid_Sonic,d0
@@ -2497,7 +2065,9 @@ Level_DelayLoop:
 Level_MainLoop:
 		bsr.w	PauseGame
 		move.w	#id_VB_06,(v_vbla_routine).w
+		bsr.w	Process_Kos_Queue
 		bsr.w	WaitForVBla
+		bsr.w	Process_Kos_Module_Queue
 		addq.w	#1,(v_framecount).w ; add 1 to level timer
 		bsr.w	MoveSonicInDemo
 		bsr.w	LZWaterFeatures
@@ -2519,7 +2089,6 @@ Level_SkipScroll:
 		jsr	(ObjPosLoad).l
 		jsr	(RingsManager).l
 		bsr.w	PaletteCycle
-		bsr.w	RunPLC
 		bsr.w	OscillateNumDo
 		bsr.w	SynchroAnimate
 		bsr.w	SignpostArtLoad
@@ -2554,7 +2123,9 @@ Level_FadeDemo:
 
 Level_FDLoop:
 		move.w	#id_VB_06,(v_vbla_routine).w
+		bsr.w	Process_Kos_Queue
 		bsr.w	WaitForVBla
+		bsr.w	Process_Kos_Module_Queue
 		bsr.w	MoveSonicInDemo
 		jsr	(ExecuteObjects).l
 		jsr	(BuildSprites).l
@@ -2679,7 +2250,7 @@ SignpostArtLoad:
 		beq.s	.exit
 		move.w	d1,(v_limitleft2).w ; move left boundary to current screen position
 		moveq	#plcid_Signpost,d0
-		bra.w	NewPLC		; load signpost	patterns
+		bra.w	AddPLC		; load signpost	patterns
 
 .exit:
 		rts
@@ -3501,11 +3072,7 @@ LevelDataLoad:
 		addq.w	#4,a2		; read number for 2nd PLC
 		moveq	#0,d0
 		move.b	(a2),d0
-		beq.s	.skipPLC	; if 2nd PLC is 0 (i.e. the ending sequence), branch
 		bra.w	AddPLC		; load pattern load cues
-
-.skipPLC:
-		rts
 ; End of function LevelDataLoad
 
 ; ---------------------------------------------------------------------------
@@ -3734,7 +3301,7 @@ MvSonicOnPtfm:
 MvSonicOnPtfm2:
 		lea	(v_player).w,a1
 		move.w	obY(a0),d0
-		subi.w	#9,d0
+		subq.w	#8,d0
 
 MvSonic2:
 		tst.b	(f_playerctrl).w
@@ -6054,21 +5621,34 @@ Art_LivesNums:	binclude	"artunc/Lives Counter Numbers.bin" ; 8x8 pixel numbers o
 		include	"_inc/LevelHeaders.asm"
 		include	"_inc/Pattern Load Cues.asm"
 
-Nem_SegaLogo:	binclude	"artnem/Sega Logo.nem" ; large Sega logo
+Nem_SegaLogo:	binclude	"artkosp/Sega Logo.kosp" ; large Sega logo
 		even
 Eni_SegaLogo:	binclude	"tilemaps/Sega Logo.eni" ; large Sega logo (mappings)
 		even
 Eni_Title:	binclude	"tilemaps/Title Screen.eni" ; title screen foreground (mappings)
 		even
-Nem_TitleFg:	binclude	"artnem/Title Screen Foreground.nem"
+Nem_TitleFg:	binclude	"artkospm/Title Screen Foreground.kospm"
 		even
-Nem_TitleSonic:	binclude	"artnem/Title Screen Sonic.nem"
+Nem_TitleSonic:	binclude	"artkospm/Title Screen Sonic.kospm"
 		even
-Nem_TitleTM:	binclude	"artnem/Title Screen TM.nem"
+Nem_TitleTM:	binclude	"artkospm/Title Screen TM.kospm"
 		even
 Eni_JapNames:	binclude	"tilemaps/Hidden Japanese Credits.eni" ; Japanese credits (mappings)
 		even
-Nem_JapNames:	binclude	"artnem/Hidden Japanese Credits.nem"
+Nem_JapNames:	binclude	"artkospm/Hidden Japanese Credits.kospm"
+		even
+;---------------------------------------------------------------------------------------
+; Menu Assets
+;---------------------------------------------------------------------------------------
+Nem_FontStuff:	binclude	"artkospm/Standard font.kospm"
+		even
+Eni_MenuBack:	binclude	"tilemaps/Sonic and Miles animated background.eni"
+		even
+Unc_MenuBack:	binclude	"artunc/Sonic and Miles animated background.bin"
+		even
+Nem_MenuBox:	binclude	"artkospm/A menu box with a shadow.kospm"
+		even
+Nem_LevelSelectPics:	binclude	"artkospm/Pictures in level preview box from level select.kospm"
 		even
 
 Map_Sonic:	include	"_maps/Sonic.asm"
@@ -6082,227 +5662,227 @@ Art_Sonic:	binclude	"artunc/Sonic.bin"	; Sonic
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - various
 ; ---------------------------------------------------------------------------
-Nem_Shield:	binclude	"artnem/Shield.nem"
+Nem_Shield:	binclude	"artkospm/Shield.kospm"
 		even
-Nem_Stars:	binclude	"artnem/Invincibility Stars.nem"
+Nem_Stars:	binclude	"artkospm/Invincibility Stars.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - GHZ stuff
 ; ---------------------------------------------------------------------------
-Nem_Stalk:	binclude	"artnem/GHZ Flower Stalk.nem"
+Nem_Stalk:	binclude	"artkospm/GHZ Flower Stalk.kospm"
 		even
-Nem_Swing:	binclude	"artnem/GHZ Swinging Platform.nem"
+Nem_Swing:	binclude	"artkospm/GHZ Swinging Platform.kospm"
 		even
-Nem_Bridge:	binclude	"artnem/GHZ Bridge.nem"
+Nem_Bridge:	binclude	"artkospm/GHZ Bridge.kospm"
 		even
-Nem_Ball:	binclude	"artnem/GHZ Giant Ball.nem"
+Nem_Ball:	binclude	"artkospm/GHZ Giant Ball.kospm"
 		even
-Nem_Spikes:	binclude	"artnem/Spikes.nem"
+Nem_Spikes:	binclude	"artkospm/Spikes.kospm"
 		even
-Nem_SpikePole:	binclude	"artnem/GHZ Spiked Log.nem"
+Nem_SpikePole:	binclude	"artkospm/GHZ Spiked Log.kospm"
 		even
-Nem_PplRock:	binclude	"artnem/GHZ Purple Rock.nem"
+Nem_PplRock:	binclude	"artkospm/GHZ Purple Rock.kospm"
 		even
-Nem_GhzWall1:	binclude	"artnem/GHZ Breakable Wall.nem"
+Nem_GhzWall1:	binclude	"artkospm/GHZ Breakable Wall.kospm"
 		even
-Nem_GhzWall2:	binclude	"artnem/GHZ Edge Wall.nem"
+Nem_GhzWall2:	binclude	"artkospm/GHZ Edge Wall.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - LZ stuff
 ; ---------------------------------------------------------------------------
-Nem_Water:	binclude	"artnem/LZ Water Surface.nem"
+Nem_Water:	binclude	"artkospm/LZ Water Surface.kospm"
 		even
-Nem_Splash:	binclude	"artnem/LZ Water & Splashes.nem"
+Nem_Splash:	binclude	"artkospm/LZ Water & Splashes.kospm"
 		even
-Nem_LzSpikeBall:binclude	"artnem/LZ Spiked Ball & Chain.nem"
+Nem_LzSpikeBall:binclude	"artkospm/LZ Spiked Ball & Chain.kospm"
 		even
-Nem_FlapDoor:	binclude	"artnem/LZ Flapping Door.nem"
+Nem_FlapDoor:	binclude	"artkospm/LZ Flapping Door.kospm"
 		even
-Nem_Bubbles:	binclude	"artnem/LZ Bubbles & Countdown.nem"
+Nem_Bubbles:	binclude	"artkospm/LZ Bubbles & Countdown.kospm"
 		even
-Nem_LzBlock3:	binclude	"artnem/LZ 32x16 Block.nem"
+Nem_LzBlock3:	binclude	"artkospm/LZ 32x16 Block.kospm"
 		even
-Nem_LzDoor1:	binclude	"artnem/LZ Vertical Door.nem"
+Nem_LzDoor1:	binclude	"artkospm/LZ Vertical Door.kospm"
 		even
-Nem_Harpoon:	binclude	"artnem/LZ Harpoon.nem"
+Nem_Harpoon:	binclude	"artkospm/LZ Harpoon.kospm"
 		even
-Nem_LzPole:	binclude	"artnem/LZ Breakable Pole.nem"
+Nem_LzPole:	binclude	"artkospm/LZ Breakable Pole.kospm"
 		even
-Nem_LzDoor2:	binclude	"artnem/LZ Horizontal Door.nem"
+Nem_LzDoor2:	binclude	"artkospm/LZ Horizontal Door.kospm"
 		even
-Nem_LzWheel:	binclude	"artnem/LZ Wheel.nem"
+Nem_LzWheel:	binclude	"artkospm/LZ Wheel.kospm"
 		even
-Nem_Gargoyle:	binclude	"artnem/LZ Gargoyle & Fireball.nem"
+Nem_Gargoyle:	binclude	"artkospm/LZ Gargoyle & Fireball.kospm"
 		even
-Nem_LzBlock2:	binclude	"artnem/LZ Blocks.nem"
+Nem_LzBlock2:	binclude	"artkospm/LZ Blocks.kospm"
 		even
-Nem_LzPlatfm:	binclude	"artnem/LZ Rising Platform.nem"
+Nem_LzPlatfm:	binclude	"artkospm/LZ Rising Platform.kospm"
 		even
-Nem_Cork:	binclude	"artnem/LZ Cork.nem"
+Nem_Cork:	binclude	"artkospm/LZ Cork.kospm"
 		even
-Nem_LzBlock1:	binclude	"artnem/LZ 32x32 Block.nem"
+Nem_LzBlock1:	binclude	"artkospm/LZ 32x32 Block.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - MZ stuff
 ; ---------------------------------------------------------------------------
-Nem_MzMetal:	binclude	"artnem/MZ Metal Blocks.nem"
+Nem_MzMetal:	binclude	"artkospm/MZ Metal Blocks.kospm"
 		even
-Nem_MzSwitch:	binclude	"artnem/MZ Switch.nem"
+Nem_MzSwitch:	binclude	"artkospm/MZ Switch.kospm"
 		even
-Nem_MzGlass:	binclude	"artnem/MZ Green Glass Block.nem"
+Nem_MzGlass:	binclude	"artkospm/MZ Green Glass Block.kospm"
 		even
-Nem_MzFire:	binclude	"artnem/Fireballs.nem"
+Nem_MzFire:	binclude	"artkospm/Fireballs.kospm"
 		even
-Nem_Lava:	binclude	"artnem/MZ Lava.nem"
+Nem_Lava:	binclude	"artkospm/MZ Lava.kospm"
 		even
-Nem_MzBlock:	binclude	"artnem/MZ Green Pushable Block.nem"
+Nem_MzBlock:	binclude	"artkospm/MZ Green Pushable Block.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - SLZ stuff
 ; ---------------------------------------------------------------------------
-Nem_Seesaw:	binclude	"artnem/SLZ Seesaw.nem"
+Nem_Seesaw:	binclude	"artkospm/SLZ Seesaw.kospm"
 		even
-Nem_SlzSpike:	binclude	"artnem/SLZ Little Spikeball.nem"
+Nem_SlzSpike:	binclude	"artkospm/SLZ Little Spikeball.kospm"
 		even
-Nem_Fan:	binclude	"artnem/SLZ Fan.nem"
+Nem_Fan:	binclude	"artkospm/SLZ Fan.kospm"
 		even
-Nem_SlzWall:	binclude	"artnem/SLZ Breakable Wall.nem"
+Nem_SlzWall:	binclude	"artkospm/SLZ Breakable Wall.kospm"
 		even
-Nem_Pylon:	binclude	"artnem/SLZ Pylon.nem"
+Nem_Pylon:	binclude	"artkospm/SLZ Pylon.kospm"
 		even
-Nem_SlzSwing:	binclude	"artnem/SLZ Swinging Platform.nem"
+Nem_SlzSwing:	binclude	"artkospm/SLZ Swinging Platform.kospm"
 		even
-Nem_SlzBlock:	binclude	"artnem/SLZ 32x32 Block.nem"
+Nem_SlzBlock:	binclude	"artkospm/SLZ 32x32 Block.kospm"
 		even
-Nem_SlzCannon:	binclude	"artnem/SLZ Cannon.nem"
+Nem_SlzCannon:	binclude	"artkospm/SLZ Cannon.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - SYZ stuff
 ; ---------------------------------------------------------------------------
-Nem_Bumper:	binclude	"artnem/SYZ Bumper.nem"
+Nem_Bumper:	binclude	"artkospm/SYZ Bumper.kospm"
 		even
-Nem_SyzSpike2:	binclude	"artnem/SYZ Small Spikeball.nem"
+Nem_SyzSpike2:	binclude	"artkospm/SYZ Small Spikeball.kospm"
 		even
-Nem_LzSwitch:	binclude	"artnem/Switch.nem"
+Nem_LzSwitch:	binclude	"artkospm/Switch.kospm"
 		even
-Nem_SyzSpike1:	binclude	"artnem/SYZ Large Spikeball.nem"
+Nem_SyzSpike1:	binclude	"artkospm/SYZ Large Spikeball.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - SBZ stuff
 ; ---------------------------------------------------------------------------
-Nem_SbzWheel1:	binclude	"artnem/SBZ Running Disc.nem"
+Nem_SbzWheel1:	binclude	"artkospm/SBZ Running Disc.kospm"
 		even
-Nem_SbzWheel2:	binclude	"artnem/SBZ Junction Wheel.nem"
+Nem_SbzWheel2:	binclude	"artkospm/SBZ Junction Wheel.kospm"
 		even
-Nem_Cutter:	binclude	"artnem/SBZ Pizza Cutter.nem"
+Nem_Cutter:	binclude	"artkospm/SBZ Pizza Cutter.kospm"
 		even
-Nem_Stomper:	binclude	"artnem/SBZ Stomper.nem"
+Nem_Stomper:	binclude	"artkospm/SBZ Stomper.kospm"
 		even
-Nem_SpinPform:	binclude	"artnem/SBZ Spinning Platform.nem"
+Nem_SpinPform:	binclude	"artkospm/SBZ Spinning Platform.kospm"
 		even
-Nem_TrapDoor:	binclude	"artnem/SBZ Trapdoor.nem"
+Nem_TrapDoor:	binclude	"artkospm/SBZ Trapdoor.kospm"
 		even
-Nem_SbzFloor:	binclude	"artnem/SBZ Collapsing Floor.nem"
+Nem_SbzFloor:	binclude	"artkospm/SBZ Collapsing Floor.kospm"
 		even
-Nem_Electric:	binclude	"artnem/SBZ Electrocuter.nem"
+Nem_Electric:	binclude	"artkospm/SBZ Electrocuter.kospm"
 		even
-Nem_SbzBlock:	binclude	"artnem/SBZ Vanishing Block.nem"
+Nem_SbzBlock:	binclude	"artkospm/SBZ Vanishing Block.kospm"
 		even
-Nem_FlamePipe:	binclude	"artnem/SBZ Flaming Pipe.nem"
+Nem_FlamePipe:	binclude	"artkospm/SBZ Flaming Pipe.kospm"
 		even
-Nem_SbzDoor1:	binclude	"artnem/SBZ Small Vertical Door.nem"
+Nem_SbzDoor1:	binclude	"artkospm/SBZ Small Vertical Door.kospm"
 		even
-Nem_SlideFloor:	binclude	"artnem/SBZ Sliding Floor Trap.nem"
+Nem_SlideFloor:	binclude	"artkospm/SBZ Sliding Floor Trap.kospm"
 		even
-Nem_SbzDoor2:	binclude	"artnem/SBZ Large Horizontal Door.nem"
+Nem_SbzDoor2:	binclude	"artkospm/SBZ Large Horizontal Door.kospm"
 		even
-Nem_Girder:	binclude	"artnem/SBZ Crushing Girder.nem"
+Nem_Girder:	binclude	"artkospm/SBZ Crushing Girder.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - enemies
 ; ---------------------------------------------------------------------------
-Nem_BallHog:	binclude	"artnem/Enemy Ball Hog.nem"
+Nem_BallHog:	binclude	"artkospm/Enemy Ball Hog.kospm"
 		even
-Nem_Crabmeat:	binclude	"artnem/Enemy Crabmeat.nem"
+Nem_Crabmeat:	binclude	"artkospm/Enemy Crabmeat.kospm"
 		even
-Nem_Buzz:	binclude	"artnem/Enemy Buzz Bomber.nem"
+Nem_Buzz:	binclude	"artkospm/Enemy Buzz Bomber.kospm"
 		even
-Nem_Burrobot:	binclude	"artnem/Enemy Burrobot.nem"
+Nem_Burrobot:	binclude	"artkospm/Enemy Burrobot.kospm"
 		even
-Nem_Chopper:	binclude	"artnem/Enemy Chopper.nem"
+Nem_Chopper:	binclude	"artkospm/Enemy Chopper.kospm"
 		even
-Nem_Jaws:	binclude	"artnem/Enemy Jaws.nem"
+Nem_Jaws:	binclude	"artkospm/Enemy Jaws.kospm"
 		even
-Nem_Roller:	binclude	"artnem/Enemy Roller.nem"
+Nem_Roller:	binclude	"artkospm/Enemy Roller.kospm"
 		even
-Nem_Motobug:	binclude	"artnem/Enemy Motobug.nem"
+Nem_Motobug:	binclude	"artkospm/Enemy Motobug.kospm"
 		even
-Nem_Newtron:	binclude	"artnem/Enemy Newtron.nem"
+Nem_Newtron:	binclude	"artkospm/Enemy Newtron.kospm"
 		even
-Nem_Yadrin:	binclude	"artnem/Enemy Yadrin.nem"
+Nem_Yadrin:	binclude	"artkospm/Enemy Yadrin.kospm"
 		even
-Nem_Basaran:	binclude	"artnem/Enemy Basaran.nem"
+Nem_Basaran:	binclude	"artkospm/Enemy Basaran.kospm"
 		even
-Nem_Bomb:	binclude	"artnem/Enemy Bomb.nem"
+Nem_Bomb:	binclude	"artkospm/Enemy Bomb.kospm"
 		even
-Nem_Orbinaut:	binclude	"artnem/Enemy Orbinaut.nem"
+Nem_Orbinaut:	binclude	"artkospm/Enemy Orbinaut.kospm"
 		even
-Nem_Cater:	binclude	"artnem/Enemy Caterkiller.nem"
+Nem_Cater:	binclude	"artkospm/Enemy Caterkiller.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - various
 ; ---------------------------------------------------------------------------
-Nem_TitleCard:	binclude	"artnem/Title Cards.nem"
+Nem_TitleCard:	binclude	"artkospm/Title Cards.kospm"
 		even
-Nem_Hud:	binclude	"artnem/HUD.nem"	; HUD (rings, time, score)
+Nem_Hud:	binclude	"artkospm/HUD.kospm"	; HUD (rings, time, score)
 		even
-Nem_Lives:	binclude	"artnem/HUD - Life Counter Icon.nem"
+Nem_Lives:	binclude	"artkospm/HUD - Life Counter Icon.kospm"
 		even
-Nem_Ring:	binclude	"artnem/Rings.nem"
+Nem_Ring:	binclude	"artkospm/Rings.kospm"
 		even
-Nem_Monitors:	binclude	"artnem/Monitors.nem"
+Nem_Monitors:	binclude	"artkospm/Monitors.kospm"
 		even
-Nem_Explode:	binclude	"artnem/Explosion.nem"
+Nem_Explode:	binclude	"artkospm/Explosion.kospm"
 		even
-Nem_Points:	binclude	"artnem/Points.nem"	; points from destroyed enemy or object
+Nem_Points:	binclude	"artkospm/Points.kospm"	; points from destroyed enemy or object
 		even
-Nem_GameOver:	binclude	"artnem/Game Over.nem"	; game over / time over
+Nem_GameOver:	binclude	"artkospm/Game Over.kospm"	; game over / time over
 		even
-Nem_HSpring:	binclude	"artnem/Spring Horizontal.nem"
+Nem_HSpring:	binclude	"artkospm/Spring Horizontal.kospm"
 		even
-Nem_VSpring:	binclude	"artnem/Spring Vertical.nem"
+Nem_VSpring:	binclude	"artkospm/Spring Vertical.kospm"
 		even
-Nem_SignPost:	binclude	"artnem/Signpost.nem"	; end of level signpost
+Nem_SignPost:	binclude	"artkospm/Signpost.kospm"	; end of level signpost
 		even
-Nem_Lamp:	binclude	"artnem/Lamppost.nem"
+Nem_Lamp:	binclude	"artkospm/Lamppost.kospm"
 		even
-Nem_BigFlash:	binclude	"artnem/Giant Ring Flash.nem"
+Nem_BigFlash:	binclude	"artkospm/Giant Ring Flash.kospm"
 		even
-Nem_Bonus:	binclude	"artnem/Hidden Bonuses.nem" ; hidden bonuses at end of a level
+Nem_Bonus:	binclude	"artkospm/Hidden Bonuses.kospm" ; hidden bonuses at end of a level
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - animals
 ; ---------------------------------------------------------------------------
-Nem_Rabbit:	binclude	"artnem/Animal Rabbit.nem"
+Nem_Rabbit:	binclude	"artkospm/Animal Rabbit.kospm"
 		even
-Nem_Chicken:	binclude	"artnem/Animal Chicken.nem"
+Nem_Chicken:	binclude	"artkospm/Animal Chicken.kospm"
 		even
-Nem_Penguin:	binclude	"artnem/Animal Penguin.nem"
+Nem_Penguin:	binclude	"artkospm/Animal Penguin.kospm"
 		even
-Nem_Seal:	binclude	"artnem/Animal Seal.nem"
+Nem_Seal:	binclude	"artkospm/Animal Seal.kospm"
 		even
-Nem_Pig:	binclude	"artnem/Animal Pig.nem"
+Nem_Pig:	binclude	"artkospm/Animal Pig.kospm"
 		even
-Nem_Flicky:	binclude	"artnem/Animal Flicky.nem"
+Nem_Flicky:	binclude	"artkospm/Animal Flicky.kospm"
 		even
-Nem_Squirrel:	binclude	"artnem/Animal Squirrel.nem"
+Nem_Squirrel:	binclude	"artkospm/Animal Squirrel.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - primary patterns and block mappings
 ; ---------------------------------------------------------------------------
 Blk16_GHZ:	binclude	"map16/GHZ.eni"
 		even
-Nem_GHZ_1st:	binclude	"artnem/8x8 - Title.nem"	; GHZ primary patterns
+Nem_GHZ_1st:	binclude	"artkosp/8x8 - Title.kosp"	; GHZ primary patterns
 		even
 Nem_GHZ_2nd:	binclude	"artkosp/8x8 - GHZ.kosp"	; GHZ secondary patterns
 		even
@@ -6341,21 +5921,21 @@ Blk256_SBZ:	binclude	"map128/SBZ.kosp"
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - bosses
 ; ---------------------------------------------------------------------------
-Nem_Eggman:	binclude	"artnem/Boss - Main.nem"
+Nem_Eggman:	binclude	"artkospm/Boss - Main.kospm"
 		even
-Nem_Weapons:	binclude	"artnem/Boss - Weapons.nem"
+Nem_Weapons:	binclude	"artkospm/Boss - Weapons.kospm"
 		even
-Nem_Prison:	binclude	"artnem/Prison Capsule.nem"
+Nem_Prison:	binclude	"artkospm/Prison Capsule.kospm"
 		even
-Nem_Sbz2Eggman:	binclude	"artnem/Boss - Eggman in SBZ2 & FZ.nem"
+Nem_Sbz2Eggman:	binclude	"artkospm/Boss - Eggman in SBZ2 & FZ.kospm"
 		even
-Nem_FzBoss:	binclude	"artnem/Boss - Final Zone.nem"
+Nem_FzBoss:	binclude	"artkospm/Boss - Final Zone.kospm"
 		even
-Nem_FzEggman:	binclude	"artnem/Boss - Eggman after FZ Fight.nem"
+Nem_FzEggman:	binclude	"artkospm/Boss - Eggman after FZ Fight.kospm"
 		even
-Nem_Exhaust:	binclude	"artnem/Boss - Exhaust Flame.nem"
+Nem_Exhaust:	binclude	"artkospm/Boss - Exhaust Flame.kospm"
 		even
-Nem_CreditText:	binclude	"artnem/Ending - Credits.nem"
+Nem_CreditText:	binclude	"artkospm/Ending - Credits.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Collision data
@@ -6393,6 +5973,7 @@ Col_SBZ_2:	binclude	"collide/SBZ2.bin"	; SBZ index 2
 ; ---------------------------------------------------------------------------
 ; Animated uncompressed graphics
 ; ---------------------------------------------------------------------------
+	align $8000
 Art_GhzWater:	binclude	"artunc/GHZ Waterfall.bin"
 		even
 Art_GhzFlower1:	binclude	"artunc/GHZ Flower Large.bin"

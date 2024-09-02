@@ -62,12 +62,12 @@ CollectRing:
 		moveq	#sfx_Ring,d0	; play ring sound
 		cmpi.w	#100,(v_rings).w ; do you have < 100 rings?
 		blo.s	.playsnd	; if yes, branch
-		bset	#1,(v_lifecount).w ; update lives counter
-		beq.s	.got100
+		addq.b	#1,(v_lifecount).w ; update lives counter
+		bpl.s	.got100
 		cmpi.w	#200,(v_rings).w ; do you have < 200 rings?
 		blo.s	.playsnd	; if yes, branch
-		bset	#2,(v_lifecount).w ; update lives counter
-		bne.s	.playsnd
+		addq.b	#1,(v_lifecount).w ; update lives counter
+;		bne.s	.playsnd
 
 .got100:
 		addq.b	#1,(v_lives).w	; add 1 to the number of lives you have
