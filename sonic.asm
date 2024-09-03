@@ -563,7 +563,7 @@ Vint_Menu:
 		beq.s	+	; rts
 		subq.w	#1,(v_demolength).w
 +
-		bra.w	Set_Kos_Bookmark
+		rts
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
@@ -758,7 +758,7 @@ TilemapToVRAM:
 		move.l	#$800000,d4
 
 Tilemap_Line:
-		move.l	d0,4(a6)	; move d0 to VDP_control_port
+		move.l	d0,vdp_control_port-vdp_data_port(a6)	; move d0 to VDP_control_port
 		move.w	d1,d3
 
 Tilemap_Cell:
@@ -1601,7 +1601,7 @@ GM_Title:
 		bne.s	.waitplc2 ; if yes, branch
 
 		lea	(vdp_data_port).l,a6
-		locVRAM	ArtTile_Level_Select_Font*tile_size,4(a6)
+		locVRAM	ArtTile_Level_Select_Font*tile_size,vdp_control_port-vdp_data_port(a6)
 		lea	Art_Text(pc),a5	; load level select font
 		move.w	#bytesToLcnt(Art_Text_End-Art_Text),d1
 
@@ -1633,7 +1633,7 @@ Tit_LoadText:
 		disable_ints
 		bsr.w	ClearScreen
 		lea	(vdp_data_port).l,a6
-		lea	4(a6),a5
+		lea	vdp_control_port-vdp_data_port(a6),a5
 		lea	(v_bgscreenposx).w,a3
 		movea.l	(v_lvllayoutbg).w,a4
 		move.w	#$6000,d2
@@ -3077,7 +3077,7 @@ LevelDataLoad:
 		bsr.w	KosPlusDec
 		bsr.s	LevelLayoutLoad
 		moveq	#0,d0
-		move.b	(a2)+,d0
+		move.b	(a2),d0
 		cmpi.w	#(id_LZ<<8)+3,(v_zone).w ; is level SBZ3 (LZ4) ?
 		bne.s	.notSBZ3	; if not, branch
 		moveq	#palid_SBZ3,d0	; use SB3 palette
