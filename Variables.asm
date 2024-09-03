@@ -18,6 +18,9 @@ Max_Rings = 511 ; default. maximum number possible is 759
 
 Rings_Space = (Max_Rings+1)*2
 
+; set this to any integer (normally 16)
+Max_PLC = 16
+
 ; sign-extends a 32-bit integer to 64-bit
 ; all RAM addresses are run through this function to allow them to work in both 16-bit and 32-bit addressing modes
 ramaddr function x,(-(x&$80000000)<<1)|x
@@ -46,7 +49,7 @@ Kos_decomp_source: =	Kos_decomp_queue	; long ; the compressed data location for 
 Kos_decomp_destination: =	Kos_decomp_queue+4	; long ; the decompression location for the first entry in the queue
 Kos_modules_left:	ds.w	1		; the number of modules left to decompresses. Sign bit set indicates a module is being decompressed/has been decompressed
 Kos_last_module_size:	ds.w	1		; the uncompressed size of the last module in words. All other modules are $800 words
-Kos_module_queue:	ds.b	6*13		; 6 bytes per entry, first longword is source location and next word is VRAM destination
+Kos_module_queue:	ds.b	6*Max_PLC	; 6 bytes per entry, first longword is source location and next word is VRAM destination
 Kos_module_queue_End:
 Kos_module_source: =	Kos_module_queue	; long ; the compressed data location for the first module in the queue
 Kos_module_destination: =	Kos_module_queue+4	; word ; the VRAM destination for the first module in the queue
@@ -62,7 +65,7 @@ Ring_start_addr_RAM:	ds.w	1
 Perfect_rings_left:	ds.w	1
 Ring_consumption_table:	ds.b	$80
 Ring_consumption_table_End:
-			ds.b	$EDE		; unused
+			ds.b	$ECC		; unused
 
 v_lvllayoutfg:		ds.l	1		; level layout ROM address (4 bytes)
 v_lvllayoutbg:		ds.l	1		; background layout ROM address (4 bytes)
