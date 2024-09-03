@@ -469,7 +469,7 @@ VBla_04:
 		subq.w	#1,(v_demolength).w
 
 .end:
-		bra.w	Set_Kos_Bookmark
+		rts
 ; ===========================================================================
 
 VBla_08:
@@ -496,7 +496,7 @@ VBla_08:
 		cmpi.b	#96,(v_hbla_line).w
 		bhs.s	Demo_Time
 		st.b	(f_doupdatesinhblank).w
-		bra.w	Set_Kos_Bookmark
+		rts
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to	run a demo for an amount of time
@@ -514,7 +514,7 @@ Demo_Time:
 		subq.w	#1,(v_demolength).w ; subtract 1 from time left
 
 .end:
-		bra.w	Set_Kos_Bookmark
+		rts
 ; End of function Demo_Time
 
 ; ===========================================================================
@@ -541,8 +541,7 @@ VBla_0C:
 		movem.l	d0-d1,(v_fg_scroll_flags_dup).w
 		bsr.w	LoadTilesAsYouMove
 		jsr	(AnimateLevelGfx).l
-		jsr	(HUD_Update).l
-		bra.w	Set_Kos_Bookmark
+		jmp	(HUD_Update).l
 ; ===========================================================================
 
 VBla_12:
@@ -1568,6 +1567,13 @@ GM_Title:
 
 		copyTilemap	v_128x128_end,vram_fg,40,28
 
+.waitplc:
+		bsr.w	Process_Kos_Queue
+		bsr.w	ProcessDMAQueue
+		bsr.w	Process_Kos_Module_Queue
+		tst.w	(Kos_modules_left).w ; are there any items in the pattern load cue?
+		bne.s	.waitplc ; if yes, branch
+
 		clearRAM v_palette_fading
 
 		moveq	#palid_Sonic,d0	; load Sonic's palette
@@ -1586,6 +1592,14 @@ GM_Title:
 		lea	(Nem_TitleTM).l,a1 ; load "TM" patterns
 		move.w	#tiles_to_bytes(ArtTile_Title_Trademark),d2
 		bsr.w	Queue_Kos_Module
+
+.waitplc2:
+		bsr.w	Process_Kos_Queue
+		bsr.w	ProcessDMAQueue
+		bsr.w	Process_Kos_Module_Queue
+		tst.w	(Kos_modules_left).w ; are there any items in the pattern load cue?
+		bne.s	.waitplc2 ; if yes, branch
+
 		lea	(vdp_data_port).l,a6
 		locVRAM	ArtTile_Level_Select_Font*tile_size,4(a6)
 		lea	Art_Text(pc),a5	; load level select font
@@ -1671,6 +1685,12 @@ Tit_LoadText:
 		jsr	(BuildSprites).l
 		moveq	#plcid_Main,d0
 		bsr.w	AddPLC
+.waitplc:
+		bsr.w	Process_Kos_Queue
+		bsr.w	ProcessDMAQueue
+		bsr.w	Process_Kos_Module_Queue
+		tst.w	(Kos_modules_left).w ; are there any items in the pattern load cue?
+		bne.s	.waitplc ; if yes, branch
 		moveq	#0,d0
 		move.w	d0,(v_title_dcount).w
 		move.w	d0,(v_title_ccount).w
@@ -1681,9 +1701,7 @@ Tit_LoadText:
 
 Tit_MainLoop:
 		move.w	#id_VB_04,(v_vbla_routine).w
-		bsr.w	Process_Kos_Queue
 		bsr.w	WaitForVBla
-		bsr.w	Process_Kos_Module_Queue
 		jsr	(ExecuteObjects).l
 		bsr.w	DeformLayers
 		jsr	(BuildSprites).l
@@ -1778,9 +1796,7 @@ GotoDemo:
 
 loc_33B6:
 		move.w	#id_VB_04,(v_vbla_routine).w
-		bsr.w	Process_Kos_Queue
 		bsr.w	WaitForVBla
-		bsr.w	Process_Kos_Module_Queue
 		bsr.w	DeformLayers
 		bsr.w	PaletteCycle
 		addq.w	#2,(v_player+obX).w
@@ -1877,10 +1893,15 @@ GM_Level:
 		moveq	#0,d0
 		move.b	(a2),d0
 		bsr.w	AddPLC		; load level patterns
-
-loc_37FC:
 		moveq	#plcid_Main2,d0
 		bsr.w	AddPLC		; load standard	patterns
+
+.waitplc:
+		bsr.w	Process_Kos_Queue
+		bsr.w	ProcessDMAQueue
+		bsr.w	Process_Kos_Module_Queue
+		tst.w	(Kos_modules_left).w ; are there any items in the pattern load cue?
+		bne.s	.waitplc ; if yes, branch
 
 Level_ClrRam:
 		clearRAM v_objspace
