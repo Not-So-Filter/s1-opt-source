@@ -1566,7 +1566,7 @@ GM_Title:
 		bsr.w	EniDec
 
 		copyTilemap	v_128x128_end,vram_fg,40,28
-
+		
 .waitplc:
 		bsr.w	Process_Kos_Queue
 		bsr.w	ProcessDMAQueue
@@ -1895,13 +1895,6 @@ GM_Level:
 		bsr.w	AddPLC		; load level patterns
 		moveq	#plcid_Main2,d0
 		bsr.w	AddPLC		; load standard	patterns
-
-.waitplc:
-		bsr.w	Process_Kos_Queue
-		bsr.w	ProcessDMAQueue
-		bsr.w	Process_Kos_Module_Queue
-		tst.w	(Kos_modules_left).w ; are there any items in the pattern load cue?
-		bne.s	.waitplc ; if yes, branch
 
 Level_ClrRam:
 		clearRAM v_objspace
