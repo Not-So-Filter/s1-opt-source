@@ -328,18 +328,6 @@ GameInit:
 
 		btst	#6,(v_megadrive).w
 		sne.b	(f_palmode).w
-		jsr	MegaPCM_LoadDriver
-		lea	SampleTable,a0
-		jsr	MegaPCM_LoadSampleTable
-		tst.w	d0                      ; was sample table loaded successfully?
-		beq.s	.SampleTableOk          ; if yes, branch
-		ifdef __DEBUG__
-		; for MD Debugger v.2.5 or above
-			RaiseError "MegaPCM_LoadSampleTable returned %<.b d0>", MPCM_Debugger_LoadSampleTableException
-		else
-			illegal
-		endif
-.SampleTableOk:
 		bsr.w	InitDMAQueue
 		bsr.w	VDPSetupGame
 		lea	(z80_port_1_control).l,a0	; init port 1 (joypad 1)
@@ -407,7 +395,7 @@ VBlank:
 		jsr	(a0)
 
 VBla_Music:
-		jsr	(UpdateSMPS).l
+;		jsr	(UpdateSMPS).l
 
 VBla_Exit:
 		addq.l	#1,(v_vbla_count).w
@@ -463,13 +451,12 @@ VBla_14:
 
 VBla_04:
 		bsr.w	sub_106E
-		bsr.w	LoadTilesAsYouMove_BGOnly
 		tst.w	(v_demolength).w
 		beq.s	.end
 		subq.w	#1,(v_demolength).w
 
 .end:
-		rts
+		bra.w	LoadTilesAsYouMove_BGOnly
 ; ===========================================================================
 
 VBla_08:
@@ -508,13 +495,12 @@ VBla_08:
 Demo_Time:
 		bsr.w	LoadTilesAsYouMove
 		jsr	(AnimateLevelGfx).l
-		jsr	(HUD_Update).l
 		tst.w	(v_demolength).w ; is there time left on the demo?
 		beq.s	.end		; if not, branch
 		subq.w	#1,(v_demolength).w ; subtract 1 from time left
 
 .end:
-		rts
+		jmp	(HUD_Update).l
 ; End of function Demo_Time
 
 ; ===========================================================================
@@ -557,13 +543,11 @@ Vint_Menu:
 		writeVRAMsrcdefined	v_spritetablebuffer,vram_sprites
 		writeVRAMsrcdefined	v_hscrolltablebuffer,vram_hscroll
 
-		bsr.w	ProcessDMAQueue
-
 		tst.w	(v_demolength).w
 		beq.s	+	; rts
 		subq.w	#1,(v_demolength).w
 +
-		rts
+		bra.w	ProcessDMAQueue
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
@@ -787,6 +771,36 @@ AddPLC:
 		add.w	d0,d0
 		move.w	(a6,d0.w),d0
 		lea	(a6,d0.w),a6		; jump to relevant PLC
+		move.w	(a6)+,d6	; get length of PLC
+		bmi.s	.skip
+
+.loop:
+		movea.l	(a6)+,a1
+		move.w	(a6)+,d2
+		bsr.w	Queue_Kos_Module
+		dbf	d6,.loop	; repeat for length of PLC
+
+.skip:
+		rts
+; End of function AddPLC
+
+; ---------------------------------------------------------------------------
+; Subroutine to load pattern load cues (aka to queue pattern load requests)
+; ---------------------------------------------------------------------------
+
+; ARGUMENTS
+; d0 = index of PLC list
+; ---------------------------------------------------------------------------
+
+; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
+
+; LoadPLC:
+NewPLC:
+		lea	(ArtLoadCues).l,a6
+		add.w	d0,d0
+		move.w	(a6,d0.w),d0
+		lea	(a6,d0.w),a6		; jump to relevant PLC
+		clearRAM Kos_decomp_stored_registers,Kos_module_end
 		move.w	(a6)+,d6	; get length of PLC
 		bmi.s	.skip
 
@@ -1457,9 +1471,7 @@ GM_Sega:
 		move.w	#$8B00,(a6)	; full-screen vertical scrolling
 		clr.b	(f_wtr_state).w
 		disable_ints
-		move.w	(v_vdp_buffer1).w,d0
-		andi.b	#$BF,d0
-		move.w	d0,(vdp_control_port).l
+		displayOff
 		bsr.w	ClearScreen
 		lea	(Nem_SegaLogo).l,a0 ; load Sega	logo patterns
 		lea	(v_128x128).l,a1
@@ -1494,9 +1506,7 @@ GM_Sega:
 		moveq	#0,d0
 		move.w	d0,(v_pcyc_time).w
 		move.w	d0,(v_pal_buffer+$10).w
-		move.w	(v_vdp_buffer1).w,d0
-		ori.b	#$40,d0
-		move.w	d0,(vdp_control_port).l
+		displayOn
 
 Sega_WaitPal:
 		move.w	#id_VB_02,(v_vbla_routine).w
@@ -1504,8 +1514,6 @@ Sega_WaitPal:
 		bsr.w	PalCycle_Sega
 		bne.s	Sega_WaitPal
 
-		moveq	#signextendB($87),d0
-		jsr	MegaPCM_PlaySample
 		move.w	#id_VB_0C,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		tst.b	(f_palmode).w
@@ -1566,7 +1574,7 @@ GM_Title:
 		bsr.w	EniDec
 
 		copyTilemap	v_128x128_end,vram_fg,40,28
-		
+
 .waitplc:
 		bsr.w	Process_Kos_Queue
 		bsr.w	ProcessDMAQueue
@@ -1653,7 +1661,6 @@ Tit_LoadText:
 		move.l	#dmaSource(v_128x128),d1
 		moveq	#tiles_to_bytes(ArtTile_Level),d2
 		bsr.w	QueueDMATransfer
-		bsr.w	ProcessDMAQueue
 		moveq	#palid_Title,d0	; load title screen palette
 		bsr.w	PalLoad_Fade
 		moveq	#bgm_Title,d0
@@ -1684,7 +1691,7 @@ Tit_LoadText:
 		bsr.w	DeformLayers
 		jsr	(BuildSprites).l
 		moveq	#plcid_Main,d0
-		bsr.w	AddPLC
+		bsr.w	NewPLC
 .waitplc:
 		bsr.w	Process_Kos_Queue
 		bsr.w	ProcessDMAQueue
@@ -1694,9 +1701,6 @@ Tit_LoadText:
 		moveq	#0,d0
 		move.w	d0,(v_title_dcount).w
 		move.w	d0,(v_title_ccount).w
-		move.w	(v_vdp_buffer1).w,d0
-		ori.b	#$40,d0
-		move.w	d0,(vdp_control_port).l
 		bsr.w	PaletteFadeIn
 
 Tit_MainLoop:
@@ -2264,7 +2268,7 @@ SignpostArtLoad:
 		beq.s	.exit
 		move.w	d1,(v_limitleft2).w ; move left boundary to current screen position
 		moveq	#plcid_Signpost,d0
-		bra.w	AddPLC		; load signpost	patterns
+		bra.w	NewPLC		; load signpost	patterns
 
 .exit:
 		rts
@@ -6262,8 +6266,6 @@ RingPos_SBZ2:	binclude	"ringpos/sbz2_INDIVIDUAL.bin"
 RingPos_SBZ3:	binclude	"ringpos/sbz3_INDIVIDUAL.bin"
 		even
 
-		include	"sound/MegaPCM.asm"
-		include	"sound/SampleTable.asm"
 SoundDriver:	include "s1.sounddriver.asm"
 
 ; ==============================================================

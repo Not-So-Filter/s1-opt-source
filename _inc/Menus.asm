@@ -3,9 +3,7 @@
 GM_MenuScreen:
 		bsr.w	PaletteFadeOut
 		disable_ints
-		move.w	(v_vdp_buffer1).w,d0
-		andi.b	#$BF,d0
-		move.w	d0,(vdp_control_port).l
+		displayOff
 		bsr.w	ClearScreen
 		lea	(vdp_control_port).l,a6
 		move.w	#$8004,(a6)		; H-INT disabled
@@ -16,7 +14,7 @@ GM_MenuScreen:
 		move.w	#$8C81,(a6)		; H res 40 cells, no interlace, S/H disabled
 		move.w	#$9001,(a6)		; Scroll table size: 64x32
 
-		clearRAM Kos_decomp_stored_registers, Ring_Positions
+		clearRAM Kos_decomp_stored_registers, Kos_module_end
 		clearRAM v_objspace,v_objspace_end
 
 		; load background + graphics of font/LevSelPics
@@ -52,6 +50,13 @@ GM_MenuScreen:
 		moveq	#28-1,d2	; 40x28 = whole screen
 		bsr.w	TilemapToVRAM	; display patterns
 
+.waitplc:
+		bsr.w	Process_Kos_Queue
+		bsr.w	ProcessDMAQueue
+		bsr.w	Process_Kos_Module_Queue
+		tst.w	(Kos_modules_left).w ; are there any items in the pattern load cue?
+		bne.s	.waitplc ; if yes, branch
+
 		; Draw sound test number
 		moveq	#palette_line_0,d3
 		bsr.w	LevelSelect_DrawSoundNumber
@@ -83,23 +88,14 @@ GM_MenuScreen:
 		move.l	d0,(v_screenposx).w
 		move.l	d0,(v_screenposy).w
 
-		move.w	#VintID_Menu,(v_vbla_routine).w
-		bsr.w	Process_Kos_Queue
-		bsr.w	WaitForVBla
-		bsr.w	Process_Kos_Module_Queue
-
-		move.w	(v_vdp_buffer1).w,d0
-		ori.b	#$40,d0
-		move.w	d0,(vdp_control_port).l
+		displayOn
 
 		bsr.w	PaletteFadeIn
 
 ;loc_93AC:
 LevelSelect_Main:	; routine running during level select
 		move.w	#VintID_Menu,(v_vbla_routine).w
-		bsr.w	Process_Kos_Queue
 		bsr.w	WaitForVBla
-		bsr.w	Process_Kos_Module_Queue
 
 		disable_ints
 

@@ -134,7 +134,7 @@ GotThroughAct:
 		move.b	d0,(HUD_scroll_flag).w
 		move.b	#id_GotThroughCard,(v_endcard).w
 		moveq	#plcid_TitleCard,d0
-		jsr	(AddPLC).w	; load title card patterns
+		jsr	(NewPLC).w	; load title card patterns
 		move.b	#1,(f_endactbonus).w
 		moveq	#0,d0
 		move.b	(v_timemin).w,d0

@@ -114,6 +114,22 @@ SoundPriorities:
 ; sub_71B4C:
 UpdateSMPS:
 		lea	(v_snddriver_ram).w,a6
+		lea	($A00000+YM_Buffer).l,a0		; CHG: load buffer ID address
+		stopZ80						; CHG: request Z80 stop on
+		move.b	(a0),d0					; CHG: load buffer ID
+		startZ80					; CHG: request Z80 stop off
+		cmp.b	$10(a6),d0				; CHG: has the 68k recently written to this buffer?
+		bne.s	.SD_ValidList				; CHG: if not, branch
+		rts						; CHG: return (cannot write to YM cue until Z80 is finished with it)
+
+.SD_ValidList:
+		move.l	#$A00000+YM_Buffer1,$10(a6)		; set the cue address to buffer 1
+		tst.b	d0					; is the Z80 accessing buffer 1?
+		bne.s	.SD_WriteBuffer1				; if not, branch
+		move.l	#$A00000+YM_Buffer2,$10(a6)		; set the cue address to buffer 2
+
+.SD_WriteBuffer1:
+		move.b	d0,$10(a6)				; set buffer ID the 68k is writing to
 .dblupdate:
 		clr.b	SMPS_RAM.f_voice_selector(a6)
 		tst.b	SMPS_RAM.f_pausemusic(a6)	; is music paused?
@@ -129,17 +145,24 @@ UpdateSMPS:
 ; loc_71BB2:
 .skipfadein:
 		lea	SMPS_RAM.v_soundqueue0(a6),a1	; load sound queues
-		tst.l	(a1)	; is a music or sound queued for playing?
+		tst.w	(a1)	; is a music or sound queued for playing?
 		beq.s	.nosndinput			; if not, branch
 		bsr.w	CycleSoundQueue
 ; loc_71BBC:
 .nosndinput:
+		lea	$40-$30(a6),a5			; MJ: making correction for flow below
+		moveq	#2-1,d7				; MJ: set number of PCM channels to run
+		move.b	#$80-1,SMPS_RAM.f_updating_dac(a6)	; MJ: reset as PCM channel
+
+.SD_NextPCM:
+		addq.b	#1,SMPS_RAM.f_updating_dac(a6)	; MJ: advance PCM channel ID
 		lea	SMPS_RAM.v_music_dac_track(a6),a5
 		tst.b	SMPS_Track.PlaybackControl(a5)	; Is DAC track playing?
 		bpl.s	.dacdone			; Branch if not
 		bsr.w	DACUpdateTrack
 ; loc_71BD4:
 .dacdone:
+		dbf	d7,.SD_NextPCM			; MJ: repeat for number of PCM channels available
 		clr.b	SMPS_RAM.f_updating_dac(a6)
 		moveq	#SMPS_MUSIC_FM_TRACK_COUNT-1,d7	; 6 FM tracks
 ; loc_71BDA:
@@ -257,9 +280,9 @@ DACUpdateTrack:
 		move.b	SMPS_Track.SavedDAC(a5),d0	; Get sample
 		cmpi.b	#$80,d0				; Is it a rest?
 		beq.s	.locret				; Return if yes
-		MPCM_stopZ80
-		move.b	d0,(z80_ram+Z_MPCM_CommandInput).l
-		MPCM_startZ80
+		stopZ80
+		move.b	d0,(z80_ram).l
+		startZ80
 ; locret_71CAA:
 .locret:
 		rts
@@ -1271,7 +1294,7 @@ WriteFMIorII:
 ; sub_7272E:
 WriteFMI:
 		lea	(ym2612_a0).l,a0
-		MPCM_stopZ80
+		stopZ80
 
 .waitloop1:
 		tst.b	(a0)		; Is FM busy?
@@ -1287,7 +1310,7 @@ WriteFMI:
 		tst.b	(a0)		; Is FM busy?
 		bmi.s	.waitloop3	; Loop if so
 		move.b	#$2A,(a0)
-		MPCM_startZ80
+		startZ80
 		rts
 ; End of function WriteFMI
 
@@ -1301,7 +1324,7 @@ WriteFMIIPart:
 ; sub_72764:
 WriteFMII:
 		lea	(ym2612_a0).l,a0
-		MPCM_stopZ80
+		stopZ80
 
 .waitloop1:
 		tst.b	(a0)		; Is FM busy?
@@ -1317,7 +1340,7 @@ WriteFMII:
 		tst.b	(a0)		; Is FM busy?
 		bmi.s	.waitloop3	; Loop if so
 		move.b	#$2A,(a0)
-		MPCM_startZ80
+		startZ80
 		rts
 ; End of function WriteFMII
 

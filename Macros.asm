@@ -46,6 +46,14 @@ start:
 zoneanimcount := zoneanimcount + 1
     endm
 
+displayOff:	macro
+		move.w	#$8134,(vdp_control_port).l
+		endm
+		
+displayOn:	macro
+		move.w	#$8134+$40,(vdp_control_port).l
+		endm
+
 ; ---------------------------------------------------------------------------
 ; Set a VRAM address via the VDP control port.
 ; input: 16-bit VRAM address, control port (default is (vdp_control_port).l)
@@ -198,36 +206,36 @@ copyTilemap:	macro source,destination,width,height
 		moveq	#(height)-1,d2
 		bsr.w	TilemapToVRAM
 		endm
+		
+; ---------------------------------------------------------------------------
+; stop the Z80
+; ---------------------------------------------------------------------------
 
-; ------------------------------------------------------------------------------
-; Macro to stop Z80 and take over its bus
-; ------------------------------------------------------------------------------
+stopZ80:	macro
+		move.w	#$100,(z80_bus_request).l
+.wait:		tst.w	(z80_bus_request).l
+		bne.s	.wait
+		endm
 
-MPCM_stopZ80:	macro OPBUSREQ
-	if ARGCOUNT==1
-		move.w	#$100, OPBUSREQ
-		.wait:
-			bset	#0, OPBUSREQ
-			bne.s	.wait
-	else
-		move.w	#$100, MPCM_Z80_BUSREQ
-		.wait:
-			bset	#0, MPCM_Z80_BUSREQ
-			bne.s	.wait
-	endif
-	endm
+; ---------------------------------------------------------------------------
+; reset the Z80
+; ---------------------------------------------------------------------------
 
-; ------------------------------------------------------------------------------
-; Macro to start Z80 and release its bus
-; ------------------------------------------------------------------------------
+resetZ80:	macro
+		move.w	#$100,(z80_reset).l
+		endm
 
-MPCM_startZ80:	macro OPBUSREQ
-	if ARGCOUNT==1
-		move.w	#0, OPBUSREQ
-	else
-		move.w	#0, MPCM_Z80_BUSREQ
-	endif
-	endm
+resetZ80a:	macro
+		move.w	#0,(z80_reset).l
+		endm
+
+; ---------------------------------------------------------------------------
+; start the Z80
+; ---------------------------------------------------------------------------
+
+startZ80:	macro
+		move.w	#0,(z80_bus_request).l
+		endm
 
 ; ---------------------------------------------------------------------------
 ; disable interrupts
