@@ -12,6 +12,11 @@ SMPS_MUSIC_PSG_TRACK_COUNT = (SMPS_RAM.v_music_psg_tracks_end-SMPS_RAM.v_music_p
 SMPS_SFX_TRACK_COUNT = (SMPS_RAM.v_sfx_track_ram_end-SMPS_RAM.v_sfx_track_ram)/SMPS_Track.len
 SMPS_SFX_FM_TRACK_COUNT = (SMPS_RAM.v_sfx_fm_tracks_end-SMPS_RAM.v_sfx_fm_tracks)/SMPS_Track.len
 SMPS_SFX_PSG_TRACK_COUNT = (SMPS_RAM.v_sfx_psg_tracks_end-SMPS_RAM.v_sfx_psg_tracks)/SMPS_Track.len
+
+MUTEDAC		=	0
+MUTEFM		=	0
+MUTEPSG		=	0
+
 ; ---------------------------------------------------------------------------
 ; PSG instruments used in music
 ; ---------------------------------------------------------------------------
@@ -156,7 +161,7 @@ UpdateSMPS:
 
 .SD_NextPCM:
 		addq.b	#1,SMPS_RAM.f_updating_dac(a6)	; MJ: advance PCM channel ID
-		lea	SMPS_RAM.v_music_dac_track(a6),a5
+		lea	SMPS_Track.len(a5),a5
 		tst.b	SMPS_Track.PlaybackControl(a5)	; Is DAC track playing?
 		bpl.s	.dacdone			; Branch if not
 		bsr.w	DACUpdateTrack
@@ -238,61 +243,378 @@ TempoWait:
 ; End of function TempoWait
 ; End of function UpdateSMPS
 
+; ===========================================================================
+; ---------------------------------------------------------------------------
+; Subroutine to run an FM channel ; EXTRA - ON/OFF
+; ---------------------------------------------------------------------------
+
+SDAC_CheckMute:
+		move.b	$21(a5),d0
+		cmp.b	$22(a5),d0
+		beq.s	S71C4E_NoCHG
+		tst.b	d0
+		bpl.s	S71C4E_NoMute
+
+		moveq	#%11011010|$FFFFFF00,d0			; prepare "JP Z" instruction
+		lea	(StopSample).l,a4		; MUTE
+		lea	($A00000+PCM2_Sample).l,a1		; load PCM 2 slot address
+		lea	($A00000+PCM2_NewRET).l,a0		; ''
+		cmpi.b	#$80,8(a6)				; is this PCM 1?
+		bne.s	SDAC_CM_NotePCM2				; if not, branch for PCM 2 writing
+		lea	($A00000+PCM1_Sample).l,a1		; load PCM 1 slot address
+		lea	($A00000+PCM1_NewRET).l,a0		; ''
+
+SDAC_CM_NotePCM2:
+		stopZ80
+		move.b	(a4)+,(a1)+				; set address of sample
+		move.b	(a4)+,(a1)+				; ''
+		move.b	(a4)+,(a1)+				; ''
+		move.b	(a4)+,(a1)+				; set address of reverse sample
+		move.b	(a4)+,(a1)+				; ''
+		move.b	(a4)+,(a1)+				; ''
+		move.b	(a4)+,(a1)+				; set address of next sample
+		move.b	(a4)+,(a1)+				; ''
+		move.b	(a4)+,(a1)+				; ''
+		move.b	(a4)+,(a1)+				; set address of next reverse sample
+		move.b	(a4)+,(a1)+				; ''
+		move.b	(a4)+,(a1)+				; ''
+		move.b	d0,(a0)					; change "JP NC" to "JP C"
+		startZ80
+
+	;	jsr	sub_726FE(pc)
+	;	move.b	$0A(a5),d1
+	;	andi.b	#%00111111,d1
+	;	move.b	#$B4,d0
+	;	jsr	loc_72716
+		bset.b	#6,(a5)
+		move.b	$21(a5),$22(a5)
+
+S71C4E_NoCHG:
+		rts
+
+S71C4E_NoMute:
+		move.b	d0,$22(a5)
+	;	move.b	$0B(a5),d0
+	;	jsr	SFM_UpdateVoice(pc)
+	;	move.b	$0A(a5),d1
+	;	move.b	#$B4,d0
+	;	jsr	loc_72716
+		bset.b	#6,(a5)
+		rts
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
 ; sub_71C4E: UpdateDAC:
 DACUpdateTrack:
-		subq.b	#1,SMPS_Track.DurationTimeout(a5)	; Has DAC sample timeout expired?
-		bne.s	.locret					; Return if not
-		st.b	SMPS_RAM.f_updating_dac(a6)	; Set flag to indicate this is the DAC
-;DACDoNext:
-		movea.l	SMPS_Track.DataPointer(a5),a4		; DAC track data pointer
-; loc_71C5E:
-.sampleloop:
-		moveq	#0,d5
-		move.b	(a4)+,d5	; Get next SMPS unit
-		cmpi.b	#$E0,d5		; Is it a coord. flag?
-		blo.s	.notcoord	; Branch if not
-		bsr.w	CoordFlag
-		bra.s	.sampleloop
-; ===========================================================================
-; loc_71C6E:
-.notcoord:
-		tst.b	d5				; Is it a sample?
-		bpl.s	.gotduration			; Branch if not (duration)
-		move.b	d5,SMPS_Track.SavedDAC(a5)	; Store new sample
-		move.b	(a4)+,d5			; Get another byte
-		bpl.s	.gotduration			; Branch if it is a duration
-		subq.w	#1,a4				; Put byte back
-		move.b	SMPS_Track.SavedDuration(a5),SMPS_Track.DurationTimeout(a5) ; Use last duration
-		bra.s	.gotsampleduration
-; ===========================================================================
-; loc_71C84:
-.gotduration:
-		bsr.w	SetDuration
-; loc_71C88:
-.gotsampleduration:
-		move.l	a4,SMPS_Track.DataPointer(a5) 		; Save pointer
-		btst	#2,SMPS_Track.PlaybackControl(a5)	; Is track being overridden?
-		bne.s	.locret					; Return if yes
-		moveq	#0,d0
-		move.b	SMPS_Track.SavedDAC(a5),d0	; Get sample
-		cmpi.b	#$80,d0				; Is it a rest?
-		beq.s	.locret				; Return if yes
+		bsr.w	SDAC_CheckMute			; EXTRA - ON/OFF
+
+		; Volume is being done first, as it'll update with a single
+		; frame delay, the PCM playback is a frame behind, as is the
+		; pitch control, but the volume change happens immediately,
+		; thus, a delay is needed.
+
+		; *VOLUME DELAY WAS HERE*
+
+		; And now back to the normal DAC
+		; SMPS routine
+
+		subq.b	#1,SMPS_Track.DurationTimeout(a5)	; decrease note timer
+		bne.w	SDAC_HoldNote				; if still running, branch
+		bclr.b	#4,(a5)					; disable softkey
+		bclr.b	#6,(a5)					; EXTRA
+		movea.l	4(a5),a4				; load tracker address
+		bra.s	SDAC_ReadTracker			; continue into loop
+
+SDAC_ReadFlag:
+		bsr.w	CoordFlag				; run flags subroutine
+
+SDAC_ReadTracker:
+		moveq	#0,d5					; clear d5
+		move.b	(a4)+,d5				; load byte from SMPS track
+		bpl.w	SDAC_Timer				; if it's a timer, branch
+		cmpi.b	#$E0,d5					; is it a flag?
+		bcc.s	SDAC_ReadFlag				; if so, branch
+		move.b	d5,$20(a5)				; EXTRA
+
+	SDAC_Update:						; EXTRA
+		bset.b	#1,(a5)					; set channel as resting
+		subi.b	#$80,d5					; minus starting note
+		beq.s	SDAC_NoFrequency			; if it's mute, branch
+		subq.b	#2,(a5)					; set channel as NOT resting
+		add.b	8(a5),d5				; add pitch to it
+		add.b	$14(a6),d5				; EXTRA
+		add.w	d5,d5					; multiply by size of word
+		move.w	(FrequenciesPCM-2)(pc,d5.w),$10(a5)	; save frequency to use
+
+SDAC_NoFrequency:
+
+		bclr.b	#6,(a5)					; EXTRA
+		bne.w	SDAC_Frequency				; EXTRA
+		move.b	(a4)+,d5				; load next note
+		bpl.w	SDAC_Timer				; if it's a timer, branch
+		subq.w	#1,a4					; move back (it's not a timer after all)
+		move.b	$F(a5),$E(a5)				; reset timer
+		bra.w	SDAC_PlayNote				; continue
+
+; ---------------------------------------------------------------------------
+; Note to PCM frequency conversion table
+; ---------------------------------------------------------------------------
+; The octave numbers below assume the samples are playing a default pitch/note
+; of C3 (A5)
+; ---------------------------------------------------------------------------
+
+	;	dc.w	  C     C#    D     Eb    E     F     F#    G     G#    A     Bb    B
+
+FrequenciesPCM:	dc.w	$0010,$0011,$0012,$0013,$0014,$0015,$0017,$0018,$0019,$001B,$001D,$001E   ; Octave 0 - (81 - 8C)
+		dc.w	$0020,$0022,$0024,$0026,$0028,$002B,$002D,$0030,$0033,$0036,$0039,$003C   ; Octave 1 - (8D - 98)
+		dc.w	$0040,$0044,$0048,$004C,$0051,$0055,$005B,$0060,$0066,$006C,$0072,$0079   ; Octave 2 - (99 - A4)
+		dc.w	$0080,$0088,$0090,$0098,$00A1,$00AB,$00B5,$00C0,$00CB,$00D7,$00E4,$00F2   ; Octave 3 - (A5 - B0)
+		dc.w	$0100,$010F,$011F,$0130,$0143,$0156,$016A,$0180,$0196,$01AF,$01C8,$01E3   ; Octave 4 - (B1 - BC)
+		dc.w	$0200,$021E,$023F,$0261,$0285,$02AB,$02D4,$02FF,$032D,$035D,$0390,$03C7   ; Octave 5 - (BD - C8)
+		dc.w	$0400,$043D,$047D,$04C2,$050A,$0557,$05A8,$05FE,$0659,$06BA,$0721,$078D   ; Octave 6 - (C9 - D4)
+		dc.w	$0800,$087A,$08FB,$0983,$0A14,$0AAE,$0B50,$0BFD,$0CB3,$0D74,$0E41,$0F1A   ; Octave 7 - (D5 - DF)
+
+; ---------------------------------------------------------------------------
+; Writing the sample to Dual PCM
+; ---------------------------------------------------------------------------
+
+SDAC_Timer:
+		bsr.w	SetDuration				; correct timer
+
+SDAC_PlayNote:
+		move.l	a4,4(a5)				; update tracker address
+
+	SDAC_MuteNote:
+		lea	(StopSample).l,a4			; load "stop sample" address
+		tst.b	$22(a5)
+		bmi.s	SDAC_Rest
+		move.b	(a5),d0					; load flags
+		btst	#4,d0					; is soft key set?
+		bne.s	SDAC_SoftKey				; if so, branch
+		roxr.b	#3,d0					; rotate around
+		bcs.w	SDAC_Return				; if the channel is being interrupted (bit 2), branch
+		bmi.s	SDAC_Rest				; if the rest bit was set, branch
+		moveq	#0,d0					; clear d0
+		move.b	$B(a5),d0				; load sample ID
+		add.w	d0,d0					; multiply by 4 (long-word size)
+		add.w	d0,d0					; ''
+		lea	(SampleList).l,a4			; load sample list
+		move.l	(a4,d0.w),a4				; load correct sample z80 pointer address
+
+SDAC_Rest:
+		moveq	#%11011010|$FFFFFF00,d0			; prepare "JP Z" instruction
+	if MUTEDAC=1
+		lea	(StopSample).l,a4		; MUTE
+	endif
+		lea	($A00000+PCM2_Sample).l,a1		; load PCM 2 slot address
+		lea	($A00000+PCM2_NewRET).l,a0		; ''
+		cmpi.b	#$80,SMPS_RAM.f_updating_dac(a6)	; is this PCM 1?
+		bne.s	SDAC_NotePCM2				; if not, branch for PCM 2 writing
+		lea	($A00000+PCM1_Sample).l,a1		; load PCM 1 slot address
+		lea	($A00000+PCM1_NewRET).l,a0		; ''
+
+SDAC_NotePCM2:
 		stopZ80
-		move.b	d0,(z80_ram).l
+		move.b	(a4)+,(a1)+				; set address of sample
+		move.b	(a4)+,(a1)+				; ''
+		move.b	(a4)+,(a1)+				; ''
+		move.b	(a4)+,(a1)+				; set address of reverse sample
+		move.b	(a4)+,(a1)+				; ''
+		move.b	(a4)+,(a1)+				; ''
+		move.b	(a4)+,(a1)+				; set address of next sample
+		move.b	(a4)+,(a1)+				; ''
+		move.b	(a4)+,(a1)+				; ''
+		move.b	(a4)+,(a1)+				; set address of next reverse sample
+		move.b	(a4)+,(a1)+				; ''
+		move.b	(a4)+,(a1)+				; ''
+		move.b	d0,(a0)					; change "JP NC" to "JP C"
 		startZ80
-; locret_71CAA:
-.locret:
+
+SDAC_SoftKey:
+
+	SDAC_Frequency:
+
+		move.b	9(a5),d0				; load current volume
+		moveq	#0,d1				; EXTRA
+		move.b	$16(a6),d1			; EXTRA
+	;	lea	(FOP_VolumeList).l,a0		; EXTRA
+	;	move.b	(a0,d1.w),d1			; EXTRA
+		add.b	d1,d1
+		add.b	d1,d0
+
+		move.b	d0,d1					; copy volume to d1
+		bpl.s	SDAC_ValidVolume			; if it is between 00 and 80, branch
+		moveq	#$FFFFFF80,d0				; set volume to mute (81 - FF is out of bounds)
+
+SDAC_ValidVolume:
+		cmp.b	$C(a5),d0				; has the volume changed?
+		beq.s	SDAC_NoVolume				; if not, branch (don't bother)
+		move.b	d0,$C(a5)				; update volume
+		moveq	#($FFFFFF00|%11010010),d1		; prepare Z80 "JP NC" instruction
+		lea	($A00000+PCM_ChangeVolume).l,a1		; load volume change instruction address
+		lea	($A00000+PCM2_Volume+1).l,a0		; load PCM 2 volume address
+		cmpi.b	#$80,8(a6)				; is this PCM 1?
+		bne.s	SDAC_VolumePCM2				; if not, branch for PCM 2 writing
+		lea	($A00000+PCM1_Volume+1).l,a0		; load PCM 1 volume address
+
+SDAC_VolumePCM2:
+		stopZ80
+		move.b	d0,(a0)					; change PCM volume
+		move.b	d1,(a1)					; change "JP C" to "JP NC"
+		startZ80
+
+SDAC_NoVolume:
+
+		move.w	SMPS_Track.Freq(a5),d6			; load frequency
+		btst	#3,(a5)					; is modulation turned on?
+		beq.s	SDAC_WriteFrequency			; if not, branch
+		movea.l	SMPS_Track.ModulationPtr(a5),a4		; load modulation address
+		lea	SMPS_Track.ModulationWait(a5),a1	; load modulation settings RAM
+		btst.b	#4,(a5)					; is soft key set?
+		bne.s	SDAC_NoResetModulation			; if so, branch
+		move.b	(a4)+,(a1)+				; reset settings...
+		move.b	(a4)+,(a1)+				; ''
+		move.b	(a4)+,(a1)+				; ''
+		move.b	(a4)+,d0				; ''
+		lsr.b	#1,d0					; ''
+		move.b	d0,(a1)+				; ''
+		clr.w	(a1)+					; clear modulation frequency
+
+SDAC_NoResetModulation:
+		add.w	SMPS_Track.ModulationVal(a5),d6		; add modulation pitch
+		bra.s	SDAC_WriteFrequency			; continue
+
+; ---------------------------------------------------------------------------
+; Holding a note...
+; ---------------------------------------------------------------------------
+
+SDAC_HoldNote:
+		move.b	(a5),d0					; load flags
+		andi.b	#%00000011,d0				; is the channel being interrupted by an SFX, or is resting?
+		bne.w	SDAC_Return				; if so, branch
+
+		btst.b	#6,(a5)			; EXTRA
+		beq.s	SDAC_NoUpdate		; EXTRA
+		moveq	#0,d5			; EXTRA
+		move.b	$20(a5),d5		; EXTRA
+		bra.w	SDAC_Update		; EXTRA
+
+	SDAC_NoUpdate:				; EXTRA
+		bsr.w	NoteTimeoutUpdate			; check for release
+		bsr.w	DoModulation				; run modulation and get right frequency to d6
+
+	; d6 = frequency
+
+SDAC_WriteFrequency:
+		move.b	SMPS_Track.Detune(a5),d0		; load detune
+		ext.w	d0					; sign extend to word
+		add.w	d6,d0					; add to frequency (move it up or down subtly)
+		btst.b	#5,(a5)					; is the reverse flag set?
+		beq.s	SDAC_NoReverse				; if not, branch
+		neg.w	d0					; reverse
+	;	subi.w	#$0100*2,d0				; move back to Dual PCM's neutral
+
+SDAC_NoReverse:
+	;	move.w	d0,d3					; copy to d3
+	;	smi	d2					; set extend byte if value is negative
+	;	addi.w	#$0100,d3				; convert to true neutral (for overflow)
+	;	muls.w	#Z80E_Read,d3				; multiply by number of reads the Z80 performs (read 18 vs playback 10)
+	;	move.b	d3,d5					; load fraction to d5
+	;	asr.l	#$08,d3					; divide by 100
+	;	move.w	d3,-(sp)				; get upper byte of overflow value
+	;	move.b	(sp),d4					; ''
+	;	move.w	d0,(sp)					; get upper byte of pitch/frequency
+	;	move.b	(sp),d1					; ''
+	;	addq.w	#$02,sp					; move stack forwards (would've done via increment and back...
+								; ...index, but interrupts could be a problem).
+	; d0 = XXXX.DD
+	; d1 = XXQQ.XX
+	; d2 = QQXX.XX
+	; d3 = XXVV.XX
+	; d4 = VVXX.XX
+	; d5 = XXXX.OO
+
+		moveq	#$FFFFFF00|%11010010,d2
+		move.b	d0,d1
+		lsr.w	#8,d0
+		cmpi.b	#$80,8(a6)				; is this PCM 1?
+		bne.s	SDAC_FrequePCM2				; if not, branch for PCM 2 writing
+		stopZ80
+	;	move.b	d0,($A00000+PCM1_RateDiv+1)		; write pitch main dividend
+	;	move.b	d1,($A00000+PCM1_RateQuo+1)		; write pitch quotient low
+	;	move.b	d2,($A00000+PCM1_RateQuo+2)		; write pitch quotient high
+	;	move.b	d3,($A00000+PCM1_Overflow+1)		; write low overflow
+	;	move.b	d4,($A00000+PCM1_Overflow+2)		; write high overflow
+	;	move.b	d5,($A00000+PCM1_OverDiv+1)		; write dividend overflow
+	;	move.b	#%11010010,($A00000+PCM_ChangePitch)	; change "JP C" to "JP NC"
+
+		move.b	d0,($A00000+PCM1_PitchHigh+1)
+		move.b	d1,($A00000+PCM1_PitchLow+1)
+		move.b	d2,($A00000+PCM1_ChangePitch)		; change "JP C" to "JP NC"
+		startZ80
+
+SDAC_Return:
+		rts						; return
+
+SDAC_FrequePCM2:
+		stopZ80
+	;	move.b	d0,($A00000+PCM2_RateDiv+1)		; write pitch main dividend
+	;	move.b	d1,($A00000+PCM2_RateQuo+1)		; write pitch quotient low
+	;	move.b	d2,($A00000+PCM2_RateQuo+2)		; write pitch quotient high
+	;	move.b	d3,($A00000+PCM2_Overflow+1)		; write low overflow
+	;	move.b	d4,($A00000+PCM2_Overflow+2)		; write high overflow
+	;	move.b	d5,($A00000+PCM2_OverDiv+1)		; write dividend overflow
+	;	move.b	#%11010010,($A00000+PCM_ChangePitch)	; change "JP C" to "JP NC"
+
+		move.b	d0,($A00000+PCM2_PitchHigh+1)
+		move.b	d1,($A00000+PCM2_PitchLow+1)
+		move.b	d2,($A00000+PCM2_ChangePitch)		; change "JP C" to "JP NC"
+		startZ80
+		rts						; return
+
+; ===========================================================================
+; ---------------------------------------------------------------------------
+; Subroutine to run an FM channel ; EXTRA - ON/OFF
+; ---------------------------------------------------------------------------
+
+SFM_CheckMute:
+		tst.b	$E(a6)
+		bne.s	S71CCA_NoCHG
+		move.b	$21(a5),d0
+		cmp.b	$22(a5),d0
+		beq.s	S71CCA_NoCHG
+		tst.b	d0
+		bpl.s	S71CCA_NoMute
+		bsr.w	FMNoteOff
+		move.b	$A(a5),d1
+		andi.b	#%00111111,d1
+		move.b	#$B4,d0
+		bsr.w	WriteFMIorIIMain
+		bset.b	#6,(a5)
+		move.b	$21(a5),$22(a5)
+
+S71CCA_NoCHG:
+		rts
+
+S71CCA_NoMute:
+		move.b	d0,$22(a5)
+		move.b	$B(a5),d0
+		bsr.w	SFM_UpdateVoice
+	;	bsr.w	FMNoteOn
+		move.b	$A(a5),d1
+		move.b	#$B4,d0
+		bsr.w	WriteFMIorIIMain
+		bset.b	#6,(a5)
 		rts
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
 ; sub_71CCA:
 FMUpdateTrack:
+		bsr.s	SFM_CheckMute			; EXTRA - ON/OFF
 		subq.b	#1,SMPS_Track.DurationTimeout(a5)	; Update duration timeout
 		bne.s	.notegoing				; Branch if it hasn't expired
+		bclr.b	#6,(a5)			; EXTRA
 		bclr	#4,SMPS_Track.PlaybackControl(a5)	; Clear 'do not attack next note' bit
 		bsr.s	FMDoNext
 		bsr.w	FMPrepareNote
@@ -300,6 +622,17 @@ FMUpdateTrack:
 ; ===========================================================================
 ; loc_71CE0:
 .notegoing:
+		bclr.b	#6,(a5)			; EXTRA
+		beq.s	SFM_NoUpdate			; EXTRA
+		bsr.w	SendVoiceTL			; EXTRA
+		moveq	#0,d5				; EXTRA
+		move.b	$20(a5),d5			; EXTRA
+		subi.b	#$80,d5				; EXTRA
+		beq.s	SFM_NoUpdate			; EXTRA
+		bsr.w	SFM_UpdateFreque		; EXTRA
+		bra.w	FMUpdateFreq			; EXTRA
+
+	SFM_NoUpdate:				; EXTRA
 		bsr.w	NoteTimeoutUpdate
 		bsr.w	DoModulation
 		bra.w	FMUpdateFreq
@@ -326,6 +659,7 @@ FMDoNext:
 		bsr.w	FMNoteOff
 		tst.b	d5		; Is this a note?
 		bpl.s	.gotduration	; Branch if not
+		move.b	d5,$20(a5)			; EXTRA
 		bsr.s	FMSetFreq
 		move.b	(a4)+,d5	; Get another byte
 		bpl.s	.gotduration	; Branch if it is a duration
@@ -345,7 +679,10 @@ FMDoNext:
 FMSetFreq:
 		subi.b	#$80,d5				; Make it a zero-based index
 		beq.s	TrackSetRest
+
+	SFM_UpdateFreque:			; EXTRA
 		add.b	SMPS_Track.Transpose(a5),d5	; Add track transposition
+		add.b	$14(a6),d5			; EXTRA
 		andi.w	#$7F,d5				; Clear high byte and sign bit
 		add.w	d5,d5
 		move.w	FMFrequencies(pc,d5.w),SMPS_Track.Freq(a5)	; Store new frequency
@@ -436,6 +773,8 @@ NoteTimeoutUpdate:
 		beq.s	FinishTrackUpdate.locret
 		subq.b	#1,SMPS_Track.NoteTimeout(a5)		; Update note fill timeout
 		bne.s	FinishTrackUpdate.locret		; Return if it hasn't expired
+		tst.b	8(a6)					; CHG: is this a PCM channel?
+		bmi.s	SDCR_StopPCM				; if so, branch (skipping rest flag setting)
 		bset	#1,SMPS_Track.PlaybackControl(a5)	; Put track at rest
 		addq.w	#4,sp					; Do not return to caller
 		tst.b	SMPS_Track.VoiceControl(a5)		; Is this a PSG track?
@@ -443,6 +782,41 @@ NoteTimeoutUpdate:
 		bra.w	FMNoteOff
 ; End of function NoteTimeoutUpdate
 
+SDCR_StopPCM:
+		stopZ80
+		lea	(StopSample).l,a0				; CHG: load stop sample address
+		lea	($A00000+PCM1_Sample).l,a1			; CHG: load PCM 1 slot address
+		move.b	(a0)+,(a1)+					; CHG: set address of sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of reverse sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of reverse sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	#%11011010,($A00000+PCM1_NewRET).l		; CHG: change "JP Nc" to "JP c"
+		lea	(StopSample).l,a0				; CHG: load stop sample address
+		lea	($A00000+PCM2_Sample).l,a1			; CHG: load PCM 2 slot address
+		move.b	(a0)+,(a1)+					; CHG: set address of sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of reverse sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of reverse sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	#%11011010,($A00000+PCM2_NewRET).l		; CHG: change "JP Nc" to "JP c"
+		startZ80
+		addq.w	#4,sp						; CHG: skip return address
+		rts
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
@@ -502,6 +876,12 @@ FMPrepareNote:
 FMUpdateFreq:
 		btst	#2,SMPS_Track.PlaybackControl(a5)	; Is track being overridden?
 		bne.s	locret_71E48				; Return if so
+		tst.b	$E(a6)
+		bne.s	locret_71E48_2
+		tst.b	$22(a5)					; EXTRA - ON/OFF
+		bne.s	locret_71E48
+
+	locret_71E48_2:
 		move.b	SMPS_Track.Detune(a5),d0
 		ext.w	d0
 		add.w	d0,d6
@@ -561,6 +941,12 @@ PauseMusic:
 		bpl.s	.bgmfmnext				; Branch if not
 		btst	#2,SMPS_Track.PlaybackControl(a5)	; Is track being overridden?
 		bne.s	.bgmfmnext				; Branch if yes
+		tst.b	$E(a6)
+		bne.s	.loc_71EB8_2
+		tst.b	$22(a5)				; EXTRA - ON/OFF
+		bne.s	.bgmfmnext
+
+	.loc_71EB8_2:
 		move.b	#$B4,d0					; Command to set AMS/FMS/panning
 		move.b	SMPS_Track.AMSFMSPan(a5),d1		; Get value from track RAM
 		bsr.w	WriteFMIorII
@@ -577,6 +963,12 @@ PauseMusic:
 		bpl.s	.sfxfmnext				; Branch if not
 		btst	#2,SMPS_Track.PlaybackControl(a5)	; Is track being overridden?
 		bne.s	.sfxfmnext				; Branch if yes
+		tst.b	$E(a6)
+		bne.s	.loc_71EDC_2
+		tst.b	$22(a5)				; EXTRA - ON/OFF
+		bne.s	.sfxfmnext
+
+	.loc_71EDC_2:
 		move.b	#$B4,d0					; Command to set AMS/FMS/panning
 		move.b	SMPS_Track.AMSFMSPan(a5),d1		; Get value from track RAM
 		bsr.w	WriteFMIorII
@@ -660,6 +1052,38 @@ ptr_flgend
 ; ---------------------------------------------------------------------------
 ; Sound_81to9F:
 Sound_PlayBGM:
+		stopZ80
+		lea	(StopSample).l,a0				; CHG: load stop sample address
+		lea	($A00000+PCM1_Sample).l,a1			; CHG: load PCM 1 slot address
+		move.b	(a0)+,(a1)+					; CHG: set address of sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of reverse sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of reverse sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	#%11011010,($A00000+PCM1_NewRET).l		; CHG: change "JP Nc" to "JP c"
+		lea	(StopSample).l,a0				; CHG: load stop sample address
+		lea	($A00000+PCM2_Sample).l,a1			; CHG: load PCM 2 slot address
+		move.b	(a0)+,(a1)+					; CHG: set address of sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of reverse sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of reverse sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	#%11011010,($A00000+PCM2_NewRET).l		; CHG: change "JP Nc" to "JP c"
+		startZ80
 		cmpi.b	#bgm_ExtraLife,d7			; is the "extra life" music to be played?
 		bne.s	.bgmnot1up				; if not, branch
 		tst.b	SMPS_RAM.f_1up_playing(a6)	; Is a 1-up music playing?
@@ -743,6 +1167,8 @@ Sound_PlayBGM:
 		move.b	d1,SMPS_Track.AMSFMSPan(a1)		; Set AMS/FMS/Panning
 		move.b	d5,SMPS_Track.DurationTimeout(a1)	; Set duration of first "note"
 		moveq	#0,d0
+		move.w	d0,$10(a1)				; MJ: clear FM's frequency (ensures no frequency writing)
+		move.b	#$80,$C(a1)				; MJ: set last frame's volume to something impossible (volume is from C0 - 40)
 		move.w	(a4)+,d0				; load DAC/FM pointer
 		add.l	a3,d0					; Relative pointer
 		move.l	d0,SMPS_Track.DataPointer(a1)		; Store track pointer
@@ -750,15 +1176,17 @@ Sound_PlayBGM:
 		adda.w	d6,a1
 		dbf	d7,.bgm_fmloadloop
 
-		cmpi.b	#7,2(a3)	; Are 7 FM tracks defined?
+		moveq	#$2B,d0					; MJ: set YM2612 address to DAC/FM6 switch
+		move.b	#%10000000,d1				; MJ: set to turn DAC on
+		cmpi.b	#8,2(a3)				; MJ: changed to 8 (8 = 6FM channels, no DAC)
 		bne.s	.silencefm6
-		moveq	#$2B,d0		; DAC enable/disable register
 		moveq	#0,d1		; Disable DAC
 		bsr.w	WriteFMI
 		bra.s	.bgm_fmdone
 ; ===========================================================================
 ; loc_720D8:
 .silencefm6:
+		bsr.w	WriteFMI				; MJ: added... (turn DAC on)
 		moveq	#$28,d0		; Key on/off register
 		moveq	#6,d1		; Note off on all operators of channel 6
 		bsr.w	WriteFMI
@@ -779,6 +1207,7 @@ Sound_PlayBGM:
 		bsr.w	WriteFMII
 ; loc_72114:
 .bgm_fmdone:
+		moveq	#2,d5					; EXT: set PSG to delay for 1 extra frame (This is to match the PSG with the FM/DAC which is delayed a frame by the Z80)
 		moveq	#0,d7
 		move.b	3(a3),d7	; Load number of PSG tracks
 		beq.s	.bgm_psgdone	; branch if zero
@@ -792,6 +1221,8 @@ Sound_PlayBGM:
 		move.b	d4,SMPS_Track.TempoDivider(a1)
 		move.b	d6,SMPS_Track.StackPointer(a1)		; set "gosub" (coord flag $F8) stack init value
 		move.b	d5,SMPS_Track.DurationTimeout(a1)	; Set duration of first "note"
+		move.w	#$FFFF,$10(a1)				; MJ: clear PSG's frequency (ensures no frequency writing)
+		move.b	#1,$12(a1)				; MJ: set key release rate to 1
 		moveq	#0,d0
 		move.w	(a4)+,d0			; load PSG channel pointer
 		add.l	a3,d0				; Relative pointer
@@ -848,7 +1279,7 @@ Sound_PlayBGM:
 		rts
 ; ===========================================================================
 ; byte_721BA:
-FMDACInitBytes:	dc.b 6,	0, 1, 2, 4, 5, 6	; first byte is for DAC; then notice the 0, 1, 2 then 4, 5, 6; this is the gap between parts I and II for YM2612 port writes
+FMDACInitBytes:	dc.b 6, 6, 0, 1, 2, 4, 5, 6	; first byte is for DAC; then notice the 0, 1, 2 then 4, 5, 6; this is the gap between parts I and II for YM2612 port writes
 		even
 ; byte_721C2:
 PSGInitBytes:	dc.b $80, $A0, $C0	; Specifically, these configure writes to the PSG port for each channel
@@ -906,8 +1337,10 @@ Sound_PlaySFX:
 .sfx_loadloop:
 		moveq	#0,d3
 		move.b	1(a1),d3	; Channel assignment bits
+		moveq	#3,d2					; EXT: set PSG to delay for 2 extra frames (This is to match the PSG with the FM/DAC which is delayed a frame by the Z80)
 		move.b	d3,d4
 		bmi.s	.sfxinitpsg	; Branch if PSG
+		move.b	#1,d2					; EXT: set DAC/FM to delay for 0 frames like normal (these have an auto delay of 1 frame in the Z80)
 		subq.b	#2,d3		; SFX can only have FM3, FM4 or FM5
 		add.b	d3,d3
 		lea	SFX_BGMChannelRAM(pc),a5
@@ -945,8 +1378,9 @@ Sound_PlaySFX:
 		add.l	a3,d0					; Relative pointer
 		move.l	d0,SMPS_Track.DataPointer(a5)		; Store track pointer
 		move.w	(a1)+,SMPS_Track.Transpose(a5)		; load FM/PSG channel modifier
-		move.b	#1,SMPS_Track.DurationTimeout(a5)	; Set duration of first "note"
+		move.b	d2,$E(a5)				; EXT: moving d2 contents (1 for FM/4 for PSG)
 		move.b	d6,SMPS_Track.StackPointer(a5)		; set "gosub" (coord flag $F8) stack init value
+		move.w	#-1,$10(a5)				; CHG: clear PSG's frequency (ensures no frequency writing)
 		tst.b	d4					; Is this a PSG channel?
 		bmi.s	.sfxpsginitdone				; Branch if yes
 		move.b	#$C0,SMPS_Track.AMSFMSPan(a5)		; AMS/FMS/Panning
@@ -988,8 +1422,7 @@ SFX_SFXChannelRAM:
 FadeOutMusic:
 		move.b	#3,SMPS_RAM.v_fadeout_delay(a6)		; Set fadeout delay to 3
 		move.b	#$28,SMPS_RAM.v_fadeout_counter(a6)	; Set fadeout counter
-		clr.b	SMPS_RAM.v_music_dac_track.PlaybackControl(a6)	; Stop DAC track
-		clr.b	SMPS_RAM.f_speedup(a6)			; Disable speed shoes tempo
+		clr.b	$24(a6)
 		rts
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
@@ -1006,6 +1439,70 @@ DoFadeOut:
 		subq.b	#1,SMPS_RAM.v_fadeout_counter(a6)	; Update fade counter
 		beq.w	StopAllSound				; Branch if fade is done
 		move.b	#3,SMPS_RAM.v_fadeout_delay(a6)		; Reset fade delay
+
+		lea	($A00000+PCM_ChangeVolume).l,a1		; CHG: load volume change instruction address
+		moveq	#0,d6					; CHG: clear d6
+		move.b	4(a6),d6				; CHG: load fade counter
+		moveq	#($FFFFFF00|%11010010),d1		; prepare Z80 "JP NC" instruction
+		lea	$40(a6),a5				; CHG: load PCM 1 address
+		lea	($A00000+PCM1_Volume+1).l,a0		; CHG: load PCM 1 volume address
+		bsr.s	FadeOut_PCM				; CHG: do PCM 1
+		lea	($A00000+PCM2_Volume+1).l,a0		; CHG: load PCM 2 volume address
+		bsr.s	FadeOut_PCM				; CHG: do PCM 2
+		bra.w	FadeOut_FM				; CHG: continue to FM fade out
+
+FadeOut_PCM:
+		tst.b	(a5)					; CHG: is the channel running?
+		bpl.s	FOP_NotRunning				; CHG: if not, branch
+		moveq	#0,d0					; CHG: clear d0
+		move.b	9(a5),d0				; CHG: load volume
+		bpl.s	FOP_NoMute				; CHG: if the channel is not mute (not from 80 - FF), branch
+		moveq	#$FFFFFF80,d0				; CHG: force volume 80 (mute)
+		bclr	#7,(a5)					; CHG: stop PCM channel
+		bra.s	FOP_Mute				; CHG: continue to mute the channel
+
+FOP_NoMute:
+	;	add.b	FOP_FadeList(pc,d0.w),d0		; CHG: reduce the volume
+		addq.b	#2,d0					; reduce the volume
+
+FOP_Mute:
+		move.b	d0,9(a5)				; CHG: update
+		cmp.b	$C(a5),d0				; CHG: has the volume changed?
+		beq.s	FOP_NotRunning				; CHG: if not, branch
+		move.b	d0,$C(a5)				; CHG: update volume
+		move.b	4(a6),d2				; CHG: load fade timer
+		andi.b	#3,d2					; CHG: has it been four frames?
+		bne.s	FOP_NotRunning				; CHG: if not, branch (temp until Z80 volume struggling is fixed)
+		stopZ80
+		move.b	d0,(a0)					; change PCM volume
+		move.b	d1,(a1)					; change "JP C" to "JP NC"
+		startZ80
+
+FOP_NotRunning:
+		lea	$30(a5),a5				; CHG: advance to next channel
+		rts						; CHG: return
+; ===========================================================================
+
+;FOP_FadeList:	dc.b	$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
+;		dc.b	$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
+;		dc.b	$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08
+;		dc.b	$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08,$08
+;		dc.b	$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04
+;		dc.b	$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04,$04
+;		dc.b	$02,$02,$02,$02,$02,$02,$02,$02,$02,$02,$02,$02,$02,$02,$02,$02
+;		dc.b	$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01
+
+;FOP_VolumeList:	dc.b	$00,$0C,$18,$20,$28,$30,$34,$38,$3C,$40,$44,$48,$4C,$50,$56,$5A
+;		dc.b	$60,$63,$66,$69,$6B,$6D,$6F,$70,$71,$72,$73,$74,$75,$76,$76,$77
+;		dc.b	$77,$78,$78,$79,$79,$79,$7A,$7A,$7A,$7B,$7B,$7B,$7C,$7C,$7C,$7C
+;		dc.b	$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7D,$7E,$7E,$7E,$7E,$7E,$7E,$7E,$7E
+;		dc.b	$7F,$7F,$7F,$7F,$7F,$7F,$7F,$7F,$7F,$7F,$7F,$7F,$7F,$7F,$7F,$7F
+;		dc.b	$7F,$7F,$7F,$7F,$7F,$7F,$7F,$7F,$7F,$7F,$7F,$7F,$7F,$7F,$7F,$7F
+;		dc.b	$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80
+;		dc.b	$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80
+; ===========================================================================
+
+FadeOut_FM:
 		lea	SMPS_RAM.v_music_fm_tracks(a6),a5
 		moveq	#SMPS_MUSIC_FM_TRACK_COUNT-1,d7		; 6 FM tracks
 ; loc_72524:
@@ -1041,6 +1538,7 @@ DoFadeOut:
 		tst.b	SMPS_Track.VoiceIndex(a5)
 		bne.s	.nextpsg
 		move.b	SMPS_Track.Volume(a5),d6	; Store new volume attenuation
+		add.b	$16(a6),d6			; EXTRA
 		bsr.w	SetPSGVolume
 ; loc_72560:
 .nextpsg:
@@ -1090,6 +1588,38 @@ FMSilenceAll:
 ; ---------------------------------------------------------------------------
 ; Sound_E4: StopSoundAndMusic:
 StopAllSound:
+		stopZ80
+		lea	(StopSample).l,a0				; CHG: load stop sample address
+		lea	($A00000+PCM1_Sample).l,a1			; CHG: load PCM 1 slot address
+		move.b	(a0)+,(a1)+					; CHG: set address of sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of reverse sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of reverse sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	#%11011010,($A00000+PCM1_NewRET).l		; CHG: change "JP Nc" to "JP c"
+		lea	(StopSample).l,a0				; CHG: load stop sample address
+		lea	($A00000+PCM2_Sample).l,a1			; CHG: load PCM 2 slot address
+		move.b	(a0)+,(a1)+					; CHG: set address of sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of reverse sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of reverse sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	#%11011010,($A00000+PCM2_NewRET).l		; CHG: change "JP Nc" to "JP c"
+		startZ80
 		moveq	#$2B,d0		; Enable/disable DAC
 		move.b	#$80,d1		; Enable DAC
 		bsr.w	WriteFMI
@@ -1097,12 +1627,16 @@ StopAllSound:
 		moveq	#0,d1		; FM3/FM6 normal mode, disable timers
 		bsr.w	WriteFMI
 		movea.l	a6,a0
+		move.l	$10(a6),d6					; EXT: store YM Cue list pointer
+		move.l	$14(a6),-(sp)			; EXTRA
 		move.w	#(SMPS_RAM.v_1up_ram_copy/4)-1,d0	; Clear $400 bytes: all variables and track data
 ; loc_725B6:
 .clearramloop:
 		clr.l	(a0)+
 		dbf	d0,.clearramloop
 
+		move.l	d6,$10(a6)					; EXT: restore YM Cue list pointer
+		move.l	(sp)+,$14(a6)			; EXTRA
 		clr.b	SMPS_RAM.v_sound_id(a6)	; set music to $80 (silence)
 		bsr.w	FMSilenceAll
 		bra.w	PSGSilenceAll
@@ -1117,7 +1651,9 @@ InitMusicPlayback:
 		move.b	SMPS_RAM.f_1up_playing(a6),d2
 		move.b	SMPS_RAM.f_speedup(a6),d3
 		move.b	SMPS_RAM.v_fadein_counter(a6),d4
-		move.l	SMPS_RAM.v_soundqueue0(a6),d5
+		move.w	SMPS_RAM.v_soundqueue0(a6),d5
+		move.l	$10(a6),d6					; EXT: store YM Cue list pointer
+		move.l	$14(a6),-(sp)			; EXTRA
 		move.w	#((SMPS_RAM.v_1up_ram_end-SMPS_RAM.v_1up_ram)/4)-1,d0	; Clear $220 bytes: all variables and music track data
 ; loc_725E4:
 .clearramloop:
@@ -1129,7 +1665,9 @@ InitMusicPlayback:
 		move.b	d2,SMPS_RAM.f_1up_playing(a6)
 		move.b	d3,SMPS_RAM.f_speedup(a6)
 		move.b	d4,SMPS_RAM.v_fadein_counter(a6)
-		move.l	d5,SMPS_RAM.v_soundqueue0(a6)
+		move.w	d5,SMPS_RAM.v_soundqueue0(a6)
+		move.l	d6,$10(a6)					; EXT: restore YM Cue list pointer
+		move.l	(sp)+,$14(a6)			; EXTRA
 		clr.b	SMPS_RAM.v_sound_id(a6)	; set music to $80 (silence)
 		lea	SMPS_RAM.v_music_track_ram+SMPS_Track.VoiceControl(a6),a1
 		lea	FMDACInitBytes(pc),a2
@@ -1201,6 +1739,19 @@ DoFadeIn:
 		beq.s	.fadedone				; Branch if yes
 		subq.b	#1,SMPS_RAM.v_fadein_counter(a6)	; Update fade counter
 		move.b	#2,SMPS_RAM.v_fadein_delay(a6)		; Reset fade delay
+
+		lea	$40(a6),a5				; CHG: load starting from PCM channels
+		moveq	#2-1,d7					; CHG: set number of PCM channels to alter
+
+.FadeIn_NextPCM:
+		tst.b	(a5)					; CHG: is this channel running?
+		bpl.s	.FadeIn_NoPCM				; CHG: if not, branch
+		subq.b	#3,9(a5)				; CHG: increase volume
+
+.FadeIn_NoPCM:
+		lea	$30(a5),a5				; CHG: advance to next channel
+		dbf	d7,.FadeIn_NextPCM			; CHG: repeat for all channels
+
 		lea	SMPS_RAM.v_music_fm_tracks(a6),a5
 		moveq	#SMPS_MUSIC_FM_TRACK_COUNT-1,d7		; 6 FM tracks
 ; loc_7269E:
@@ -1231,8 +1782,7 @@ DoFadeIn:
 ; ===========================================================================
 ; loc_726D6:
 .fadedone:
-		bclr	#2,SMPS_RAM.v_music_dac_track.PlaybackControl(a6)	; Clear 'SFX overriding' bit
-		clr.b	SMPS_RAM.f_fadein_flag(a6)				; Stop fadein
+		clr.b	$24(a6)
 		rts
 ; End of function DoFadeIn
 
@@ -1243,6 +1793,12 @@ FMNoteOn:
 		bne.s	.locret					; Return if so
 		btst	#2,SMPS_Track.PlaybackControl(a5)	; Is track being overridden?
 		bne.s	.locret					; Return if so
+		tst.b	$E(a6)
+		bne.s	.locret_726FC_2
+		tst.b	$22(a5)				; EXTRA - ON/OFF
+		bne.s	.locret
+
+	.locret_726FC_2:
 		moveq	#$28,d0					; Note on/off register
 		move.b	SMPS_Track.VoiceControl(a5),d1		; Get channel bits
 		ori.b	#$F0,d1					; Note on on all operators
@@ -1260,6 +1816,10 @@ FMNoteOff:
 		bne.s	FMNoteOn.locret				; Return if yes
 		btst	#2,SMPS_Track.PlaybackControl(a5)	; Is SFX overriding?
 		bne.s	FMNoteOn.locret				; Return if yes
+		tst.b	$E(a6)
+		bne.s	SendFMNoteOff
+		tst.b	$22(a5)				; EXTRA - ON/OFF
+		bne.s	FMNoteOn.locret
 ; loc_7270A:
 SendFMNoteOff:
 		moveq	#$28,d0				; Note on/off register
@@ -1272,6 +1832,10 @@ SendFMNoteOff:
 WriteFMIorIIMain:
 		btst	#2,SMPS_Track.PlaybackControl(a5)	; Is track being overriden by sfx?
 		bne.s	FMNoteOn.locret				; Return if yes
+		tst.b	$E(a6)
+		bne.s	WriteFMIorII
+		tst.b	$22(a5)				; EXTRA - ON/OFF
+		bne.s	FMNoteOn.locret
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
@@ -1286,32 +1850,24 @@ WriteFMIorII:
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
-; Strangely, despite this driver being SMPS 68k Type 1b,
-; WriteFMI and WriteFMII are the Type 1a versions.
-; In Sonic 1's prototype, they were the Type 1b versions.
-; I wonder why they were changed?
-
 ; sub_7272E:
 WriteFMI:
-		lea	(ym2612_a0).l,a0
-		stopZ80
-
-.waitloop1:
-		tst.b	(a0)		; Is FM busy?
-		bmi.s	.waitloop1	; Loop if so
-		move.b	d0,(a0)
-; loc_72746:
-.waitloop2:
-		tst.b	(a0)		; Is FM busy?
-		bmi.s	.waitloop2	; Loop if so
-		move.b	d1,ym2612_d0-ym2612_a0(a0)
-
-.waitloop3:
-		tst.b	(a0)		; Is FM busy?
-		bmi.s	.waitloop3	; Loop if so
-		move.b	#$2A,(a0)
-		startZ80
-		rts
+		movem.l	d2/a0,-(sp)				; EXT: store register data
+		movea.l	$10(a6),a0				; EXT: load Cue pointer
+		move.b	#$00,d2					; EXT: prepare d2 for YM2612 port address ($4000 - $4001)
+	if MUTEFM=1
+		move.b	#$B8,d0	; MUTE
+		move.b	#$00,d1
+	endif
+		stopZ80						; EXT: request Z80 stop "ON"
+		move.b	d2,(a0)+				; EXT: write YM2612 port address
+		move.b	d1,(a0)+				; EXT: write YM2612 data
+		move.b	d0,(a0)+				; EXT: write YM2612 address
+		st.b	(a0)					; EXT: set end of list marker
+		startZ80					; EXT: request Z80 stop "OFF"
+		move.l	a0,$10(a6)				; EXT: store cue address
+		movem.l	(sp)+,d2/a0				; EXT: restore register data
+		rts						; EXT: return
 ; End of function WriteFMI
 
 ; ===========================================================================
@@ -1323,33 +1879,57 @@ WriteFMIIPart:
 
 ; sub_72764:
 WriteFMII:
-		lea	(ym2612_a0).l,a0
-		stopZ80
-
-.waitloop1:
-		tst.b	(a0)		; Is FM busy?
-		bmi.s	.waitloop1	; Loop if so
-		move.b	d0,ym2612_a1-ym2612_a0(a0)
-; loc_7277C:
-.waitloop2:
-		tst.b	(a0)		; Is FM busy?
-		bmi.s	.waitloop2	; Loop if so
-		move.b	d1,ym2612_d1-ym2612_a0(a0)
-
-.waitloop3:
-		tst.b	(a0)		; Is FM busy?
-		bmi.s	.waitloop3	; Loop if so
-		move.b	#$2A,(a0)
-		startZ80
-		rts
+		movem.l	d2/a0,-(sp)				; EXT: store register data
+		movea.l	$10(a6),a0				; EXT: load Cue pointer
+		move.b	#$02,d2					; EXT: prepare d2 for YM2612 port address ($4002 - $4003)
+	if MUTEFM=1
+		move.b	#$B8,d0	; MUTE
+		move.b	#$00,d1
+	endif
+		stopZ80						; EXT: request Z80 stop "ON"
+		move.b	d2,(a0)+				; EXT: write YM2612 port address
+		move.b	d1,(a0)+				; EXT: write YM2612 data
+		move.b	d0,(a0)+				; EXT: write YM2612 address
+		st.b	(a0)					; EXT: set end of list marker
+		startZ80					; EXT: request Z80 stop "OFF"
+		move.l	a0,$10(a6)				; EXT: store cue address
+		movem.l	(sp)+,d2/a0				; EXT: restore register data
+		rts						; EXT: return
 ; End of function WriteFMII
+
+; ===========================================================================
+; ---------------------------------------------------------------------------
+; Subroutine to run an FM channel ; EXTRA - ON/OFF
+; ---------------------------------------------------------------------------
+
+SPSG_CheckMute:
+		tst.b	$E(a6)
+		bne.s	S72850_NoCHG
+		move.b	$21(a5),d0
+		cmp.b	$22(a5),d0
+		beq.s	S72850_NoCHG
+		tst.b	d0
+		bpl.s	S72850_NoMute
+		bset.b	#6,(a5)
+		move.b	$21(a5),$22(a5)
+		bra.w	SPSG_UpdateTone
+
+S72850_NoCHG:
+		rts
+
+S72850_NoMute:
+		move.b	d0,$22(a5)
+		bset.b	#6,(a5)
+		bra.w	PSGDoVolFX
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
 ; sub_72850:
 PSGUpdateTrack:
+		bsr.s	SPSG_CheckMute			; EXTRA - ON/OFF
 		subq.b	#1,SMPS_Track.DurationTimeout(a5)	; Update note timeout
 		bne.s	.notegoing
+		bclr.b	#6,(a5)			; EXTRA
 		bclr	#4,SMPS_Track.PlaybackControl(a5)	; Clear 'do not attack note' bit
 		bsr.s	PSGDoNext
 		bsr.w	PSGDoNoteOn
@@ -1357,9 +1937,23 @@ PSGUpdateTrack:
 ; ===========================================================================
 ; loc_72866:
 .notegoing:
+		btst.b	#6,(a5)			; EXTRA
+		beq.s	SPSG_NoUpdate			; EXTRA
+		moveq	#0,d5				; EXTRA
+		move.b	$20(a5),d5			; EXTRA
+		subi.b	#$81,d5				; EXTRA
+		bcs.s	SPSG_NoUpdate			; EXTRA
+		bsr.w	SPSG_UpdateFreque		; EXTRA
+		move.w	$10(a5),d6			; EXTRA
+		bra.w	SPSG_Update			; EXTRA
+
+	SPSG_NoUpdate:				; EXTRA
 		bsr.w	NoteTimeoutUpdate
 		bsr.w	PSGUpdateVolFX
 		bsr.w	DoModulation
+
+	SPSG_Update:				; EXTRA
+		bclr.b	#6,(a5)			; EXTRA
 		bra.w	PSGUpdateFreq
 ; End of function PSGUpdateTrack
 
@@ -1383,6 +1977,7 @@ PSGDoNext:
 .gotnote:
 		tst.b	d5		; Is it a note?
 		bpl.s	.gotduration	; Branch if not
+		move.b	d5,$20(a5)			; EXTRA
 		bsr.s	PSGSetFreq
 		move.b	(a4)+,d5	; Get another byte
 		bpl.s	.gotduration	; Branch if it is a duration
@@ -1401,15 +1996,19 @@ PSGDoNext:
 ; sub_728AC:
 PSGSetFreq:
 		subi.b	#$81,d5				; Convert to 0-based index
-		bcs.s	.restpsg			; If $80, put track at rest
+		bcs.s	PSGSetFreq.restpsg			; If $80, put track at rest
+	SPSG_UpdateFreque:			; EXTRA
 		add.b	SMPS_Track.Transpose(a5),d5	; Add in channel transposition
+		add.b	$14(a6),d5			; EXTRA
 		andi.w	#$7F,d5				; Clear high byte and sign bit
 		add.w	d5,d5
 		move.w	PSGFrequencies(pc,d5.w),SMPS_Track.Freq(a5)	; Set new frequency
+		btst.b	#6,(a5)			; EXTRA
+		bne.s	SPSG_Update			; EXTRA
 		rts
 ; ===========================================================================
 ; loc_728CA:
-.restpsg:
+PSGSetFreq.restpsg:
 		bset	#1,SMPS_Track.PlaybackControl(a5)	; Set 'track at rest' bit
 		move.w	#-1,SMPS_Track.Freq(a5)			; Invalidate note frequency
 		bra.w	PSGNoteOff
@@ -1454,6 +2053,12 @@ PSGUpdateFreq:
 		add.w	d0,d6
 		btst	#2,SMPS_Track.PlaybackControl(a5)	; Is track being overridden?
 		bne.s	.locret					; Return if yes
+		tst.b	$E(a6)
+		bne.s	.locret_7291E_2
+		tst.b	$22(a5)				; EXTRA - ON/OFF
+		bne.s	.locret
+
+	.locret_7291E_2:
 		btst	#1,SMPS_Track.PlaybackControl(a5)	; Is track at rest?
 		bne.s	.locret					; Return if yes
 		move.b	SMPS_Track.VoiceControl(a5),d0		; Get channel bits
@@ -1488,7 +2093,9 @@ PSGUpdateVolFX:
 		beq.s	PSGUpdateFreq.locret		; Return if it is zero
 ; loc_7292E:
 PSGDoVolFX:
-		move.b	SMPS_Track.Volume(a5),d6	; Get volume
+		move.b	$16(a6),d6			; EXTRA
+		asr.b	#2,d6				; EXTRA
+		add.b	9(a5),d6			; EXTRA
 		moveq	#0,d0
 		move.b	SMPS_Track.VoiceIndex(a5),d0	; Get PSG tone
 		beq.s	SetPSGVolume
@@ -1515,8 +2122,20 @@ PSGDoVolFX_Loop:
 SetPSGVolume:
 		btst	#1,SMPS_Track.PlaybackControl(a5)	; Is track at rest?
 		bne.s	locret_7298A				; Return if so
+	SPSG_UpdateTone:
 		btst	#2,SMPS_Track.PlaybackControl(a5)	; Is SFX overriding?
 		bne.s	locret_7298A				; Return if so
+		tst.b	$E(a6)
+		bne.s	locret_7298A_2
+		tst.b	$22(a5)				; EXTRA - ON/OFF
+		beq.s	locret_7298A_2
+		move.b	1(a5),d6
+		addi.b	#$10,d6
+		ori.b	#$F,d6
+		move.b	d6,($C00011).l
+		rts
+
+	locret_7298A_2:
 		btst	#4,SMPS_Track.PlaybackControl(a5)	; Is track set to not attack next note?
 		bne.s	PSGCheckNoteTimeout 			; Branch if yes
 ; loc_7297C:
@@ -1527,6 +2146,9 @@ PSGSendVolume:
 .psgsendvol:
 		or.b	SMPS_Track.VoiceControl(a5),d6	; Add in track selector bits
 		addi.b	#$10,d6				; Mark it as a volume command
+	if MUTEPSG=1
+		ori.b	#$F,d6	; MUTE
+	endif
 		move.b	d6,(psg_input).l
 
 locret_7298A:
@@ -1553,6 +2175,10 @@ VolEnvHold:
 PSGNoteOff:
 		btst	#2,SMPS_Track.PlaybackControl(a5)	; Is SFX overriding?
 		bne.s	locret_729B4				; Return if so
+		tst.b	$E(a6)
+		bne.s	SendPSGNoteOff
+		tst.b	$22(a5)				; EXTRA - ON/OFF
+		bne.s	locret_729B4
 ; loc_729A6:
 SendPSGNoteOff:
 		move.b	SMPS_Track.VoiceControl(a5),d0	; PSG channel to change
@@ -1644,6 +2270,14 @@ coordflagLookup:
 ; ===========================================================================
 		bra.w	cfOpF9			; $F9
 ; ===========================================================================
+; ---------------------------------------------------------------------------
+; Flag FA - Reverse flag
+; ---------------------------------------------------------------------------
+
+FlagFA:
+		bchg.b	#5,(a5)			; CHG: change reverse flag
+		rts					; CHG: return
+; ===========================================================================
 ; loc_72ACC:
 cfPanningAMSFMS:
 		move.b	(a4)+,d1			; New AMS/FMS/panning value
@@ -1683,19 +2317,35 @@ cfJumpReturn:
 cfFadeInToPrevious:
 		movea.l	a6,a0
 		lea	SMPS_RAM.v_1up_ram_copy(a6),a1
+		move.l	$10(a6),$10(a1)				; CHG: copy buffer address across
 		move.w	#((SMPS_RAM.v_1up_ram_end-SMPS_RAM.v_1up_ram)/4)-1,d0	; $220 bytes to restore: all variables and music track data
 ; loc_72B1E:
 .restoreramloop:
 		move.l	(a1)+,(a0)+
 		dbf	d0,.restoreramloop
-
-		moveq	#$2B,d0		; Register: DAC mode (bit 7 = enable)
-		moveq	#0,d1		; Value: DAC mode disable
-		bsr.w	WriteFMI	; Write to YM2612 Port 0 [sub_7272E]
-		bset	#2,SMPS_RAM.v_music_dac_track.PlaybackControl(a6)	; Set 'SFX overriding' bit
+		
+	;	bset	#2,$40(a6)
+	;	bset	#2,$70(a6)				; MJ: enable PCM 2
 		movea.l	a5,a3
 		moveq	#$28,d6
-		sub.b	SMPS_RAM.v_fadein_counter(a6),d6	; If fade already in progress, this adjusts track volume accordingly
+		sub.b	SMPS_RAM.v_fadein_counter(a6),d6
+		move.b	d6,d5
+		add.b	d5,d5
+		add.b	d6,d5
+
+		moveq	#2-1,d7				; CHG: set number of PCM channels to do
+		lea	$40(a6),a5				; CHG: start from PCM 1
+
+FE4_NextPCM:
+		btst	#7,(a5)				; CHG: is the channel running?
+		beq.s	FE4_NoPCM				; CHG: if not, branch
+	;	bset	#1,(a5)				; CHG: set the channel as resting
+		add.b	d5,9(a5)				; CHG: reduce its volume
+
+FE4_NoPCM:
+		lea	$30(a5),a5				; CHG: advance to next channel
+		dbf	d7,FE4_NextPCM				; CHG: repeat for all channels
+
 		moveq	#SMPS_MUSIC_FM_TRACK_COUNT-1,d7		; 6 FM tracks
 		lea	SMPS_RAM.v_music_fm_tracks(a6),a5
 ; loc_72B3A:
@@ -1706,6 +2356,12 @@ cfFadeInToPrevious:
 		add.b	d6,SMPS_Track.Volume(a5)		; Apply current volume fade-in
 		btst	#2,SMPS_Track.PlaybackControl(a5)	; Is SFX overriding?
 		bne.s	.nextfm					; Branch if yes
+		tst.b	$E(a6)
+		bne.s	.locret_72B5C_2
+		tst.b	$22(a5)				; EXTRA - ON/OFF
+		bne.s	.nextfm
+
+	.locret_72B5C_2:
 		moveq	#0,d0
 		move.b	SMPS_Track.VoiceIndex(a5),d0		; Get voice
 		movea.l	SMPS_RAM.v_voice_ptr(a6),a1		; Voice pointer
@@ -1797,8 +2453,16 @@ cfSetVoice:
 		moveq	#0,d0
 		move.b	(a4)+,d0				; Get new voice
 		move.b	d0,SMPS_Track.VoiceIndex(a5)		; Store it
+
+SFM_UpdateVoice:
 		btst	#2,SMPS_Track.PlaybackControl(a5)	; Is SFX overriding this track?
 		bne.s	locret_72CAA				; Return if yes
+		tst.b	$E(a6)
+		bne.s	locret_72CAA_2
+		tst.b	$22(a5)				; EXTRA - ON/OFF
+		bne.s	locret_72CAA
+
+	locret_72CAA_2:
 		movea.l	SMPS_RAM.v_voice_ptr(a6),a1		; Music voice pointer
 		tst.b	SMPS_RAM.f_voice_selector(a6)		; Are we updating a music track?
 		beq.s	SetVoice				; If yes, branch
@@ -1837,6 +2501,8 @@ SetVoice:
 		andi.w	#(FMSlotMask_End-FMSlotMask)-1,d4	; Get algorithm
 		move.b	FMSlotMask(pc,d4.w),d4		; Get slot mask for algorithm
 		move.b	SMPS_Track.Volume(a5),d3	; Track volume attenuation
+		add.b	$16(a6),d3			; EXTRA
+
 ; loc_72C8C:
 .sendtlloop:
 		move.b	(a2)+,d0
@@ -1871,6 +2537,12 @@ cfChangeFMVolume:
 SendVoiceTL:
 		btst	#2,SMPS_Track.PlaybackControl(a5)	; Is SFX overriding?
 		bne.s	.locret					; Return if so
+		tst.b	$E(a6)
+		bne.s	.locret_72D16_2
+		tst.b	$22(a5)				; EXTRA - ON/OFF
+		bne.s	.locret
+
+	.locret_72D16_2:
 		moveq	#0,d0
 		move.b	SMPS_Track.VoiceIndex(a5),d0		; Current voice
 		movea.l	SMPS_RAM.v_voice_ptr(a6),a1		; Voice pointer
@@ -1896,6 +2568,7 @@ SendVoiceTL:
 		andi.w	#(FMSlotMask_End-FMSlotMask)-1,d0	; Want only algorithm
 		move.b	FMSlotMask(pc,d0.w),d4		; Get slot mask
 		move.b	SMPS_Track.Volume(a5),d3	; Get track volume attenuation
+		add.b	$16(a6),d3			; EXTRA
 		bmi.s	.locret				; If negative, stop
 		moveq	#(FMInstrumentTLTable_End-FMInstrumentTLTable)-1,d5
 ; loc_72D02:
@@ -1950,14 +2623,15 @@ FMInstrumentTLTable_End
 ; loc_72D30:
 cfModulation:
 		bset	#3,SMPS_Track.PlaybackControl(a5)	; Turn on modulation
-		move.l	a4,SMPS_Track.ModulationPtr(a5)		; Save pointer to modulation data
-		move.b	(a4)+,SMPS_Track.ModulationWait(a5)	; Modulation delay
-		move.b	(a4)+,SMPS_Track.ModulationSpeed(a5)	; Modulation speed
-		move.b	(a4)+,SMPS_Track.ModulationDelta(a5)	; Modulation delta
-		move.b	(a4)+,d0				; Modulation steps...
-		lsr.b	#1,d0					; ... divided by 2...
-		move.b	d0,SMPS_Track.ModulationSteps(a5)	; ... before being stored
-		clr.w	SMPS_Track.ModulationVal(a5)		; Total accumulated modulation frequency change
+		movea.l	$14(a5),a0				; CHG: load modulation address
+		lea	$18(a5),a1				; CHG: load modulation settings RAM
+		move.b	(a0)+,(a1)+				; CHG: reset settings...
+		move.b	(a0)+,(a1)+				; CHG: ''
+		move.b	(a0)+,(a1)+				; CHG: ''
+		move.b	(a0)+,d0				; CHG: ''
+		lsr.b	#1,d0					; CHG: ''
+		move.b	d0,(a1)+				; CHG: ''
+		clr.w	(a1)+					; CHG: clear modulation frequency
 		rts
 ; ===========================================================================
 ; loc_72D52:
@@ -1972,7 +2646,7 @@ cfStopTrack:
 		tst.b	SMPS_Track.VoiceControl(a5)		; Is this a PSG track?
 		bmi.s	.stoppsg				; Branch if yes
 		tst.b	SMPS_RAM.f_updating_dac(a6)		; Is this the DAC we are updating?
-		bmi.w	.locexit				; Exit if yes
+		bmi.w	SF2_MutePCM				; CHG: for PCM, branch to a differen mute routine
 		bsr.w	FMNoteOff
 		bra.s	.stoppedchannel
 ; ===========================================================================
@@ -2032,6 +2706,49 @@ cfStopTrack:
 .locexit:
 		addq.w	#8,sp	; Tamper with return value so we don't go back to caller
 		rts
+		
+SF2_MutePCM:
+		addq.w	#4,sp						; CHG: go back, but not out of sound driver
+		cmpi.b	#$80,8(a6)					; CHG: is this PCM 1?
+		bne.s	SF2_MutePCM2					; CHG: if not, branch to mute PCM 2
+		lea	(StopSample).l,a0				; CHG: load stop sample address
+		lea	($A00000+PCM1_Sample).l,a1			; CHG: load PCM 1 slot address
+		stopZ80
+		move.b	(a0)+,(a1)+					; CHG: set address of sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of reverse sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of reverse sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	#%11011010,($A00000+PCM1_NewRET).l		; CHG: change "JP Nc" to "JP c"
+		startZ80
+		rts							; CHG: return
+
+SF2_MutePCM2:
+		lea	(StopSample).l,a0				; CHG: load stop sample address
+		lea	($A00000+PCM2_Sample).l,a1			; CHG: load PCM 1 slot address
+		stopZ80
+		move.b	(a0)+,(a1)+					; CHG: set address of sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of reverse sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: set address of reverse sample
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	(a0)+,(a1)+					; CHG: ''
+		move.b	#%11011010,($A00000+PCM2_NewRET).l		; CHG: change "JP Nc" to "JP c"
+		startZ80
+		rts							; CHG: return
 ; ===========================================================================
 ; loc_72E06:
 cfSetPSGNoise:
@@ -2039,7 +2756,18 @@ cfSetPSGNoise:
 		move.b	(a4)+,SMPS_Track.PSGNoise(a5)		; Save noise tone
 		btst	#2,SMPS_Track.PlaybackControl(a5)	; Is track being overridden?
 		bne.s	.locret					; Return if yes
-		move.b	-1(a4),(psg_input).l			; Set tone
+		tst.b	$E(a6)
+		bne.s	.locret_72E1E_2
+		tst.b	$22(a5)				; EXTRA - ON/OFF
+		bne.s	.locret
+
+	.locret_72E1E_2:
+		move.b	-1(a4),d0				; MJ: reload F3 setting to d0
+		move.b	d0,($C00011).l				; MJ: save F3 setting (should be EX (PSG 4) related)
+		andi.b	#%00000011,d0				; MJ: get only frequency mode bits
+		cmpi.b	#%00000011,d0				; MJ: has it been set to use PSG 3's frequency?
+		bne.s	.locret				; MJ: if not, branch
+		move.b	#%11011111,($C00011).l			; MJ: mute PSG 3's volume
 ; locret_72E1E:
 .locret:
 		rts
@@ -2291,3 +3019,18 @@ SoundCF:	include "sound/sfx/SndCF - Signpost.asm"
 		even
 SoundD0:	include "sound/sfx/SndD0 - Waterfall.asm"
 		even
+		
+; ===========================================================================
+; ---------------------------------------------------------------------------
+; Z80 ROM address
+; ---------------------------------------------------------------------------
+
+Z80ROM:		binclude	"sound/Z80.bin"
+Z80ROM_End:	even
+
+; ===========================================================================
+; ---------------------------------------------------------------------------
+; Sample 68k PCM list
+; ---------------------------------------------------------------------------
+; SampleList:
+		include	"sound/Samples.asm"

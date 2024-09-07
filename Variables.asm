@@ -135,7 +135,7 @@ v_objspace_end	= v_lvlobjend
 v_credits	= v_objspace+object_size*2	; object variable space for the credits text ($40 bytes)
 
 v_snddriver_ram:	SMPS_RAM		; sound driver state
-			ds.b	$A0		; unused
+			ds.b	$28		; unused
 
 v_gamemode:		ds.w	1		; game mode (00=Sega; 04=Title; 08=Demo; 0C=Level; 10=SS; 14=Cont; 18=End; 1C=Credit; +8C=PreLevel)
 v_jpadhold_stored:	ds.b	1		; joypad input - held (storage)

@@ -53,6 +53,12 @@ displayOff:	macro
 displayOn:	macro
 		move.w	#$8134+$40,(vdp_control_port).l
 		endm
+		
+dcb:		macro size,val
+	rept size
+		dc.ATTRIBUTE val
+	endm
+		endm
 
 ; ---------------------------------------------------------------------------
 ; Set a VRAM address via the VDP control port.
@@ -213,7 +219,7 @@ copyTilemap:	macro source,destination,width,height
 
 stopZ80:	macro
 		move.w	#$100,(z80_bus_request).l
-.wait:		tst.w	(z80_bus_request).l
+.wait:		btst	#0,(z80_bus_request).l
 		bne.s	.wait
 		endm
 
@@ -235,6 +241,29 @@ resetZ80a:	macro
 
 startZ80:	macro
 		move.w	#0,(z80_bus_request).l
+		endm
+		
+	; --- Storing 68k address for Z80 as dc ---
+
+dcz80		macro	Sample, SampleRev, SampleLoop, SampleLoopRev
+		dc.b	((Sample)&$FF)
+		dc.b	((((Sample)>>$08)&$7F)|$80)
+		dc.b	(((Sample)&$7F8000)>>$0F)
+		dc.b	(((SampleRev)-1)&$FF)
+		dc.b	(((((SampleRev)-1)>>$08)&$7F)|$80)
+		dc.b	((((SampleRev)-1)&$7F8000)>>$0F)
+		dc.b	((SampleLoop)&$FF)
+		dc.b	((((SampleLoop)>>$08)&$7F)|$80)
+		dc.b	(((SampleLoop)&$7F8000)>>$0F)
+		dc.b	(((SampleLoopRev)-1)&$FF)
+		dc.b	(((((SampleLoopRev)-1)>>$08)&$7F)|$80)
+		dc.b	((((SampleLoopRev)-1)&$7F8000)>>$0F)
+		endm
+
+	; --- End marker for PCM samples ---
+
+EndMarker	macro
+		dcb.b	Z80E_Read*(($1000+$100)/$100),$00
 		endm
 
 ; ---------------------------------------------------------------------------

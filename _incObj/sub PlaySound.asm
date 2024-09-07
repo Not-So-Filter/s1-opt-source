@@ -9,7 +9,7 @@
 
 
 PlayMusic:
-;		move.b	d0,(v_snddriver_ram.v_soundqueue0).w
+		move.b	d0,(v_snddriver_ram.v_soundqueue0).w
 		rts
 ; End of function PlaySound
 
@@ -21,6 +21,6 @@ PlayMusic:
 
 
 PlaySound:
-;		move.b	d0,(v_snddriver_ram.v_soundqueue1).w
+		move.b	d0,(v_snddriver_ram.v_soundqueue1).w
 		rts	
 ; End of function PlaySound_Special

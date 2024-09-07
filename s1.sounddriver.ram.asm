@@ -51,6 +51,14 @@ v_soundqueue_end:
 f_voice_selector:	ds.b	1	; $00 = use music voice pointer; $40 = use special voice pointer; $80 = use track voice pointer
 			ds.b	1	; unused
 v_voice_ptr:		ds.l	1	; voice data pointer (4 bytes)
+			ds.b	1	; unused
+			ds.b	1	; unused
+			ds.b	1	; unused
+			ds.b	1	; unused
+			ds.b	1	; unused
+			ds.b	1	; unused
+			ds.b	1	; unused
+			ds.b	1	; unused
 v_special_voice_ptr:	ds.l	1	; voice data pointer for special SFX ($D0-$DF) (4 bytes)
 f_fadein_flag:		ds.b	1	; Flag for fade in
 v_fadein_delay:		ds.b	1
@@ -64,9 +72,10 @@ f_push_playing:		ds.b	1	; if set, prevents further push sounds from playing
 			ds.b	$1F	; unused
 
 v_track_ram:
-v_music_track_ram:			; Start of music RAM
 v_music_fmdac_tracks:
-v_music_dac_track:	SMPS_Track
+v_music_dac1_track:	SMPS_Track
+v_music_track_ram:			; Start of music RAM
+v_music_dac2_track:	SMPS_Track
 v_music_fm_tracks:
 v_music_fm1_track:	SMPS_Track
 v_music_fm2_track:	SMPS_Track

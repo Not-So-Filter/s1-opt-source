@@ -1,10 +1,11 @@
 Mus8E_Sonic_Got_Through_Header:
 	smpsHeaderStartSong 1
 	smpsHeaderVoice     Mus8E_Sonic_Got_Through_Voices
-	smpsHeaderChan      $06, $02
+	smpsHeaderChan      $07, $02
 	smpsHeaderTempo     $02, $03
 
-	smpsHeaderDAC       Mus8E_Sonic_Got_Through_DAC
+	smpsHeaderDAC       Mus8E_Sonic_Got_Through_DAC,	$00, $00
+	smpsHeaderDAC       Mus8E_Sonic_Got_Through_DAC,	$00, $00
 	smpsHeaderFM        Mus8E_Sonic_Got_Through_FM1,	$F4, $0A
 	smpsHeaderFM        Mus8E_Sonic_Got_Through_FM2,	$DC, $0A
 	smpsHeaderFM        Mus8E_Sonic_Got_Through_FM3,	$F4, $15

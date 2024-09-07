@@ -1,10 +1,11 @@
 Mus8D_FZ_Header:
 	smpsHeaderStartSong 1
 	smpsHeaderVoice     Mus8D_FZ_Voices
-	smpsHeaderChan      $06, $00
+	smpsHeaderChan      $07, $00
 	smpsHeaderTempo     $02, $06
 
-	smpsHeaderDAC       Mus8D_FZ_DAC
+	smpsHeaderDAC       Mus8D_FZ_DAC,	$00, $00
+	smpsHeaderDAC       Mus8D_FZ_DAC,	$00, $00
 	smpsHeaderFM        Mus8D_FZ_FM1,	$00, $12
 	smpsHeaderFM        Mus8D_FZ_FM2,	$F4, $0D
 	smpsHeaderFM        Mus8D_FZ_FM3,	$F4, $0A

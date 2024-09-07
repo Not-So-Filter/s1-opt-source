@@ -40,7 +40,7 @@ Sonic1Timpani:		dcz80	SWF_S1_Timpani,		SWF_S1_Timpani,		SWF_StopSample,		SWF_Sto
 
 	; --- Volume tables ---
 
-PCM_Volumes:		binclude	"..\Volume Maker\Volumes.bin"
+PCM_Volumes:		binclude	"Volume Maker/Volumes.bin"
 
 	; --- Stop Sample (used by note 80) ---
 
@@ -50,11 +50,11 @@ SWF_StopSample_Rev:	EndMarker
 
 	; --- Sonic 1 Samples ---
 
-SWF_S1_Kick:		binclude	"Dual PCM\Samples\incswf\Sonic 1 Kick.swf"
+SWF_S1_Kick:		binclude	"Samples/Sonic 1 Kick.swf"
 SWF_S1_Kick_Rev:	EndMarker
-SWF_S1_Snare:		binclude	"Dual PCM\Samples\incswf\Sonic 1 Snare.swf"
+SWF_S1_Snare:		binclude	"Samples/Sonic 1 Snare.swf"
 SWF_S1_Snare_Rev:	EndMarker
-SWF_S1_Timpani:		binclude	"Dual PCM\Samples\incswf\Sonic 1 Timpani.swf"
+SWF_S1_Timpani:		binclude	"Samples/Sonic 1 Timpani.swf"
 SWF_S1_Timpani_Rev:	EndMarker
 
 ; ===========================================================================

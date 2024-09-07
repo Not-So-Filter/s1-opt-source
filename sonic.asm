@@ -329,6 +329,7 @@ GameInit:
 		btst	#6,(v_megadrive).w
 		sne.b	(f_palmode).w
 		bsr.w	InitDMAQueue
+		bsr.w	SoundDriverLoad
 		bsr.w	VDPSetupGame
 		lea	(z80_port_1_control).l,a0	; init port 1 (joypad 1)
 		moveq	#$40,d0
@@ -395,7 +396,7 @@ VBlank:
 		jsr	(a0)
 
 VBla_Music:
-;		jsr	(UpdateSMPS).l
+		jsr	(UpdateSMPS).l
 
 VBla_Exit:
 		addq.l	#1,(v_vbla_count).w
@@ -494,7 +495,6 @@ VBla_08:
 
 Demo_Time:
 		bsr.w	LoadTilesAsYouMove
-		jsr	(AnimateLevelGfx).l
 		tst.w	(v_demolength).w ; is there time left on the demo?
 		beq.s	.end		; if not, branch
 		subq.w	#1,(v_demolength).w ; subtract 1 from time left
@@ -526,7 +526,6 @@ VBla_0C:
 		movem.l	(v_fg_scroll_flags).w,d0-d1
 		movem.l	d0-d1,(v_fg_scroll_flags_dup).w
 		bsr.w	LoadTilesAsYouMove
-		jsr	(AnimateLevelGfx).l
 		jmp	(HUD_Update).l
 ; ===========================================================================
 
@@ -720,6 +719,50 @@ ClearScreen:
 
 		rts
 ; End of function ClearScreen
+
+; ---------------------------------------------------------------------------
+; Subroutine to	load the sound driver
+; ---------------------------------------------------------------------------
+
+; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
+
+
+SoundDriverLoad:
+		lea	(Z80ROM).l,a0				; load Z80 ROM data
+		lea	($A00000).l,a1				; load Z80 RAM space address
+		move.w	#(Z80ROM_End-Z80ROM)-1,d1		; set repeat times
+		move.w	#$100,($A11100).l			; request Z80 stop (ON)
+		move.w	#$100,($A11200).l			; request Z80 reset (OFF)
+		btst.b	#0,($A11100).l			; has the Z80 stopped yet?
+		bne.s	*-$08					; if not, branch
+
+SM_LoadZ80:
+		move.b	(a0)+,(a1)+				; dump Z80 data to Z80 space
+		dbf	d1,SM_LoadZ80				; repeat til done
+		lea	(StopSample).l,a0			; load stop/mute sample address
+		lea	($A00000+MuteSample).l,a1		; load Z80 RAM space where the pointer is to be stored
+		move.b	(a0)+,(a1)+				; copy pointer over into Z80
+		move.b	(a0)+,(a1)+				; ''
+		move.b	(a0)+,(a1)+				; ''
+		move.b	(a0)+,(a1)+				; CHG: copy "reverse" pointer over into Z80
+		move.b	(a0)+,(a1)+				; ''
+		move.b	(a0)+,(a1)+				; ''
+		lea	($A00000+SV_VolumeBank).l,a1		; load volume bank address write routine
+		move.b 	#$74|((PCM_Volumes>>$F)&1),(a1)+	; write "ld  (hl),?" instructions
+		move.b	#$74|((PCM_Volumes>>$10)&1),(a1)+	; ''
+		move.b	#$74|((PCM_Volumes>>$11)&1),(a1)+	; ''
+		move.b	#$74|((PCM_Volumes>>$12)&1),(a1)+	; ''
+		move.b	#$74|((PCM_Volumes>>$13)&1),(a1)+	; ''
+		move.b	#$74|((PCM_Volumes>>$14)&1),(a1)+	; ''
+		move.b	#$74|((PCM_Volumes>>$15)&1),(a1)+	; ''
+		move.b	#$74|((PCM_Volumes>>$16)&1),(a1)+	; ''
+		move.b	#$74|((PCM_Volumes>>$17)&1),(a1)+	; ''
+		move.w	#0,($A11200).l			; request Z80 reset (ON)
+		moveq	#$7F,d1					; set repeat times
+		dbf	d1,*					; there's no way of checking for reset, so a manual delay is necessary
+		move.w	#0,($A11100).l			; request Z80 stop (OFF)
+		move.w	#$100,($A11200).l			; request Z80 reset (OFF)
+		rts						; return
 
 		include	"_incObj/sub PlaySound.asm"
 		include	"_inc/PauseGame.asm"
@@ -2016,6 +2059,7 @@ Level_LoadObj:
 		jsr	(RingsManager).l
 		jsr	(ExecuteObjects).l
 		jsr	(BuildSprites).l
+		jsr	(AnimateLevelGfx).l
 		moveq	#0,d0
 		tst.b	(v_lastlamp).w	; are you starting from	a lamppost?
 		bne.s	Level_SkipClr	; if yes, branch
@@ -2106,6 +2150,7 @@ Level_SkipScroll:
 		jsr	(BuildSprites).l
 		jsr	(ObjPosLoad).l
 		jsr	(RingsManager).l
+		jsr	(AnimateLevelGfx).l
 		bsr.w	PaletteCycle
 		bsr.w	OscillateNumDo
 		bsr.w	SynchroAnimate
