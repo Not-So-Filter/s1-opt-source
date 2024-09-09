@@ -7,16 +7,17 @@
 
 PauseGame:
 		tst.b	(v_lives).w	; do you have any lives	left?
-		beq.s	Unpause		; if not, branch
+		beq.w	Unpause		; if not, branch
 		tst.b	(f_pause).w	; is game already paused?
 		bne.s	Pause_StopGame	; if yes, branch
 		tst.b	(v_jpadpress).w ; is Start button pressed?
-		bpl.s	Pause_DoNothing	; if not, branch
+		bpl.w	Pause_DoNothing	; if not, branch
 
 Pause_StopGame:
-		moveq	#1,d0
-		move.b	d0,(f_pause).w	; freeze time
-		move.b	d0,(v_snddriver_ram.f_pausemusic).w ; pause music
+		st.b	(f_pause).w	; freeze time
+		stopZ80
+		move.b	#MusID_Pause,(z80_ram+zAbsVar.StopMusic).l ; pause music
+		startZ80
 
 Pause_Loop:
 		move.w	#id_VB_08,(v_vbla_routine).w
@@ -40,7 +41,9 @@ Pause_ChkStart:
 		bpl.s	Pause_Loop	; if not, branch
 
 Pause_EndMusic:
-		move.b	#$80,(v_snddriver_ram.f_pausemusic).w	; unpause the music
+		stopZ80
+		move.b	#MusID_Unpause,(z80_ram+zAbsVar.StopMusic).l	; unpause the music
+		startZ80
 
 Unpause:
 		clr.b	(f_pause).w	; unpause the game
@@ -51,6 +54,8 @@ Pause_DoNothing:
 
 Pause_SlowMo:
 		st.b	(f_pause).w
-		move.b	#$80,(v_snddriver_ram.f_pausemusic).w	; Unpause the music
-		rts	
+		stopZ80
+		move.b	#MusID_Unpause,(z80_ram+zAbsVar.StopMusic).l	; unpause the music
+		startZ80
+		rts
 ; End of function PauseGame

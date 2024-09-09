@@ -1,4 +1,3 @@
-	include "s1.sounddriver.ram.asm"
 
 SpriteQueue struct DOTS
 priority0:		ds.b	$80
@@ -65,11 +64,13 @@ Ring_start_addr_RAM:	ds.w	1
 Perfect_rings_left:	ds.w	1
 Ring_consumption_table:	ds.b	$80
 Ring_consumption_table_End:
-			ds.b	$ECC		; unused
 
-v_lvllayoutfg:		ds.l	1		; level layout ROM address (4 bytes)
-v_lvllayoutbg:		ds.l	1		; background layout ROM address (4 bytes)
-			ds.b	$3F8		; unused
+			ds.b	$CC		; unused
+
+Level_layout_header:	ds.b	8		; first word = chunks per FG row, second word = chunks per BG row, third word = FG rows, fourth word = BG rows
+Level_layout_main:	ds.b	$FF8		; $40 word-sized line pointers followed by actual layout data
+Level_layout_main_end:
+			ds.b	$200		; unused
 v_bgscroll_buffer:	ds.b	$200		; background scroll buffer
 			ds.b	$200		; unused
 
@@ -86,7 +87,7 @@ v_hscrolltablebuffer:	ds.b	$380		; scrolling table data
 v_hscrolltablebuffer_end:
 			ds.b	$80		; unused
 
-v_objspace:		ds.b	object_size*$80	; object variable space ($40 bytes per object)
+v_objspace:		ds.b	object_size*128	; object variable space ($40 bytes per object)
 
 ; Title screen objects
 v_sonicteam	= v_objspace+object_size*2	; object variable space for the "SONIC TEAM PRESENTS" text ($40 bytes)
@@ -134,8 +135,7 @@ v_objspace_end	= v_lvlobjend
 ; Credits objects
 v_credits	= v_objspace+object_size*2	; object variable space for the credits text ($40 bytes)
 
-v_snddriver_ram:	SMPS_RAM		; sound driver state
-			ds.b	$28		; unused
+			ds.b	$600		; unused
 
 v_gamemode:		ds.w	1		; game mode (00=Sega; 04=Title; 08=Demo; 0C=Level; 10=SS; 14=Cont; 18=End; 1C=Credit; +8C=PreLevel)
 v_jpadhold_stored:	ds.b	1		; joypad input - held (storage)
@@ -231,8 +231,8 @@ v_sonspeeddec:		ds.w	1		; Sonic's deceleration
 v_sonframenum:		ds.b	1		; frame to display for Sonic
 f_sonframechg:		ds.b	1		; flag set to update Sonic's sprite frame
 v_anglebuffer:		ds.b	1		; angle of collision block that Sonic or object is standing on
-			ds.b	1		; unused
 v_anglebuffer2:		ds.b	1		; other angle of collision block that Sonic or object is standing on
+			ds.b	1		; unused
 			ds.b	1		; unused
 v_opl_routine:		ds.w	1		; ObjPosLoad - routine counter
 v_opl_screen:		ds.w	1		; ObjPosLoad - screen variable

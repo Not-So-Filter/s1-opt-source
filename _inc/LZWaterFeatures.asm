@@ -167,7 +167,7 @@ DynWater_LZ3:
 		bhs.s	.setwaterlz3	; if not, branch
 
 		move.w	#$4C8,d1	; set new water height
-		move.l	#Level_LZ3,(v_lvllayoutfg).w ; MJ: Set normal version of act 3's layout to be read
+;		move.l	#Level_LZ3,(v_lvllayoutfg).w ; MJ: Set normal version of act 3's layout to be read
 		move.b	#1,(v_wtr_routine).w ; use second routine next
 		moveq	#sfx_Rumbling,d0
 		bsr.w	PlaySound ; play sound $B7 (rumbling)
@@ -381,15 +381,17 @@ LZWaterSlides:
 		lea	(v_player).w,a1
 		btst	#1,obStatus(a1)	; is Sonic jumping?
 		bne.s	loc_3F6A	; if not, branch
-		move.w	obY(a1),d0		; MJ: Load Y position
-		add.w	d0,d0			; MJ: multiply by 2 (Because every 80 bytes switch from FG to BG..)
-		andi.w	#$F00,d0		; MJ: keep Y position within 800 pixels (in multiples of 80)
+		lea	(Level_layout_header).w,a2	; MJ: Load address of layout
+		moveq	#obY,d0
+		add.w	obY(a1),d0		; MJ: Load Y position
+		lsr.w	#5,d0 ; divide by 32
+		andi.w	#$3C,d0
+		move.w	8(a2,d0.w),d0 ; and get the column address from the level header
 		move.w	obX(a1),d1		; MJ: Load Y position
 		lsr.w	#7,d1			; MJ: divide X position by 80 (00 = 0, 80 = 1, etc)
-		andi.w	#$7F,d1			; MJ: keep within 4000 pixels (4000 / 80 = 80)
 		add.w	d1,d0			; MJ: add together
-		movea.l	(v_lvllayoutfg).w,a2	; MJ: Load address of layout
-		move.b	(a2,d0.w),d0		; MJ: collect correct chunk ID based on the position of Sonic
+		movea.w	d0,a2
+		move.b	(a2),d0
 		lea	Slide_Chunks_End(pc),a2
 		moveq	#Slide_Chunks_End-Slide_Chunks-1,d1
 

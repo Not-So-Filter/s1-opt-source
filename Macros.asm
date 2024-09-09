@@ -45,6 +45,42 @@ start:
 	dc.b numentries, numvramtiles
 zoneanimcount := zoneanimcount + 1
     endm
+    
+
+; function to make a little-endian 16-bit pointer for the Z80 sound driver
+z80_ptr function x,(x)<<8&$FF00|(x)>>8&$7F|$80
+
+; macro to declare a little-endian 16-bit pointer for the Z80 sound driver
+rom_ptr_z80 macro addr
+	dc.w z80_ptr(addr)
+    endm
+
+; aligns the start of a bank, and detects when the bank's contents is too large
+; can also print the amount of free space in a bank with DebugSoundbanks set
+startBank macro {INTLABEL}
+	align	$8000
+__LABEL__ label *
+soundBankStart := __LABEL__
+soundBankName := "__LABEL__"
+    endm
+
+DebugSoundbanks := 1
+
+finishBank macro
+	if * > soundBankStart + $8000
+		fatal "soundBank \{soundBankName} must fit in $8000 bytes but was $\{*-soundBankStart}. Try moving something to the other bank."
+	elseif (DebugSoundbanks<>0)&&(MOMPASS=1)
+		message "soundBank \{soundBankName} has $\{$8000+soundBankStart-*} bytes free at end."
+	endif
+    endm
+    
+; some variables and functions to help define those constants (redefined before a new set of IDs)
+offset :=	0		; this is the start of the pointer table
+ptrsize :=	1		; this is the size of a pointer (should be 1 if the ID is a multiple of the actual size)
+idstart :=	0		; value to add to all IDs
+
+; function using these variables
+id function ptr,((ptr-offset)/ptrsize+idstart)
 
 displayOff:	macro
 		move.w	#$8134,(vdp_control_port).l
@@ -52,12 +88,6 @@ displayOff:	macro
 		
 displayOn:	macro
 		move.w	#$8134+$40,(vdp_control_port).l
-		endm
-		
-dcb:		macro size,val
-	rept size
-		dc.ATTRIBUTE val
-	endm
 		endm
 
 ; ---------------------------------------------------------------------------
@@ -219,8 +249,8 @@ copyTilemap:	macro source,destination,width,height
 
 stopZ80:	macro
 		move.w	#$100,(z80_bus_request).l
-.wait:		btst	#0,(z80_bus_request).l
-		bne.s	.wait
+.wait:		tst.w	(z80_bus_request).l
+		beq.s	.wait
 		endm
 
 ; ---------------------------------------------------------------------------
@@ -241,29 +271,6 @@ resetZ80a:	macro
 
 startZ80:	macro
 		move.w	#0,(z80_bus_request).l
-		endm
-		
-	; --- Storing 68k address for Z80 as dc ---
-
-dcz80		macro	Sample, SampleRev, SampleLoop, SampleLoopRev
-		dc.b	((Sample)&$FF)
-		dc.b	((((Sample)>>$08)&$7F)|$80)
-		dc.b	(((Sample)&$7F8000)>>$0F)
-		dc.b	(((SampleRev)-1)&$FF)
-		dc.b	(((((SampleRev)-1)>>$08)&$7F)|$80)
-		dc.b	((((SampleRev)-1)&$7F8000)>>$0F)
-		dc.b	((SampleLoop)&$FF)
-		dc.b	((((SampleLoop)>>$08)&$7F)|$80)
-		dc.b	(((SampleLoop)&$7F8000)>>$0F)
-		dc.b	(((SampleLoopRev)-1)&$FF)
-		dc.b	(((((SampleLoopRev)-1)>>$08)&$7F)|$80)
-		dc.b	((((SampleLoopRev)-1)&$7F8000)>>$0F)
-		endm
-
-	; --- End marker for PCM samples ---
-
-EndMarker	macro
-		dcb.b	Z80E_Read*(($1000+$100)/$100),$00
 		endm
 
 ; ---------------------------------------------------------------------------
@@ -423,10 +430,3 @@ tiles_to_bytes function addr,((addr&$7FF)<<5)
 SonicMappingsVer = 3
 SonicDplcVer = 2
 		include	"_maps/MapMacros.asm"
-
-; ---------------------------------------------------------------------------
-; turn a sample rate into a djnz loop counter
-; ---------------------------------------------------------------------------
-                                                                                
-pcmLoopCounter function sampleRate,baseCycles, 1+(53693175/15/(sampleRate)-(baseCycles)+(13/2))/13
-dpcmLoopCounter function sampleRate, pcmLoopCounter(sampleRate,295/2) ; 295 is the number of cycles zPlayPCMLoop takes.

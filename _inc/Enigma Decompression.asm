@@ -125,9 +125,9 @@ EniDec_Done:
 		subq.w	#1,a0		; and another one if needed
 ; loc_17CE:
 .notnewbyte:
-		move.l	a0,d0
-		andi.w	#$FFFE,d0
-		movea.l	d0,a0
+		move.w	a0,d0
+		andi.w	#-2,d0
+		movea.w	d0,a0
 		rts
 
 ; ---------------------------------------------------------------------------

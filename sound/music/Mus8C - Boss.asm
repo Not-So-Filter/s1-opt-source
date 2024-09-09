@@ -1,11 +1,10 @@
 Mus8C_Boss_Header:
 	smpsHeaderStartSong 1
 	smpsHeaderVoice     Mus8C_Boss_Voices
-	smpsHeaderChan      $07, $02
+	smpsHeaderChan      $06, $02
 	smpsHeaderTempo     $02, $04
 
-	smpsHeaderDAC       Mus8C_Boss_DAC,	$00, $00
-	smpsHeaderDAC       Mus8C_Boss_DAC,	$00, $00
+	smpsHeaderDAC       Mus8C_Boss_DAC
 	smpsHeaderFM        Mus8C_Boss_FM1,	$F4, $12
 	smpsHeaderFM        Mus8C_Boss_FM2,	$E8, $08
 	smpsHeaderFM        Mus8C_Boss_FM3,	$F4, $0F

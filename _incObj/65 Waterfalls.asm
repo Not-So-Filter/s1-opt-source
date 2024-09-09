@@ -61,9 +61,9 @@ WFall_OnWater:	; Routine 6
 
 loc_12B36:	; Routine 8
 		bclr	#7,obGfx(a0)
-		cmpi.l	#Level_LZ3NoWall,(v_lvllayoutfg).w
-		bne.s	.animate
-		bset	#7,obGfx(a0)
+;		cmpi.l	#Level_LZ3NoWall,(v_lvllayoutfg).w
+;		bne.s	.animate
+;		bset	#7,obGfx(a0)
 
-.animate:
+;.animate:
 		bra.s	WFall_Animate

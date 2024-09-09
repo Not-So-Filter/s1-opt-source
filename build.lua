@@ -7,9 +7,9 @@ local common = require "build_tools.lua.common"
 
 if debugbuild then
 -- Build DEBUG ROM
-local message, abort = common.build_rom("sonic", "s1built", "-D __DEBUG__ -OLIST sonic.lst", "-p=0 -z=0," .. "kosinskiplus" .. ",Size_of_DAC_driver_guess,after", false, "https://github.com/sonicretro/s1disasm")
+local message, abort = common.build_rom("sonic", "s1built", "-D __DEBUG__ -OLIST sonic.lst", "-p=0 -z=0," .. "kosinskiplus" .. ",Size_of_Snd_driver_guess,after", false, "https://github.com/sonicretro/s1disasm")
 else
-local message, abort = common.build_rom("sonic", "s1built", "", "-p=0 -z=0," .. "kosinskiplus" .. ",Size_of_DAC_driver_guess,after", false, "https://github.com/sonicretro/s1disasm")
+local message, abort = common.build_rom("sonic", "s1built", "", "-p=0 -z=0," .. "kosinskiplus" .. ",Size_of_Snd_driver_guess,after", false, "https://github.com/sonicretro/s1disasm")
 end
 
 if message then

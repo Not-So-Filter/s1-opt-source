@@ -9,7 +9,9 @@
 
 
 PlayMusic:
-		move.b	d0,(v_snddriver_ram.v_soundqueue0).w
+		stopZ80
+		move.b	d0,(z80_ram+zAbsVar.Queue0).l
+		startZ80
 		rts
 ; End of function PlaySound
 
@@ -21,6 +23,8 @@ PlayMusic:
 
 
 PlaySound:
-		move.b	d0,(v_snddriver_ram.v_soundqueue1).w
-		rts	
+		stopZ80
+		move.b	d0,(z80_ram+zAbsVar.Queue1).l
+		startZ80
+		rts
 ; End of function PlaySound_Special

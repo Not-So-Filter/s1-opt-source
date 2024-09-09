@@ -169,9 +169,12 @@ s1TempotoS3 function n,s2TempotoS3(s1TempotoS2(n))
 s3TempotoS1 function n,s2TempotoS1(s2TempotoS3(n))
 s3TempotoS2 function n,s2TempotoS3(n)
 
+s2TempotoS1_Z80 function n,(((768-n)>>1)/(256-n))&0FFh
 s2TempotoS3_Z80 function n,(100h-((n==0)|n))&0FFh
 s1TempotoS2_Z80 function n,((((conv0To256(n)-1)<<8)+(conv0To256(n)>>1))/conv0To256(n))&0FFh
 s1TempotoS3_Z80 function n,s2TempotoS3_Z80(s1TempotoS2_Z80(n))
+s3TempotoS1_Z80 function n,s2TempotoS1_Z80(s2TempotoS3_Z80(n))
+s3TempotoS2_Z80 function n,s2TempotoS3_Z80(n)
 
 convertMainTempoMod macro mod
 		dc.b	s1TempotoS3(mod)
@@ -464,11 +467,7 @@ smpsPSGAlterVol macro vol
 
 ; Clears pushing sound flag in S1
 smpsClearPush macro
-	if SonicDriverVer==1
-		dc.b	$ED
-	else
-		fatal "Coord. Flag to clear S1 push block flag does not exist in S2 or S3 drivers. Complain to Flamewing to add it."
-	endif
+	dc.b	$ED
 	endm
 
 ; Stops special SFX (S1 only) and restarts overridden music track

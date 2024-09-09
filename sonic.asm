@@ -20,15 +20,15 @@ zeroOffsetOptimization = 1	; if 1, makes a handful of zero-offset instructions s
 DebuggingMode = 1
 
 	include "MacroSetup.asm"
+	include	"Macros.asm"
 	include	"Constants.asm"
 	include	"Variables.asm"
-	include	"Macros.asm"
 	include	"errorhandler/Debugger.asm"
 
 ; ---------------------------------------------------------------------------
 ; SMPS2ASM - A collection of macros that make SMPS's bytecode human-readable.
 ; ---------------------------------------------------------------------------
-SonicDriverVer = 1 ; Tell SMPS2ASM that we're using Sonic 1's driver.
+SonicDriverVer = 2 ; Tell SMPS2ASM that we're using Sonic 2's driver.
 		include "sound/_smps2asm_inc.asm"
 ; ===========================================================================
 
@@ -329,7 +329,7 @@ GameInit:
 		btst	#6,(v_megadrive).w
 		sne.b	(f_palmode).w
 		bsr.w	InitDMAQueue
-		bsr.w	SoundDriverLoad
+		jsr	(SoundDriverLoad).l
 		bsr.w	VDPSetupGame
 		lea	(z80_port_1_control).l,a0	; init port 1 (joypad 1)
 		moveq	#$40,d0
@@ -395,9 +395,6 @@ VBlank:
 		movea.w	VBla_Index(pc,d0.w),a0
 		jsr	(a0)
 
-VBla_Music:
-		jsr	(UpdateSMPS).l
-
 VBla_Exit:
 		addq.l	#1,(v_vbla_count).w
 		movem.l	(sp)+,d0-a6
@@ -418,24 +415,25 @@ VBla_00:
 		cmpi.w	#$80+id_Level,(v_gamemode).w
 		beq.s	.islevel
 		cmpi.w	#id_Level,(v_gamemode).w ; is game on a level?
-		bne.s	VBla_Music	; if not, branch
+		bne.s	VBla_Exit	; if not, branch
 
 .islevel:
 		tst.b	(f_water).w ; is level LZ ?
-		beq.s	VBla_Music	; if not, branch
+		beq.s	VBla_Exit	; if not, branch
 		st.b	(f_hbla_pal).w ; set HBlank flag
 		tst.b	(f_wtr_state).w	; is water above top of screen?
 		bne.s	.waterabove 	; if yes, branch
 
 		writeCRAM	v_palette,0
-		bra.s	.waterbelow
+		move.w	(v_hbla_hreg).w,(a5)
+		movem.l	(sp)+,d0-a6
+		rte
 
 .waterabove:
 		writeCRAM	v_palette_water,0
-
-.waterbelow:
 		move.w	(v_hbla_hreg).w,(a5)
-		bra.w	VBla_Music
+		movem.l	(sp)+,d0-a6
+		rte
 ; ===========================================================================
 
 VBla_02:
@@ -556,12 +554,12 @@ sub_106E:
 		tst.b	(f_wtr_state).w ; is water above top of screen?
 		bne.s	.waterabove	; if yes, branch
 		writeCRAM	v_palette,0
-		bra.s	.waterbelow
+		writeVRAMsrcdefined	v_spritetablebuffer,vram_sprites
+		writeVRAMsrcdefined	v_hscrolltablebuffer,vram_hscroll
+		rts
 
 .waterabove:
 		writeCRAM	v_palette_water,0
-
-.waterbelow:
 		writeVRAMsrcdefined	v_spritetablebuffer,vram_sprites
 		writeVRAMsrcdefined	v_hscrolltablebuffer,vram_hscroll
 		rts
@@ -719,50 +717,6 @@ ClearScreen:
 
 		rts
 ; End of function ClearScreen
-
-; ---------------------------------------------------------------------------
-; Subroutine to	load the sound driver
-; ---------------------------------------------------------------------------
-
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
-
-SoundDriverLoad:
-		lea	(Z80ROM).l,a0				; load Z80 ROM data
-		lea	($A00000).l,a1				; load Z80 RAM space address
-		move.w	#(Z80ROM_End-Z80ROM)-1,d1		; set repeat times
-		move.w	#$100,($A11100).l			; request Z80 stop (ON)
-		move.w	#$100,($A11200).l			; request Z80 reset (OFF)
-		btst.b	#0,($A11100).l			; has the Z80 stopped yet?
-		bne.s	*-$08					; if not, branch
-
-SM_LoadZ80:
-		move.b	(a0)+,(a1)+				; dump Z80 data to Z80 space
-		dbf	d1,SM_LoadZ80				; repeat til done
-		lea	(StopSample).l,a0			; load stop/mute sample address
-		lea	($A00000+MuteSample).l,a1		; load Z80 RAM space where the pointer is to be stored
-		move.b	(a0)+,(a1)+				; copy pointer over into Z80
-		move.b	(a0)+,(a1)+				; ''
-		move.b	(a0)+,(a1)+				; ''
-		move.b	(a0)+,(a1)+				; CHG: copy "reverse" pointer over into Z80
-		move.b	(a0)+,(a1)+				; ''
-		move.b	(a0)+,(a1)+				; ''
-		lea	($A00000+SV_VolumeBank).l,a1		; load volume bank address write routine
-		move.b 	#$74|((PCM_Volumes>>$F)&1),(a1)+	; write "ld  (hl),?" instructions
-		move.b	#$74|((PCM_Volumes>>$10)&1),(a1)+	; ''
-		move.b	#$74|((PCM_Volumes>>$11)&1),(a1)+	; ''
-		move.b	#$74|((PCM_Volumes>>$12)&1),(a1)+	; ''
-		move.b	#$74|((PCM_Volumes>>$13)&1),(a1)+	; ''
-		move.b	#$74|((PCM_Volumes>>$14)&1),(a1)+	; ''
-		move.b	#$74|((PCM_Volumes>>$15)&1),(a1)+	; ''
-		move.b	#$74|((PCM_Volumes>>$16)&1),(a1)+	; ''
-		move.b	#$74|((PCM_Volumes>>$17)&1),(a1)+	; ''
-		move.w	#0,($A11200).l			; request Z80 reset (ON)
-		moveq	#$7F,d1					; set repeat times
-		dbf	d1,*					; there's no way of checking for reset, so a manual delay is necessary
-		move.w	#0,($A11100).l			; request Z80 stop (OFF)
-		move.w	#$100,($A11200).l			; request Z80 reset (OFF)
-		rts						; return
 
 		include	"_incObj/sub PlaySound.asm"
 		include	"_inc/PauseGame.asm"
@@ -1686,7 +1640,7 @@ Tit_LoadText:
 		lea	(vdp_data_port).l,a6
 		lea	vdp_control_port-vdp_data_port(a6),a5
 		lea	(v_bgscreenposx).w,a3
-		movea.l	(v_lvllayoutbg).w,a4
+		lea	(Level_layout_main+2).w,a4
 		move.w	#$6000,d2
 		bsr.w	DrawChunks
 		lea	(Eni_Title).l,a0 ; load	title screen mappings
@@ -1735,15 +1689,14 @@ Tit_LoadText:
 		jsr	(BuildSprites).l
 		moveq	#plcid_Main,d0
 		bsr.w	NewPLC
+
 .waitplc:
 		bsr.w	Process_Kos_Queue
 		bsr.w	ProcessDMAQueue
 		bsr.w	Process_Kos_Module_Queue
 		tst.w	(Kos_modules_left).w ; are there any items in the pattern load cue?
 		bne.s	.waitplc ; if yes, branch
-		moveq	#0,d0
-		move.w	d0,(v_title_dcount).w
-		move.w	d0,(v_title_ccount).w
+		clr.l	(v_title_dcount).w
 		bsr.w	PaletteFadeIn
 
 Tit_MainLoop:
@@ -1813,7 +1766,7 @@ Tit_CountC:
 
 loc_3230:
 		tst.w	(v_demolength).w
-		beq.w	GotoDemo
+		beq.s	GotoDemo
 		tst.b	(v_jpadpress).w ; check if Start is pressed
 		bpl.w	Tit_MainLoop	; if not, branch
 
@@ -2044,9 +1997,7 @@ Level_ChkDebug:
 	endif
 
 Level_ChkWater:
-		moveq	#0,d0
-		move.w	d0,(v_jpadhold_stored).w
-		move.w	d0,(v_jpadhold).w
+		clr.l	(v_jpadhold_stored).w
 		tst.b	(f_water).w ; does level have water?
 		beq.s	Level_LoadObj	; if not, branch
 		move.b	#id_WaterSurface,(v_watersurface1).w ; load water surface object
@@ -2336,7 +2287,7 @@ LoadTilesAsYouMove_BGOnly:
 		lea	vdp_control_port-vdp_data_port(a6),a5
 		lea	(v_bg1_scroll_flags).w,a2
 		lea	(v_bgscreenposx).w,a3
-		movea.l	(v_lvllayoutbg).w,a4
+		lea	(Level_layout_main+2).w,a4
 		move.w	#$6000,d2
 		bsr.w	DrawBGScrollBlock1
 		lea	(v_bg2_scroll_flags).w,a2
@@ -2357,7 +2308,7 @@ LoadTilesAsYouMove:
 		; First, update the background
 		lea	(v_bg1_scroll_flags_dup).w,a2	; Scroll block 1 scroll flags
 		lea	(v_bgscreenposx_dup).w,a3	; Scroll block 1 X coordinate
-		movea.l	(v_lvllayoutbg).w,a4
+		lea	(Level_layout_main+2).w,a4
 		move.w	#$6000,d2			; VRAM thing for selecting Plane B
 		bsr.w	DrawBGScrollBlock1
 		lea	(v_bg2_scroll_flags_dup).w,a2	; Scroll block 2 scroll flags
@@ -2369,7 +2320,7 @@ LoadTilesAsYouMove:
 		; Then, update the foreground
 		lea	(v_fg_scroll_flags_dup).w,a2	; Foreground scroll flags
 		lea	(v_screenposx_dup).w,a3		; Foreground X coordinate
-		movea.l	(v_lvllayoutfg).w,a4
+		subq.w	#2,a4
 		move.w	#$4000,d2			; VRAM thing for selecting Plane A
 		; The FG's update function is inlined here
 		tst.b	(a2)
@@ -2874,32 +2825,30 @@ GetBlockData:
 		add.w	(a3),d5
 GetBlockData_2:
 		add.w	4(a3),d4
-		lea	(v_16x16).w,a1
-		; Turn Y coordinate into index into level layout
-		move.w	d4,d3		; MJ: copy Y position to d3
-		andi.w	#$780,d3	; MJ: get within 780 (Not 380) (E00 pixels (not 700)) in multiples of 80
-		; Turn X coordinate into index into level layout
+		; Set Y coordinate in level layout
+		move.w	d4,d0		; MJ: copy Y position to d3
+		asr.w	#5,d0
+		andi.w	#$3C,d0
+		movea.w	(a4,d0.w),a1
+		; Set X coordinate in level layout
 		lsr.w	#3,d5		; MJ: divide X position by 8
 		move.w	d5,d0		; MJ: copy to d0
 		lsr.w	#4,d0		; MJ: divide by 10 (Not 20)
-		andi.w	#$7F,d0		; MJ: get within 7F
-		; Get chunk from level layout
-		add.w	d3,d3		; MJ: multiply by 2 (So it skips the BG)
-		add.w	d3,d0		; MJ: add calc'd Y pos
 		moveq	#-1,d3		; MJ: prepare FFFF in d3
-		move.b	(a4,d0.w),d3	; MJ: collect correct chunk ID from layout
-		; Turn chunk ID into index into chunk table
-		andi.w	#$FF,d3		; MJ: keep within FF
+		clr.w	d3
+		; Turn chunk ID from level layout
+		move.b  (a1,d0.w),d3
 		lsl.w	#7,d3		; MJ: multiply by 80
 		; Turn Y coordinate into index into chunk
 		andi.w	#$70,d4		; MJ: keep Y pos within 80 pixels
 		; Turn X coordinate into index into chunk
 		andi.w	#$E,d5		; MJ: keep X pos within 10
-		; Get block metadata from chunk
+		; Get chunk metadata
 		add.w	d4,d3		; MJ: add calc'd Y pos to ror'd d3
 		add.w	d5,d3		; MJ: add calc'd X pos to ror'd d3
 		movea.l	d3,a0		; MJ: set address (Chunk to read)
 		move.w	(a0),d3
+		lea	(v_16x16).w,a1
 		; Turn block ID into address
 		andi.w	#$3FF,d3
 		lsl.w	#3,d3
@@ -2947,11 +2896,11 @@ LoadTilesFromStart:
 		lea	(vdp_data_port).l,a6
 		lea	vdp_control_port-vdp_data_port(a6),a5
 		lea	(v_screenposx).w,a3
-		movea.l	(v_lvllayoutfg).w,a4
+		lea	(Level_layout_main).w,a4
 		move.w	#$4000,d2
 		bsr.s	DrawChunks
 		lea	(v_bgscreenposx).w,a3
-		movea.l	(v_lvllayoutbg).w,a4
+		addq.w	#2,a4
 		move.w	#$6000,d2
 		moveq	#0,d0
 		move.b	(v_zone).w,d0
@@ -3149,12 +3098,15 @@ LevelLayoutLoad:
 		move.w	(v_zone).w,d0
 		lsl.b	#6,d0
 		lsr.w	#4,d0
-		lea	(Level_Index).l,a1
-		movea.l	(a1,d0.w),a1		; MJ: moving the address strait to a1 rather than adding a word to an address
-		move.l	a1,(v_lvllayoutfg).w	; MJ: save location of layout to $FFFFA400
-		lea	$80(a1),a1		; MJ: add 80 (As the BG line is always after the FG line)
-		move.l	a1,(v_lvllayoutbg).w	; MJ: save location of layout to $FFFFA404
-		rts			; MJ: Return
+		lea	(Level_Index).l,a0
+		movea.l	(a0,d0.w),a0
+		lea	(Level_layout_header).w,a1
+		move.w	#bytesToLcnt(Level_layout_main_end-Level_layout_header),d2
+
+.loop:
+		move.l	(a0)+,(a1)+
+		dbf	d2,.loop
+		rts
 ; End of function LevelLayoutLoad
 
 		include	"_inc/DynamicLevelEvents.asm"
@@ -4879,8 +4831,7 @@ loc_12C7E:
 		bsr.s	Sonic_Display
 		bsr.w	Sonic_RecordPosition
 		bsr.w	Sonic_Water
-		move.b	(v_anglebuffer).w,objoff_36(a0)
-		move.b	(v_anglebuffer2).w,objoff_37(a0)
+		move.w	(v_anglebuffer).w,objoff_36(a0)
 		tst.b	(f_wtunnelmode).w
 		beq.s	loc_12CA6
 		tst.b	obAnim(a0)
@@ -5041,8 +4992,7 @@ Sonic_WalkSpeed:
 		add.l	d1,d2
 		swap	d2
 		swap	d3
-		move.b	d0,(v_anglebuffer).w
-		move.b	d0,(v_anglebuffer2).w
+		move.w	d0,(v_anglebuffer).w
 		move.b	d0,d1
 		addi.b	#$20,d0
 		bpl.s	loc_14D1A
@@ -5093,8 +5043,7 @@ sub_14D48:
 		move.l	(v_colladdr2).w,(v_collindex).w		; MJ: load second collision data location
 .first:
 		move.b	(v_lrb_solid_bit).w,d5		; MJ: load L/R/B soldity bit
-		move.b	d0,(v_anglebuffer).w
-		move.b	d0,(v_anglebuffer2).w
+		move.w	d0,(v_anglebuffer).w
 		addi.b	#$20,d0
 		andi.b	#$C0,d0
 		cmpi.b	#$40,d0
@@ -5617,57 +5566,6 @@ AddPoints:
 
 		include	"_inc/HUD_Update.asm"
 
-; ---------------------------------------------------------------------------
-; Subroutine to	load countdown numbers on the continue screen
-; ---------------------------------------------------------------------------
-
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
-
-ContScrCounter:
-		locVRAM	ArtTile_Continue_Number*tile_size
-		lea	(vdp_data_port).l,a6
-		lea	Hud_10(pc),a2
-		moveq	#2-1,d6
-		moveq	#0,d4
-		lea	Art_Hud(pc),a1 ; load numbers patterns
-
-ContScr_Loop:
-		moveq	#0,d2
-		move.l	(a2)+,d3
-
-loc_1C95A:
-		sub.l	d3,d1
-		blo.s	loc_1C962
-		addq.w	#1,d2
-		bra.s	loc_1C95A
-; ===========================================================================
-
-loc_1C962:
-		add.l	d3,d1
-		lsl.w	#6,d2
-		lea	(a1,d2.w),a3
-		move.l	(a3)+,(a6)
-		move.l	(a3)+,(a6)
-		move.l	(a3)+,(a6)
-		move.l	(a3)+,(a6)
-		move.l	(a3)+,(a6)
-		move.l	(a3)+,(a6)
-		move.l	(a3)+,(a6)
-		move.l	(a3)+,(a6)
-		move.l	(a3)+,(a6)
-		move.l	(a3)+,(a6)
-		move.l	(a3)+,(a6)
-		move.l	(a3)+,(a6)
-		move.l	(a3)+,(a6)
-		move.l	(a3)+,(a6)
-		move.l	(a3)+,(a6)
-		move.l	(a3)+,(a6)
-		dbf	d6,ContScr_Loop	; repeat 1 more	time
-
-		rts
-; End of function ContScrCounter
-
 ; ===========================================================================
 
 		include	"_inc/HUD (part 2).asm"
@@ -6095,8 +5993,6 @@ Level_LZ2:	binclude	"levels/lz2.bin"
 		even
 Level_LZ3:	binclude	"levels/lz3.bin"
 		even
-Level_LZ3NoWall:binclude	"levels/lz3_nowall.bin"
-		even
 Level_SBZ3:	binclude	"levels/sbz3.bin"
 		even
 
@@ -6310,8 +6206,323 @@ RingPos_SBZ2:	binclude	"ringpos/sbz2_INDIVIDUAL.bin"
 		even
 RingPos_SBZ3:	binclude	"ringpos/sbz3_INDIVIDUAL.bin"
 		even
+		
+; ---------------------------------------------------------------------------
+; Subroutine to	load the sound driver
+; ---------------------------------------------------------------------------
 
-SoundDriver:	include "s1.sounddriver.asm"
+; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
+
+
+SoundDriverLoad:
+		move.w	sr,-(sp)
+		disable_ints
+                stopZ80
+		resetZ80
+		lea	SoundDriver(pc),a0	; load sound driver
+		lea	(z80_ram).l,a1	; target Z80 RAM
+		jsr	(KosPlusDec).w		; decompress
+		tst.b	(f_palmode).w	; check video mode
+		sne.b	(z80_ram+zPalModeByte).l	; set if PAL
+		resetZ80a
+		resetZ80
+		startZ80
+		enable_ints
+		move.w	(sp)+,sr
+		rts
+; End of function SoundDriverLoad
+
+SoundDriver:
+		save
+		include "sound/s2.sounddriver.asm"
+		restore
+		padding off
+		!org SoundDriver+Size_of_Snd_driver_guess ; don't worry; I know what I'm doing
+
+; ---------------------------------------------------------------------------
+; Filler (free space)
+; ---------------------------------------------------------------------------
+	; the DAC data has to line up with the end of the bank.
+
+	; actually it only has to fit within one bank, but we'll line it up to the end anyway
+	; because the padding gives the sound driver some room to grow
+	cnop -Size_of_DAC_samples, $8000
+
+; ---------------------------------------------------------------------------
+; DAC samples
+; ---------------------------------------------------------------------------
+; loc_ED100:
+SndDAC_Start:
+
+SndDAC_Kick:
+	BINCLUDE	"sound/dac/kick.dpcm"
+SndDAC_Kick_End
+
+SndDAC_Snare:
+	BINCLUDE	"sound/dac/snare.dpcm"
+SndDAC_Snare_End
+
+SndDAC_Timpani:
+	BINCLUDE	"sound/dac/timpani.dpcm"
+SndDAC_Timpani_End
+
+SndDAC_End
+
+	if SndDAC_End - SndDAC_Start > $8000
+		fatal "DAC samples must fit within $8000 bytes, but you have $\{SndDAC_End-SndDAC_Start } bytes of DAC samples."
+	endif
+	if SndDAC_End - SndDAC_Start > Size_of_DAC_samples
+		fatal "Size_of_DAC_samples = $\{Size_of_DAC_samples}, but you have $\{SndDAC_End-SndDAC_Start} bytes of DAC samples."
+	endif
+
+; ---------------------------------------------------------------------------
+; Music	Pointers
+; ---------------------------------------------------------------------------
+MusicPoint:	startBank
+MusicIndex:
+ptr_mus81:	rom_ptr_z80 Music81
+ptr_mus82:	rom_ptr_z80 Music82
+ptr_mus83:	rom_ptr_z80 Music83
+ptr_mus84:	rom_ptr_z80 Music84
+ptr_mus85:	rom_ptr_z80 Music85
+ptr_mus86:	rom_ptr_z80 Music86
+ptr_mus87:	rom_ptr_z80 Music87
+ptr_mus88:	rom_ptr_z80 Music88
+ptr_mus89:	rom_ptr_z80 Music89
+ptr_mus8A:	rom_ptr_z80 Music8A
+ptr_mus8B:	rom_ptr_z80 Music8B
+ptr_mus8C:	rom_ptr_z80 Music8C
+ptr_mus8D:	rom_ptr_z80 Music8D
+ptr_mus8E:	rom_ptr_z80 Music8E
+ptr_mus8F:	rom_ptr_z80 Music8F
+ptr_mus90:	rom_ptr_z80 Music90
+ptr_mus91:	rom_ptr_z80 Music91
+ptr_mus92:	rom_ptr_z80 Music92
+ptr_mus93:	rom_ptr_z80 Music93
+ptr_musend
+; ---------------------------------------------------------------------------
+; Music data
+; ---------------------------------------------------------------------------
+Music81:	include	"sound/music/Mus81 - GHZ.asm"
+		even
+Music82:	include	"sound/music/Mus82 - LZ.asm"
+		even
+Music83:	include	"sound/music/Mus83 - MZ.asm"
+		even
+Music84:	include	"sound/music/Mus84 - SLZ.asm"
+		even
+Music85:	include	"sound/music/Mus85 - SYZ.asm"
+		even
+Music86:	include	"sound/music/Mus86 - SBZ.asm"
+		even
+Music87:	include	"sound/music/Mus87 - Invincibility.asm"
+		even
+Music88:	include	"sound/music/Mus88 - Extra Life.asm"
+		even
+Music89:	include	"sound/music/Mus89 - Special Stage.asm"
+		even
+Music8A:	include	"sound/music/Mus8A - Title Screen.asm"
+		even
+Music8B:	include	"sound/music/Mus8B - Ending.asm"
+		even
+Music8C:	include	"sound/music/Mus8C - Boss.asm"
+		even
+Music8D:	include	"sound/music/Mus8D - FZ.asm"
+		even
+Music8E:	include	"sound/music/Mus8E - Sonic Got Through.asm"
+		even
+Music8F:	include	"sound/music/Mus8F - Game Over.asm"
+		even
+Music90:	include	"sound/music/Mus90 - Continue Screen.asm"
+		even
+Music91:	include	"sound/music/Mus91 - Credits.asm"
+		even
+Music92:	include	"sound/music/Mus92 - Drowning.asm"
+		even
+Music93:	include	"sound/music/Mus93 - Get Emerald.asm"
+		even
+
+; ---------------------------------------------------------------------------
+; Sound	effect pointers
+; ---------------------------------------------------------------------------
+SoundIndex:
+ptr_sndA0:	rom_ptr_z80 SoundA0
+ptr_sndA1:	rom_ptr_z80 SoundA1
+ptr_sndA2:	rom_ptr_z80 SoundA2
+ptr_sndA3:	rom_ptr_z80 SoundA3
+ptr_sndA4:	rom_ptr_z80 SoundA4
+ptr_sndA5:	rom_ptr_z80 SoundA5
+ptr_sndA6:	rom_ptr_z80 SoundA6
+ptr_sndA7:	rom_ptr_z80 SoundA7
+ptr_sndA8:	rom_ptr_z80 SoundA8
+ptr_sndA9:	rom_ptr_z80 SoundA9
+ptr_sndAA:	rom_ptr_z80 SoundAA
+ptr_sndAB:	rom_ptr_z80 SoundAB
+ptr_sndAC:	rom_ptr_z80 SoundAC
+ptr_sndAD:	rom_ptr_z80 SoundAD
+ptr_sndAE:	rom_ptr_z80 SoundAE
+ptr_sndAF:	rom_ptr_z80 SoundAF
+ptr_sndB0:	rom_ptr_z80 SoundB0
+ptr_sndB1:	rom_ptr_z80 SoundB1
+ptr_sndB2:	rom_ptr_z80 SoundB2
+ptr_sndB3:	rom_ptr_z80 SoundB3
+ptr_sndB4:	rom_ptr_z80 SoundB4
+ptr_sndB5:	rom_ptr_z80 SoundB5
+ptr_sndB6:	rom_ptr_z80 SoundB6
+ptr_sndB7:	rom_ptr_z80 SoundB7
+ptr_sndB8:	rom_ptr_z80 SoundB8
+ptr_sndB9:	rom_ptr_z80 SoundB9
+ptr_sndBA:	rom_ptr_z80 SoundBA
+ptr_sndBB:	rom_ptr_z80 SoundBB
+ptr_sndBC:	rom_ptr_z80 SoundBC
+ptr_sndBD:	rom_ptr_z80 SoundBD
+ptr_sndBE:	rom_ptr_z80 SoundBE
+ptr_sndBF:	rom_ptr_z80 SoundBF
+ptr_sndC0:	rom_ptr_z80 SoundC0
+ptr_sndC1:	rom_ptr_z80 SoundC1
+ptr_sndC2:	rom_ptr_z80 SoundC2
+ptr_sndC3:	rom_ptr_z80 SoundC3
+ptr_sndC4:	rom_ptr_z80 SoundC4
+ptr_sndC5:	rom_ptr_z80 SoundC5
+ptr_sndC6:	rom_ptr_z80 SoundC6
+ptr_sndC7:	rom_ptr_z80 SoundC7
+ptr_sndC8:	rom_ptr_z80 SoundC8
+ptr_sndC9:	rom_ptr_z80 SoundC9
+ptr_sndCA:	rom_ptr_z80 SoundCA
+ptr_sndCB:	rom_ptr_z80 SoundCB
+ptr_sndCC:	rom_ptr_z80 SoundCC
+ptr_sndCD:	rom_ptr_z80 SoundCD
+ptr_sndCE:	rom_ptr_z80 SoundCE
+ptr_sndCF:	rom_ptr_z80 SoundCF
+ptr_sndD0:	rom_ptr_z80 SoundD0
+ptr_sndend
+; ---------------------------------------------------------------------------
+; Sound effect data
+; ---------------------------------------------------------------------------
+SoundA0:	include	"sound/sfx/SndA0 - Jump.asm"
+		even
+SoundA1:	include	"sound/sfx/SndA1 - Lamppost.asm"
+		even
+SoundA2:	include	"sound/sfx/SndA2.asm"
+		even
+SoundA3:	include	"sound/sfx/SndA3 - Death.asm"
+		even
+SoundA4:	include	"sound/sfx/SndA4 - Skid.asm"
+		even
+SoundA5:	include	"sound/sfx/SndA5.asm"
+		even
+SoundA6:	include	"sound/sfx/SndA6 - Hit Spikes.asm"
+		even
+SoundA7:	include	"sound/sfx/SndA7 - Push Block.asm"
+		even
+SoundA8:	include	"sound/sfx/SndA8 - SS Goal.asm"
+		even
+SoundA9:	include	"sound/sfx/SndA9 - SS Item.asm"
+		even
+SoundAA:	include	"sound/sfx/SndAA - Splash.asm"
+		even
+SoundAB:	include	"sound/sfx/SndAB.asm"
+		even
+SoundAC:	include	"sound/sfx/SndAC - Hit Boss.asm"
+		even
+SoundAD:	include	"sound/sfx/SndAD - Get Bubble.asm"
+		even
+SoundAE:	include	"sound/sfx/SndAE - Fireball.asm"
+		even
+SoundAF:	include	"sound/sfx/SndAF - Shield.asm"
+		even
+SoundB0:	include	"sound/sfx/SndB0 - Saw.asm"
+		even
+SoundB1:	include	"sound/sfx/SndB1 - Electric.asm"
+		even
+SoundB2:	include	"sound/sfx/SndB2 - Drown Death.asm"
+		even
+SoundB3:	include	"sound/sfx/SndB3 - Flamethrower.asm"
+		even
+SoundB4:	include	"sound/sfx/SndB4 - Bumper.asm"
+		even
+SoundB5:	include	"sound/sfx/SndB5 - Ring.asm"
+		even
+SoundB6:	include	"sound/sfx/SndB6 - Spikes Move.asm"
+		even
+SoundB7:	include	"sound/sfx/SndB7 - Rumbling.asm"
+		even
+SoundB8:	include	"sound/sfx/SndB8.asm"
+		even
+SoundB9:	include	"sound/sfx/SndB9 - Collapse.asm"
+		even
+SoundBA:	include	"sound/sfx/SndBA - SS Glass.asm"
+		even
+SoundBB:	include	"sound/sfx/SndBB - Door.asm"
+		even
+SoundBC:	include	"sound/sfx/SndBC - Teleport.asm"
+		even
+SoundBD:	include	"sound/sfx/SndBD - ChainStomp.asm"
+		even
+SoundBE:	include	"sound/sfx/SndBE - Roll.asm"
+		even
+SoundBF:	include	"sound/sfx/SndBF - Get Continue.asm"
+		even
+SoundC0:	include	"sound/sfx/SndC0 - Basaran Flap.asm"
+		even
+SoundC1:	include	"sound/sfx/SndC1 - Break Item.asm"
+		even
+SoundC2:	include	"sound/sfx/SndC2 - Drown Warning.asm"
+		even
+SoundC3:	include	"sound/sfx/SndC3 - Giant Ring.asm"
+		even
+SoundC4:	include	"sound/sfx/SndC4 - Bomb.asm"
+		even
+SoundC5:	include	"sound/sfx/SndC5 - Cash Register.asm"
+		even
+SoundC6:	include	"sound/sfx/SndC6 - Ring Loss.asm"
+		even
+SoundC7:	include	"sound/sfx/SndC7 - Chain Rising.asm"
+		even
+SoundC8:	include	"sound/sfx/SndC8 - Burning.asm"
+		even
+SoundC9:	include	"sound/sfx/SndC9 - Hidden Bonus.asm"
+		even
+SoundCA:	include	"sound/sfx/SndCA - Enter SS.asm"
+		even
+SoundCB:	include	"sound/sfx/SndCB - Wall Smash.asm"
+		even
+SoundCC:	include	"sound/sfx/SndCC - Spring.asm"
+		even
+SoundCD:	include	"sound/sfx/SndCD - Switch.asm"
+		even
+SoundCE:	include	"sound/sfx/SndCE - Ring Left Speaker.asm"
+		even
+SoundCF:	include	"sound/sfx/SndCF - Signpost.asm"
+		even
+; ---------------------------------------------------------------------------
+; Special sound effect data
+; ---------------------------------------------------------------------------
+SoundD0:	include	"sound/sfx/SndD0 - Waterfall.asm"
+		even
+
+	finishBank
+
+; ----------------------------------------------------------------------------------
+; Filler (free space)
+; ----------------------------------------------------------------------------------
+	; the PCM data has to line up with the end of the bank.
+	cnop -Size_of_SEGA_sound, $8000
+
+; -------------------------------------------------------------------------------
+; Sega Intro Sound
+; 8-bit unsigned raw audio at 16Khz
+; -------------------------------------------------------------------------------
+; loc_F1E8C:
+Snd_Sega:	BINCLUDE	"sound/dac/sega.pcm"
+Snd_Sega_End:
+
+	if Snd_Sega_End - Snd_Sega > $8000
+		fatal "Sega sound must fit within $8000 bytes, but you have a $\{Snd_Sega_End-Snd_Sega} byte Sega sound."
+	endif
+	if Snd_Sega_End - Snd_Sega > Size_of_SEGA_sound
+		fatal "Size_of_SEGA_sound = $\{Size_of_SEGA_sound}, but you have a $\{Snd_Sega_End-Snd_Sega} byte Sega sound."
+	endif
 
 ; ==============================================================
 ; --------------------------------------------------------------

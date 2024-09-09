@@ -42,7 +42,8 @@ CalcAngle_Divide:
 		move.b	(a2,d2.w),d2
 		sub.b	(a2,d1.w),d2
 		bne.s	CalcAngle_GetAtan2Val
-		move.w	#$FF,d2			; Edge case where X and Y values are too close for the division to handle
+;		move.w	#$FF,d2			; Edge case where X and Y values are too close for the division to handle
+		moveq	#signextendB($FF),d2	; Edge case where X and Y values are too close for the division to handle
 
 CalcAngle_GetAtan2Val:
 		lea	Atan2Table(pc),a2	; Get atan2 value
@@ -55,7 +56,7 @@ CalcAngle_GetAtan2Val:
 CalcAngle_YZero:
 		tst.b	d0			; Was the X value negated?
 		beq.s	CalcAngle_End		; If not, branch (d0 is already 0, so no need to set it again on branch)
-		moveq	#$FFFFFF80,d0		; 180 degrees
+		moveq	#signextendB($80),d0		; 180 degrees
 
 CalcAngle_End:
 		rts
@@ -67,7 +68,7 @@ CalcAngle_XZero:
 		rts
 
 CalcAngle_XZeroYNeg:
-		moveq	#$FFFFFFC0,d0		; 270 degrees
+		moveq	#signextendB($C0),d0		; 270 degrees
 		rts
 ; -------------------------------------------------------------------------
 

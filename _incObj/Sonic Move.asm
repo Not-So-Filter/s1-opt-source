@@ -120,7 +120,7 @@ loc_12FC2:
 		bmi.s	loc_12FE2
 		sub.w	d5,d0
 		bcc.s	loc_12FDC
-		move.w	#0,d0
+		moveq	#0,d0
 
 loc_12FDC:
 		move.w	d0,obInertia(a0)
@@ -130,7 +130,7 @@ loc_12FDC:
 loc_12FE2:
 		add.w	d5,d0
 		bcc.s	loc_12FEA
-		move.w	#0,d0
+		moveq	#0,d0
 
 loc_12FEA:
 		move.w	d0,obInertia(a0)

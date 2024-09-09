@@ -1,11 +1,10 @@
 Mus8B_Ending_Header:
 	smpsHeaderStartSong 1
 	smpsHeaderVoice     Mus8B_Ending_Voices
-	smpsHeaderChan      $07, $03
+	smpsHeaderChan      $06, $03
 	smpsHeaderTempo     $01, $05
 
-	smpsHeaderDAC       Mus8B_Ending_DAC,	$00, $00
-	smpsHeaderDAC       Mus8B_Ending_DAC,	$00, $00
+	smpsHeaderDAC       Mus8B_Ending_DAC
 	smpsHeaderFM        Mus8B_Ending_FM1,	$F4, $0E
 	smpsHeaderFM        Mus8B_Ending_FM2,	$F4, $09
 	smpsHeaderFM        Mus8B_Ending_FM3,	$F4, $0D

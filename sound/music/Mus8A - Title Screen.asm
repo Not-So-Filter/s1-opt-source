@@ -1,11 +1,10 @@
 Mus8A_Title_Screen_Header:
 	smpsHeaderStartSong 1
 	smpsHeaderVoice     Mus8A_Title_Screen_Voices
-	smpsHeaderChan      $07, $03
+	smpsHeaderChan      $06, $03
 	smpsHeaderTempo     $01, $05
 
-	smpsHeaderDAC       Mus8A_Title_Screen_DAC,	$00, $00
-	smpsHeaderDAC       Mus8A_Title_Screen_DAC,	$00, $00
+	smpsHeaderDAC       Mus8A_Title_Screen_DAC
 	smpsHeaderFM        Mus8A_Title_Screen_FM1,	$F4, $0C
 	smpsHeaderFM        Mus8A_Title_Screen_FM2,	$F4, $09
 	smpsHeaderFM        Mus8A_Title_Screen_FM3,	$F4, $0D
