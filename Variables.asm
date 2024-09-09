@@ -10,7 +10,9 @@ priority6:		ds.b	$80
 priority7:		ds.b	$80
 	endstruct
 
-Max_Rings = 511 ; default. maximum number possible is 759
+; 511 is default
+; maximum number possible is 759
+Max_Rings = 613
     if Max_Rings > 759
     fatal "Maximum number of rings possible is 759"
     endif
@@ -69,7 +71,6 @@ Perfect_rings_left:	ds.w	1
 Ring_consumption_table:	ds.b	$80
 Ring_consumption_table_End:
 
-			ds.b	$CC		; unused
 			ds.b	$200		; unused
 v_bgscroll_buffer:	ds.b	$200		; background scroll buffer
 			ds.b	$200		; unused
