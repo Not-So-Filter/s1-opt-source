@@ -32,6 +32,10 @@ v_ram_start:
 v_128x128:		ds.b	256*128		; 128x128 tile mappings ($FF chunks)
 v_128x128_end:
 
+Level_layout_header:	ds.b	8		; first word = chunks per FG row, second word = chunks per BG row, third word = FG rows, fourth word = BG rows
+Level_layout_main:	ds.b	$FF8		; $40 word-sized line pointers followed by actual layout data
+Level_layout_main_end:
+
 Kos_decomp_buffer:	ds.b	$1000		; each module in a KosM archive is decompressed here and then DMAed to VRAM
 Kos_decomp_buffer_end:
 Kos_decomp_queue_count:	ds.w	1		; the number of pieces of data on the queue. Sign bit set indicates a decompression is in progress
@@ -66,10 +70,6 @@ Ring_consumption_table:	ds.b	$80
 Ring_consumption_table_End:
 
 			ds.b	$CC		; unused
-
-Level_layout_header:	ds.b	8		; first word = chunks per FG row, second word = chunks per BG row, third word = FG rows, fourth word = BG rows
-Level_layout_main:	ds.b	$FF8		; $40 word-sized line pointers followed by actual layout data
-Level_layout_main_end:
 			ds.b	$200		; unused
 v_bgscroll_buffer:	ds.b	$200		; background scroll buffer
 			ds.b	$200		; unused

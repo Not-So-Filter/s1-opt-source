@@ -391,21 +391,21 @@ LevSel_MarkTable:	; 4 bytes per level select entry
 		dc.b   3,  6,  3,$24	; GHZ1
 		dc.b   3,  6,  4,$24	; GHZ2
 		dc.b   3,  6,  5,$24	; GHZ3
-		dc.b   6,  6,  6,$24	; MZ1
-		dc.b   6,  6,  7,$24	; MZ2
-		dc.b   6,  6,  8,$24	; MZ3
-		dc.b   9,  6,  9,$24	; SYZ1
-		dc.b   9,  6, $A,$24	; SYZ2
-		dc.b   9,  6, $B,$24	; SYZ3
-		dc.b  $C,  6, $C,$24	; LZ1
-		dc.b  $C,  6, $D,$24	; LZ2
-		dc.b  $C,  6, $E,$24	; LZ3
-		dc.b  $F,  6, $F,$24	; SLZ1
-		dc.b  $F,  6, $10,$24	; SLZ2
-		dc.b  $F,  6, $11,$24	; SLZ3
-		dc.b  $12, 6, $12,$24	; SBZ1
-		dc.b  $12, 6, $13,$24	; SBZ2
-		dc.b  $12, 6, $14,$24	; SBZ3
+		dc.b   7,  6,  6,$24	; MZ1
+		dc.b   7,  6,  7,$24	; MZ2
+		dc.b   7,  6,  8,$24	; MZ3
+		dc.b  $A,  6,  9,$24	; SYZ1
+		dc.b  $A,  6, $A,$24	; SYZ2
+		dc.b  $A,  6, $B,$24	; SYZ3
+		dc.b  $D,  6, $C,$24	; LZ1
+		dc.b  $D,  6, $D,$24	; LZ2
+		dc.b  $D,  6, $E,$24	; LZ3
+		dc.b  $10,  6, $F,$24	; SLZ1
+		dc.b  $10,  6, $10,$24	; SLZ2
+		dc.b  $10,  6, $11,$24	; SLZ3
+		dc.b  $13, 6, $12,$24	; SBZ1
+		dc.b  $13, 6, $13,$24	; SBZ2
+		dc.b  $13, 6, $14,$24	; SBZ3
 ; --- second column ---
 		dc.b   3,$2C,  3,$48	; FZ
 		dc.b $12,$2C,$12,$48	; Sound Test
