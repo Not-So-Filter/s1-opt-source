@@ -19,17 +19,17 @@ GM_MenuScreen:
 
 		; load background + graphics of font/LevSelPics
 		ResetDMAQueue
-		lea	(Nem_FontStuff).l,a1
+		lea	(KosPM_FontStuff).l,a1
 		move.w	#tiles_to_bytes(ArtTile_ArtNem_FontStuff),d2
 		bsr.w	Queue_Kos_Module
-		lea	(Nem_MenuBox).l,a1
+		lea	(KosPM_MenuBox).l,a1
 		move.w	#tiles_to_bytes(ArtTile_ArtNem_MenuBox),d2
 		bsr.w	Queue_Kos_Module
-		lea	(Nem_LevelSelectPics).l,a1
+		lea	(KosPM_LevelSelectPics).l,a1
 		move.w	#tiles_to_bytes(ArtTile_ArtNem_LevelSelectPics),d2
 		bsr.w	Queue_Kos_Module
-		lea	(v_128x128_end).w,a1
 		lea	(Eni_MenuBack).l,a0
+		lea	(v_128x128_end).w,a1
 		move.w	#make_art_tile(ArtTile_VRAM_Start,3,0),d0
 		bsr.w	EniDec
 		lea	(v_128x128_end).w,a1
@@ -39,8 +39,8 @@ GM_MenuScreen:
 		bsr.w	TilemapToVRAM	; fullscreen background
 
 		; Load foreground (sans zone icon)
+		lea	Eni_LevSel(pc),a0	; 2 bytes per 8x8 tile, compressed
 		lea	(v_128x128_end).w,a1
-		lea	(Eni_LevSel).l,a0	; 2 bytes per 8x8 tile, compressed
 		moveq	#make_art_tile(ArtTile_VRAM_Start,0,0),d0
 		bsr.w	EniDec
 
@@ -62,12 +62,17 @@ GM_MenuScreen:
 		bsr.w	LevelSelect_DrawSoundNumber
 
 		; Load zone icon
+		lea	Eni_LevSelIcon(pc),a0
 		lea	(v_128x128_end+planeLoc(40,0,28)).w,a1
-		lea	(Eni_LevSelIcon).l,a0
 		move.w	#make_art_tile(ArtTile_ArtNem_LevelSelectPics,0,0),d0
 		bsr.w	EniDec
 
 		bsr.w	LevelSelect_DrawIcon
+
+		lea	Anim_SonicMilesBG(pc),a2
+		jsr	(Dynamic_Normal).l
+
+		bsr.w	ProcessDMAQueue
 
 		moveq	#palid_LevelSel,d0
 		bsr.w	PalLoad_Fade
@@ -108,6 +113,9 @@ LevelSelect_Main:	; routine running during level select
 		bsr.w	LevelSelect_DrawIcon
 
 		enable_ints
+		
+		lea	Anim_SonicMilesBG(pc),a2
+		jsr	(Dynamic_Normal).l
 
 		tst.b	(v_jpadpress).w	; start pressed?
 		bmi.s	LevelSelect_PressStart	; yes
@@ -184,8 +192,8 @@ LevSelControls:
 
 +
 		move.b	#$B,(v_levseldelay).w
-		moveq	#btnUp|btnDn,d1
-		and.b	(v_jpadhold).w,d1
+		move.b	(v_jpadhold).w,d1
+		andi.b	#btnUp|btnDn,d1
 		beq.s	LevSelControls_CheckLR	; up/down not pressed, check for left & right
 		move.w	(v_levselitem).w,d0
 		btst	#bitUp,d1
@@ -250,8 +258,28 @@ LevSelControls_SwitchSide:	; not in soundtest, not up/down pressed
 ; ===========================================================================
 ;byte_95A2:
 LevelSelect_SwitchTable:
-		dc.b	$0F, $10, $11, $12, $12, $12, $13, $13, $13, $14, $14, $14, $15, $15, $15
-		dc.b	$00, $01, $02, $03, $06, $09, $0C
+		dc.b	$0F
+		dc.b	$10
+		dc.b	$11
+		dc.b	$12
+		dc.b	$12
+		dc.b	$12
+		dc.b	$13
+		dc.b	$13
+		dc.b	$13
+		dc.b	$14
+		dc.b	$14
+		dc.b	$14
+		dc.b	$15
+		dc.b	$15
+		dc.b	$15
+		dc.b	$00
+		dc.b	$01
+		dc.b	$02
+		dc.b	$03
+		dc.b	$06
+		dc.b	$09
+		dc.b	$0C
 		even
 ; ===========================================================================
 
@@ -313,7 +341,7 @@ LevelSelect_MarkFields:
 		move.w	d0,(a6)
 
 +
-		cmpi.w	#$15,(v_levselitem).w
+		cmpi.w	#$13,(v_levselitem).w
 		bne.s	+	; rts
 		bra.s	LevelSelect_DrawSoundNumber
 +
@@ -383,7 +411,7 @@ LevSel_IconTable:
                 dc.b $04, $04, $04 ; SLZ
                 dc.b $05, $05, $05 ; SBZ
                 dc.b $06 ; FZ
-                dc.b $07 ; Sound Test
+                dc.b $0E ; Sound Test
 		even
 ;byte_96EE:
 LevSel_MarkTable:	; 4 bytes per level select entry
@@ -391,30 +419,45 @@ LevSel_MarkTable:	; 4 bytes per level select entry
 		dc.b   3,  6,  3,$24	; GHZ1
 		dc.b   3,  6,  4,$24	; GHZ2
 		dc.b   3,  6,  5,$24	; GHZ3
-		dc.b   7,  6,  6,$24	; MZ1
-		dc.b   7,  6,  7,$24	; MZ2
-		dc.b   7,  6,  8,$24	; MZ3
-		dc.b  $A,  6,  9,$24	; SYZ1
-		dc.b  $A,  6, $A,$24	; SYZ2
-		dc.b  $A,  6, $B,$24	; SYZ3
-		dc.b  $D,  6, $C,$24	; LZ1
-		dc.b  $D,  6, $D,$24	; LZ2
-		dc.b  $D,  6, $E,$24	; LZ3
-		dc.b  $10,  6, $F,$24	; SLZ1
-		dc.b  $10,  6, $10,$24	; SLZ2
-		dc.b  $10,  6, $11,$24	; SLZ3
-		dc.b  $13, 6, $12,$24	; SBZ1
-		dc.b  $13, 6, $13,$24	; SBZ2
-		dc.b  $13, 6, $14,$24	; SBZ3
+		dc.b   7,  6,  7,$24	; MZ1
+		dc.b   7,  6,  8,$24	; MZ2
+		dc.b   7,  6,  9,$24	; MZ3
+		dc.b  $B,  6, $B,$24	; SYZ1
+		dc.b  $B,  6, $C,$24	; SYZ2
+		dc.b  $B,  6, $D,$24	; SYZ3
+		dc.b  $F,  6, $F,$24	; LZ1
+		dc.b  $F,  6,$10,$24	; LZ2
+		dc.b  $F,  6,$11,$24	; LZ3
+		dc.b $13,  6,$13,$24	; SLZ1
+		dc.b $13,  6,$14,$24	; SLZ2
+		dc.b $13,  6,$15,$24	; SLZ3
+		dc.b $17,  6,$17,$24	; SBZ1
+		dc.b $17,  6,$18,$24	; SBZ2
+		dc.b $17,  6,$19,$24	; SBZ3
 ; --- second column ---
 		dc.b   3,$2C,  3,$48	; FZ
 		dc.b $12,$2C,$12,$48	; Sound Test
+		
+; ------------------------------------------------------------------------
+; MENU ANIMATION SCRIPT
+; ------------------------------------------------------------------------
+;word_87C6:
+Anim_SonicMilesBG:	zoneanimstart
+		; Sonic/Miles animated background
+		zoneanimdecl  -1, Unc_MenuBack,    1,  6, $A
+		dc.b   0,$C7
+		dc.b  $A,  5
+		dc.b $14,  5
+		dc.b $1E,$C7
+		dc.b $14,  5
+		dc.b  $A,  5
+		even
+
+		zoneanimend
 
 ; level select picture palettes
 ; byte_9880:
 Pal_LevelIcons:	binclude "palette/Level Select Icons.bin"
-		even
-Eni_LevSel2P:	binclude "tilemaps/Level Select 2P.eni"
 		even
 Eni_LevSel:	binclude "tilemaps/Level Select.eni"
 		even

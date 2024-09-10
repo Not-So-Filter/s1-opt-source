@@ -50,12 +50,12 @@ Dynamic_Normal:
 
 loc_1AACA:
 		subq.b	#1,(a3)				; Tick down frame duration
-		bpl.s	loc_1AB10			; If frame isn't over, move on to next script
+		bcc.s	loc_1AB10			; If frame isn't over, move on to next script
 
 		moveq	#0,d0
 		move.b	1(a3),d0			; Get current frame
 		cmp.b	6(a2),d0			; Have we processed the last frame in the script?
-		bcs.s	loc_1AAE0
+		blo.s	loc_1AAE0
 		moveq	#0,d0				; If so, reset to first frame
 		move.b	d0,1(a3)
 

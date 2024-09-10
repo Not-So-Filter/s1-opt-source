@@ -167,7 +167,7 @@ zBankRegister =	$6000
 zPSG =		$7F11
 zROMWindow =	$8000
 ; More equates: addresses specific to this program (besides labelled addresses)
-zStack =	$1800	; 1B80h
+zStack =	$1100
 
 	phase zStack
 zAbsVar:		zVar
@@ -1387,15 +1387,11 @@ zPlaySegaSound:
 	; reset panning (don't want Sega sound playing on only one speaker)
 	ld	a,0B6h		; Set Panning / AMS / FMS
 	ld	c,0C0h		; default Panning / AMS / FMS settings (only stereo L/R enabled)
-	push	af
 	rst	zWriteFMII	; Set it!
-	pop	af
 
 	ld	a,2Bh		; DAC enable/disable register
 	ld	c,80h		; Command to enable DAC
-	push	af
 	rst	zWriteFMI
-	pop	af
 
 	bankswitch Snd_Sega	; We want the Sega sound
 
@@ -1424,10 +1420,7 @@ zPlaySegaSound:
 	call	zBankSwitchToMusic
 	ld	c,(ix+zVar.DACEnabled)
 	ld	a,2Bh			; DAC enable/disable register
-	push	af
-	rst	zWriteFMI
-	push	af
-	ret
+	jp	zWriteFMI
 ; ---------------------------------------------------------------------------
 ; zloc_73D
 zPlayMusic:

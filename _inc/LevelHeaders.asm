@@ -17,10 +17,10 @@ lhead:	macro plc1,lvlgfx,plc2,sixteen,twofivesix,pal
 ;		1st PLC				2nd PLC				128x128 data
 ;				level gfx*			16x16 data                      palette
 
-	lhead	plcid_GHZ,	Nem_GHZ_2nd,	plcid_GHZ2,	Blk16_GHZ,	Blk256_GHZ,	palid_GHZ	; Green Hill
-	lhead	plcid_LZ,	Nem_LZ,		plcid_LZ2,	Blk16_LZ,	Blk256_LZ,	palid_LZ	; Labyrinth
-	lhead	plcid_MZ,	Nem_MZ,		plcid_MZ2,	Blk16_MZ,	Blk256_MZ,	palid_MZ	; Marble
-	lhead	plcid_SLZ,	Nem_SLZ,	plcid_SLZ2,	Blk16_SLZ,	Blk256_SLZ,	palid_SLZ	; Star Light
-	lhead	plcid_SYZ,	Nem_SYZ,	plcid_SYZ2,	Blk16_SYZ,	Blk256_SYZ,	palid_SYZ	; Spring Yard
-	lhead	plcid_SBZ,	Nem_SBZ,	plcid_SBZ2,	Blk16_SBZ,	Blk256_SBZ,	palid_SBZ2	; Scrap Brain
+	lhead	plcid_GHZ,	KosP_GHZ_2nd,	plcid_GHZ2,	Blk16_GHZ,	Blk256_GHZ,	palid_GHZ	; Green Hill
+	lhead	plcid_LZ,	KosP_LZ,	plcid_LZ2,	Blk16_LZ,	Blk256_LZ,	palid_LZ	; Labyrinth
+	lhead	plcid_MZ,	KosP_MZ,	plcid_MZ2,	Blk16_MZ,	Blk256_MZ,	palid_MZ	; Marble
+	lhead	plcid_SLZ,	KosP_SLZ,	plcid_SLZ2,	Blk16_SLZ,	Blk256_SLZ,	palid_SLZ	; Star Light
+	lhead	plcid_SYZ,	KosP_SYZ,	plcid_SYZ2,	Blk16_SYZ,	Blk256_SYZ,	palid_SYZ	; Spring Yard
+	lhead	plcid_SBZ,	KosP_SBZ,	plcid_SBZ2,	Blk16_SBZ,	Blk256_SBZ,	palid_SBZ2	; Scrap Brain
 	even

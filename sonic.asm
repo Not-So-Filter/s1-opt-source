@@ -1476,7 +1476,7 @@ GM_Sega:
 		disable_ints
 		displayOff
 		bsr.w	ClearScreen
-		lea	(Nem_SegaLogo).l,a0 ; load Sega	logo patterns
+		lea	(KosP_SegaLogo).l,a0 ; load Sega	logo patterns
 		lea	(v_128x128).l,a1
 		bsr.w	KosPlusDec
 		move.w	a1,d3
@@ -1565,10 +1565,10 @@ GM_Title:
 		clearRAM Kos_decomp_stored_registers, Kos_module_end
 		clearRAM v_objspace
 
-		lea	(Nem_JapNames).l,a1 ; load Japanese credits
+		lea	(KosPM_JapNames).l,a1 ; load Japanese credits
 		moveq	#tiles_to_bytes(ArtTile_Title_Japanese_Text),d2
 		bsr.w	Queue_Kos_Module
-		lea	(Nem_CreditText).l,a1 ;	load alphabet
+		lea	(KosPM_CreditText).l,a1 ;	load alphabet
 		move.w	#tiles_to_bytes(ArtTile_Sonic_Team_Font),d2
 		bsr.w	Queue_Kos_Module
 		lea	(Eni_JapNames).l,a0 ; load mappings for	Japanese credits
@@ -1594,13 +1594,13 @@ GM_Title:
 		jsr	(BuildSprites).l
 		bsr.w	PaletteFadeIn
 		disable_ints
-		lea	(Nem_TitleFg).l,a1 ; load title	screen patterns
+		lea	(KosPM_TitleFg).l,a1 ; load title	screen patterns
 		move.w	#tiles_to_bytes(ArtTile_Title_Foreground),d2
 		bsr.w	Queue_Kos_Module
-		lea	(Nem_TitleSonic).l,a1 ;	load Sonic title screen	patterns
+		lea	(KosPM_TitleSonic).l,a1 ;	load Sonic title screen	patterns
 		move.w	#tiles_to_bytes(ArtTile_Title_Sonic),d2
 		bsr.w	Queue_Kos_Module
-		lea	(Nem_TitleTM).l,a1 ; load "TM" patterns
+		lea	(KosPM_TitleTM).l,a1 ; load "TM" patterns
 		move.w	#tiles_to_bytes(ArtTile_Title_Trademark),d2
 		bsr.w	Queue_Kos_Module
 
@@ -1656,7 +1656,7 @@ Tit_LoadText:
 
 		copyTilemap	v_128x128_end,vram_fg+$208,34,22
 
-		lea	(Nem_GHZ_1st).l,a0 ; load GHZ patterns
+		lea	(KosP_GHZ_1st).l,a0 ; load GHZ patterns
 		lea	(v_128x128).l,a1
 		bsr.w	KosPlusDec
 		move.w	a1,d3
@@ -1888,7 +1888,7 @@ GM_Level:
 		bsr.w	PlayMusic ; fade out music
 		clearRAM Kos_decomp_stored_registers, Kos_module_end
 		bsr.w	PaletteFadeOut
-		lea	(Nem_TitleCard).l,a1 ; load title card patterns
+		lea	(KosPM_TitleCard).l,a1 ; load title card patterns
 		move.w	#tiles_to_bytes(ArtTile_Title_Card),d2
 		bsr.w	Queue_Kos_Module
 		moveq	#0,d0
@@ -5588,34 +5588,34 @@ Art_LivesNums:	binclude	"artunc/Lives Counter Numbers.bin" ; 8x8 pixel numbers o
 		include	"_inc/LevelHeaders.asm"
 		include	"_inc/Pattern Load Cues.asm"
 
-Nem_SegaLogo:	binclude	"artkosp/Sega Logo.kosp" ; large Sega logo
+KosP_SegaLogo:	binclude	"artkosp/Sega Logo.kosp" ; large Sega logo
 		even
 Eni_SegaLogo:	binclude	"tilemaps/Sega Logo.eni" ; large Sega logo (mappings)
 		even
 Eni_Title:	binclude	"tilemaps/Title Screen.eni" ; title screen foreground (mappings)
 		even
-Nem_TitleFg:	binclude	"artkospm/Title Screen Foreground.kospm"
+KosPM_TitleFg:	binclude	"artkospm/Title Screen Foreground.kospm"
 		even
-Nem_TitleSonic:	binclude	"artkospm/Title Screen Sonic.kospm"
+KosPM_TitleSonic:	binclude	"artkospm/Title Screen Sonic.kospm"
 		even
-Nem_TitleTM:	binclude	"artkospm/Title Screen TM.kospm"
+KosPM_TitleTM:	binclude	"artkospm/Title Screen TM.kospm"
 		even
 Eni_JapNames:	binclude	"tilemaps/Hidden Japanese Credits.eni" ; Japanese credits (mappings)
 		even
-Nem_JapNames:	binclude	"artkospm/Hidden Japanese Credits.kospm"
+KosPM_JapNames:	binclude	"artkospm/Hidden Japanese Credits.kospm"
 		even
 ;---------------------------------------------------------------------------------------
 ; Menu Assets
 ;---------------------------------------------------------------------------------------
-Nem_FontStuff:	binclude	"artkospm/Standard font.kospm"
+KosPM_FontStuff:	binclude	"artkospm/Standard font.kospm"
 		even
 Eni_MenuBack:	binclude	"tilemaps/Sonic and Miles animated background.eni"
 		even
 Unc_MenuBack:	binclude	"artunc/Sonic and Miles animated background.bin"
 		even
-Nem_MenuBox:	binclude	"artkospm/A menu box with a shadow.kospm"
+KosPM_MenuBox:	binclude	"artkospm/A menu box with a shadow.kospm"
 		even
-Nem_LevelSelectPics:	binclude	"artkospm/Pictures in level preview box from level select.kospm"
+KosPM_LevelSelectPics:	binclude	"artkospm/Pictures in level preview box from level select.kospm"
 		even
 
 Map_Sonic:	include	"_maps/Sonic.asm"
@@ -5629,280 +5629,280 @@ Art_Sonic:	binclude	"artunc/Sonic.bin"	; Sonic
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - various
 ; ---------------------------------------------------------------------------
-Nem_Shield:	binclude	"artkospm/Shield.kospm"
+KosPM_Shield:	binclude	"artkospm/Shield.kospm"
 		even
-Nem_Stars:	binclude	"artkospm/Invincibility Stars.kospm"
+KosPM_Stars:	binclude	"artkospm/Invincibility Stars.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - GHZ stuff
 ; ---------------------------------------------------------------------------
-Nem_Stalk:	binclude	"artkospm/GHZ Flower Stalk.kospm"
+KosPM_Stalk:	binclude	"artkospm/GHZ Flower Stalk.kospm"
 		even
-Nem_Swing:	binclude	"artkospm/GHZ Swinging Platform.kospm"
+KosPM_Swing:	binclude	"artkospm/GHZ Swinging Platform.kospm"
 		even
-Nem_Bridge:	binclude	"artkospm/GHZ Bridge.kospm"
+KosPM_Bridge:	binclude	"artkospm/GHZ Bridge.kospm"
 		even
-Nem_Ball:	binclude	"artkospm/GHZ Giant Ball.kospm"
+KosPM_Ball:	binclude	"artkospm/GHZ Giant Ball.kospm"
 		even
-Nem_Spikes:	binclude	"artkospm/Spikes.kospm"
+KosPM_Spikes:	binclude	"artkospm/Spikes.kospm"
 		even
-Nem_SpikePole:	binclude	"artkospm/GHZ Spiked Log.kospm"
+KosPM_SpikePole:	binclude	"artkospm/GHZ Spiked Log.kospm"
 		even
-Nem_PplRock:	binclude	"artkospm/GHZ Purple Rock.kospm"
+KosPM_PplRock:	binclude	"artkospm/GHZ Purple Rock.kospm"
 		even
-Nem_GhzWall1:	binclude	"artkospm/GHZ Breakable Wall.kospm"
+KosPM_GhzWall1:	binclude	"artkospm/GHZ Breakable Wall.kospm"
 		even
-Nem_GhzWall2:	binclude	"artkospm/GHZ Edge Wall.kospm"
+KosPM_GhzWall2:	binclude	"artkospm/GHZ Edge Wall.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - LZ stuff
 ; ---------------------------------------------------------------------------
-Nem_Water:	binclude	"artkospm/LZ Water Surface.kospm"
+KosPM_Water:	binclude	"artkospm/LZ Water Surface.kospm"
 		even
-Nem_Splash:	binclude	"artkospm/LZ Water & Splashes.kospm"
+KosPM_Splash:	binclude	"artkospm/LZ Water & Splashes.kospm"
 		even
-Nem_LzSpikeBall:binclude	"artkospm/LZ Spiked Ball & Chain.kospm"
+KosPM_LzSpikeBall:binclude	"artkospm/LZ Spiked Ball & Chain.kospm"
 		even
-Nem_FlapDoor:	binclude	"artkospm/LZ Flapping Door.kospm"
+KosPM_FlapDoor:	binclude	"artkospm/LZ Flapping Door.kospm"
 		even
-Nem_Bubbles:	binclude	"artkospm/LZ Bubbles & Countdown.kospm"
+KosPM_Bubbles:	binclude	"artkospm/LZ Bubbles & Countdown.kospm"
 		even
-Nem_LzBlock3:	binclude	"artkospm/LZ 32x16 Block.kospm"
+KosPM_LzBlock3:	binclude	"artkospm/LZ 32x16 Block.kospm"
 		even
-Nem_LzDoor1:	binclude	"artkospm/LZ Vertical Door.kospm"
+KosPM_LzDoor1:	binclude	"artkospm/LZ Vertical Door.kospm"
 		even
-Nem_Harpoon:	binclude	"artkospm/LZ Harpoon.kospm"
+KosPM_Harpoon:	binclude	"artkospm/LZ Harpoon.kospm"
 		even
-Nem_LzPole:	binclude	"artkospm/LZ Breakable Pole.kospm"
+KosPM_LzPole:	binclude	"artkospm/LZ Breakable Pole.kospm"
 		even
-Nem_LzDoor2:	binclude	"artkospm/LZ Horizontal Door.kospm"
+KosPM_LzDoor2:	binclude	"artkospm/LZ Horizontal Door.kospm"
 		even
-Nem_LzWheel:	binclude	"artkospm/LZ Wheel.kospm"
+KosPM_LzWheel:	binclude	"artkospm/LZ Wheel.kospm"
 		even
-Nem_Gargoyle:	binclude	"artkospm/LZ Gargoyle & Fireball.kospm"
+KosPM_Gargoyle:	binclude	"artkospm/LZ Gargoyle & Fireball.kospm"
 		even
-Nem_LzBlock2:	binclude	"artkospm/LZ Blocks.kospm"
+KosPM_LzBlock2:	binclude	"artkospm/LZ Blocks.kospm"
 		even
-Nem_LzPlatfm:	binclude	"artkospm/LZ Rising Platform.kospm"
+KosPM_LzPlatfm:	binclude	"artkospm/LZ Rising Platform.kospm"
 		even
-Nem_Cork:	binclude	"artkospm/LZ Cork.kospm"
+KosPM_Cork:	binclude	"artkospm/LZ Cork.kospm"
 		even
-Nem_LzBlock1:	binclude	"artkospm/LZ 32x32 Block.kospm"
+KosPM_LzBlock1:	binclude	"artkospm/LZ 32x32 Block.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - MZ stuff
 ; ---------------------------------------------------------------------------
-Nem_MzMetal:	binclude	"artkospm/MZ Metal Blocks.kospm"
+KosPM_MzMetal:	binclude	"artkospm/MZ Metal Blocks.kospm"
 		even
-Nem_MzSwitch:	binclude	"artkospm/MZ Switch.kospm"
+KosPM_MzSwitch:	binclude	"artkospm/MZ Switch.kospm"
 		even
-Nem_MzGlass:	binclude	"artkospm/MZ Green Glass Block.kospm"
+KosPM_MzGlass:	binclude	"artkospm/MZ Green Glass Block.kospm"
 		even
-Nem_MzFire:	binclude	"artkospm/Fireballs.kospm"
+KosPM_MzFire:	binclude	"artkospm/Fireballs.kospm"
 		even
-Nem_Lava:	binclude	"artkospm/MZ Lava.kospm"
+KosPM_Lava:	binclude	"artkospm/MZ Lava.kospm"
 		even
-Nem_MzBlock:	binclude	"artkospm/MZ Green Pushable Block.kospm"
+KosPM_MzBlock:	binclude	"artkospm/MZ Green Pushable Block.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - SLZ stuff
 ; ---------------------------------------------------------------------------
-Nem_Seesaw:	binclude	"artkospm/SLZ Seesaw.kospm"
+KosPM_Seesaw:	binclude	"artkospm/SLZ Seesaw.kospm"
 		even
-Nem_SlzSpike:	binclude	"artkospm/SLZ Little Spikeball.kospm"
+KosPM_SlzSpike:	binclude	"artkospm/SLZ Little Spikeball.kospm"
 		even
-Nem_Fan:	binclude	"artkospm/SLZ Fan.kospm"
+KosPM_Fan:	binclude	"artkospm/SLZ Fan.kospm"
 		even
-Nem_SlzWall:	binclude	"artkospm/SLZ Breakable Wall.kospm"
+KosPM_SlzWall:	binclude	"artkospm/SLZ Breakable Wall.kospm"
 		even
-Nem_Pylon:	binclude	"artkospm/SLZ Pylon.kospm"
+KosPM_Pylon:	binclude	"artkospm/SLZ Pylon.kospm"
 		even
-Nem_SlzSwing:	binclude	"artkospm/SLZ Swinging Platform.kospm"
+KosPM_SlzSwing:	binclude	"artkospm/SLZ Swinging Platform.kospm"
 		even
-Nem_SlzBlock:	binclude	"artkospm/SLZ 32x32 Block.kospm"
+KosPM_SlzBlock:	binclude	"artkospm/SLZ 32x32 Block.kospm"
 		even
-Nem_SlzCannon:	binclude	"artkospm/SLZ Cannon.kospm"
+KosPM_SlzCannon:	binclude	"artkospm/SLZ Cannon.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - SYZ stuff
 ; ---------------------------------------------------------------------------
-Nem_Bumper:	binclude	"artkospm/SYZ Bumper.kospm"
+KosPM_Bumper:	binclude	"artkospm/SYZ Bumper.kospm"
 		even
-Nem_SyzSpike2:	binclude	"artkospm/SYZ Small Spikeball.kospm"
+KosPM_SyzSpike2:	binclude	"artkospm/SYZ Small Spikeball.kospm"
 		even
-Nem_LzSwitch:	binclude	"artkospm/Switch.kospm"
+KosPM_LzSwitch:	binclude	"artkospm/Switch.kospm"
 		even
-Nem_SyzSpike1:	binclude	"artkospm/SYZ Large Spikeball.kospm"
+KosPM_SyzSpike1:	binclude	"artkospm/SYZ Large Spikeball.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - SBZ stuff
 ; ---------------------------------------------------------------------------
-Nem_SbzWheel1:	binclude	"artkospm/SBZ Running Disc.kospm"
+KosPM_SbzWheel1:	binclude	"artkospm/SBZ Running Disc.kospm"
 		even
-Nem_SbzWheel2:	binclude	"artkospm/SBZ Junction Wheel.kospm"
+KosPM_SbzWheel2:	binclude	"artkospm/SBZ Junction Wheel.kospm"
 		even
-Nem_Cutter:	binclude	"artkospm/SBZ Pizza Cutter.kospm"
+KosPM_Cutter:	binclude	"artkospm/SBZ Pizza Cutter.kospm"
 		even
-Nem_Stomper:	binclude	"artkospm/SBZ Stomper.kospm"
+KosPM_Stomper:	binclude	"artkospm/SBZ Stomper.kospm"
 		even
-Nem_SpinPform:	binclude	"artkospm/SBZ Spinning Platform.kospm"
+KosPM_SpinPform:	binclude	"artkospm/SBZ Spinning Platform.kospm"
 		even
-Nem_TrapDoor:	binclude	"artkospm/SBZ Trapdoor.kospm"
+KosPM_TrapDoor:	binclude	"artkospm/SBZ Trapdoor.kospm"
 		even
-Nem_SbzFloor:	binclude	"artkospm/SBZ Collapsing Floor.kospm"
+KosPM_SbzFloor:	binclude	"artkospm/SBZ Collapsing Floor.kospm"
 		even
-Nem_Electric:	binclude	"artkospm/SBZ Electrocuter.kospm"
+KosPM_Electric:	binclude	"artkospm/SBZ Electrocuter.kospm"
 		even
-Nem_SbzBlock:	binclude	"artkospm/SBZ Vanishing Block.kospm"
+KosPM_SbzBlock:	binclude	"artkospm/SBZ Vanishing Block.kospm"
 		even
-Nem_FlamePipe:	binclude	"artkospm/SBZ Flaming Pipe.kospm"
+KosPM_FlamePipe:	binclude	"artkospm/SBZ Flaming Pipe.kospm"
 		even
-Nem_SbzDoor1:	binclude	"artkospm/SBZ Small Vertical Door.kospm"
+KosPM_SbzDoor1:	binclude	"artkospm/SBZ Small Vertical Door.kospm"
 		even
-Nem_SlideFloor:	binclude	"artkospm/SBZ Sliding Floor Trap.kospm"
+KosPM_SlideFloor:	binclude	"artkospm/SBZ Sliding Floor Trap.kospm"
 		even
-Nem_SbzDoor2:	binclude	"artkospm/SBZ Large Horizontal Door.kospm"
+KosPM_SbzDoor2:	binclude	"artkospm/SBZ Large Horizontal Door.kospm"
 		even
-Nem_Girder:	binclude	"artkospm/SBZ Crushing Girder.kospm"
+KosPM_Girder:	binclude	"artkospm/SBZ Crushing Girder.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - enemies
 ; ---------------------------------------------------------------------------
-Nem_BallHog:	binclude	"artkospm/Enemy Ball Hog.kospm"
+KosPM_BallHog:	binclude	"artkospm/Enemy Ball Hog.kospm"
 		even
-Nem_Crabmeat:	binclude	"artkospm/Enemy Crabmeat.kospm"
+KosPM_Crabmeat:	binclude	"artkospm/Enemy Crabmeat.kospm"
 		even
-Nem_Buzz:	binclude	"artkospm/Enemy Buzz Bomber.kospm"
+KosPM_Buzz:	binclude	"artkospm/Enemy Buzz Bomber.kospm"
 		even
-Nem_Burrobot:	binclude	"artkospm/Enemy Burrobot.kospm"
+KosPM_Burrobot:	binclude	"artkospm/Enemy Burrobot.kospm"
 		even
-Nem_Chopper:	binclude	"artkospm/Enemy Chopper.kospm"
+KosPM_Chopper:	binclude	"artkospm/Enemy Chopper.kospm"
 		even
-Nem_Jaws:	binclude	"artkospm/Enemy Jaws.kospm"
+KosPM_Jaws:	binclude	"artkospm/Enemy Jaws.kospm"
 		even
-Nem_Roller:	binclude	"artkospm/Enemy Roller.kospm"
+KosPM_Roller:	binclude	"artkospm/Enemy Roller.kospm"
 		even
-Nem_Motobug:	binclude	"artkospm/Enemy Motobug.kospm"
+KosPM_Motobug:	binclude	"artkospm/Enemy Motobug.kospm"
 		even
-Nem_Newtron:	binclude	"artkospm/Enemy Newtron.kospm"
+KosPM_Newtron:	binclude	"artkospm/Enemy Newtron.kospm"
 		even
-Nem_Yadrin:	binclude	"artkospm/Enemy Yadrin.kospm"
+KosPM_Yadrin:	binclude	"artkospm/Enemy Yadrin.kospm"
 		even
-Nem_Basaran:	binclude	"artkospm/Enemy Basaran.kospm"
+KosPM_Basaran:	binclude	"artkospm/Enemy Basaran.kospm"
 		even
-Nem_Bomb:	binclude	"artkospm/Enemy Bomb.kospm"
+KosPM_Bomb:	binclude	"artkospm/Enemy Bomb.kospm"
 		even
-Nem_Orbinaut:	binclude	"artkospm/Enemy Orbinaut.kospm"
+KosPM_Orbinaut:	binclude	"artkospm/Enemy Orbinaut.kospm"
 		even
-Nem_Cater:	binclude	"artkospm/Enemy Caterkiller.kospm"
+KosPM_Cater:	binclude	"artkospm/Enemy Caterkiller.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - various
 ; ---------------------------------------------------------------------------
-Nem_TitleCard:	binclude	"artkospm/Title Cards.kospm"
+KosPM_TitleCard:	binclude	"artkospm/Title Cards.kospm"
 		even
-Nem_Hud:	binclude	"artkospm/HUD.kospm"	; HUD (rings, time, score)
+KosPM_Hud:	binclude	"artkospm/HUD.kospm"	; HUD (rings, time, score)
 		even
-Nem_Lives:	binclude	"artkospm/HUD - Life Counter Icon.kospm"
+KosPM_Lives:	binclude	"artkospm/HUD - Life Counter Icon.kospm"
 		even
-Nem_Ring:	binclude	"artkospm/Rings.kospm"
+KosPM_Ring:	binclude	"artkospm/Rings.kospm"
 		even
-Nem_Monitors:	binclude	"artkospm/Monitors.kospm"
+KosPM_Monitors:	binclude	"artkospm/Monitors.kospm"
 		even
-Nem_Explode:	binclude	"artkospm/Explosion.kospm"
+KosPM_Explode:	binclude	"artkospm/Explosion.kospm"
 		even
-Nem_Points:	binclude	"artkospm/Points.kospm"	; points from destroyed enemy or object
+KosPM_Points:	binclude	"artkospm/Points.kospm"	; points from destroyed enemy or object
 		even
-Nem_GameOver:	binclude	"artkospm/Game Over.kospm"	; game over / time over
+KosPM_GameOver:	binclude	"artkospm/Game Over.kospm"	; game over / time over
 		even
-Nem_HSpring:	binclude	"artkospm/Spring Horizontal.kospm"
+KosPM_HSpring:	binclude	"artkospm/Spring Horizontal.kospm"
 		even
-Nem_VSpring:	binclude	"artkospm/Spring Vertical.kospm"
+KosPM_VSpring:	binclude	"artkospm/Spring Vertical.kospm"
 		even
-Nem_SignPost:	binclude	"artkospm/Signpost.kospm"	; end of level signpost
+KosPM_SignPost:	binclude	"artkospm/Signpost.kospm"	; end of level signpost
 		even
-Nem_Lamp:	binclude	"artkospm/Lamppost.kospm"
+KosPM_Lamp:	binclude	"artkospm/Lamppost.kospm"
 		even
-Nem_BigFlash:	binclude	"artkospm/Giant Ring Flash.kospm"
+KosPM_BigFlash:	binclude	"artkospm/Giant Ring Flash.kospm"
 		even
-Nem_Bonus:	binclude	"artkospm/Hidden Bonuses.kospm" ; hidden bonuses at end of a level
+KosPM_Bonus:	binclude	"artkospm/Hidden Bonuses.kospm" ; hidden bonuses at end of a level
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - animals
 ; ---------------------------------------------------------------------------
-Nem_Rabbit:	binclude	"artkospm/Animal Rabbit.kospm"
+KosPM_Rabbit:	binclude	"artkospm/Animal Rabbit.kospm"
 		even
-Nem_Chicken:	binclude	"artkospm/Animal Chicken.kospm"
+KosPM_Chicken:	binclude	"artkospm/Animal Chicken.kospm"
 		even
-Nem_Penguin:	binclude	"artkospm/Animal Penguin.kospm"
+KosPM_Penguin:	binclude	"artkospm/Animal Penguin.kospm"
 		even
-Nem_Seal:	binclude	"artkospm/Animal Seal.kospm"
+KosPM_Seal:	binclude	"artkospm/Animal Seal.kospm"
 		even
-Nem_Pig:	binclude	"artkospm/Animal Pig.kospm"
+KosPM_Pig:	binclude	"artkospm/Animal Pig.kospm"
 		even
-Nem_Flicky:	binclude	"artkospm/Animal Flicky.kospm"
+KosPM_Flicky:	binclude	"artkospm/Animal Flicky.kospm"
 		even
-Nem_Squirrel:	binclude	"artkospm/Animal Squirrel.kospm"
+KosPM_Squirrel:	binclude	"artkospm/Animal Squirrel.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - primary patterns and block mappings
 ; ---------------------------------------------------------------------------
 Blk16_GHZ:	binclude	"map16/GHZ.eni"
 		even
-Nem_GHZ_1st:	binclude	"artkosp/8x8 - Title.kosp"	; GHZ primary patterns
+KosP_GHZ_1st:	binclude	"artkosp/8x8 - Title.kosp"	; GHZ primary patterns
 		even
-Nem_GHZ_2nd:	binclude	"artkosp/8x8 - GHZ.kosp"	; GHZ secondary patterns
+KosP_GHZ_2nd:	binclude	"artkosp/8x8 - GHZ.kosp"	; GHZ secondary patterns
 		even
 Blk256_GHZ:	binclude	"map128/GHZ.kosp"
 		even
 Blk16_LZ:	binclude	"map16/LZ.eni"
 		even
-Nem_LZ:		binclude	"artkosp/8x8 - LZ.kosp"	; LZ primary patterns
+KosP_LZ:		binclude	"artkosp/8x8 - LZ.kosp"	; LZ primary patterns
 		even
 Blk256_LZ:	binclude	"map128/LZ.kosp"
 		even
 Blk16_MZ:	binclude	"map16/MZ.eni"
 		even
-Nem_MZ:		binclude	"artkosp/8x8 - MZ.kosp"	; MZ primary patterns
+KosP_MZ:		binclude	"artkosp/8x8 - MZ.kosp"	; MZ primary patterns
 		even
 Blk256_MZ:	binclude	"map128/MZ.kosp"
 		even
 Blk16_SLZ:	binclude	"map16/SLZ.eni"
 		even
-Nem_SLZ:	binclude	"artkosp/8x8 - SLZ.kosp"	; SLZ primary patterns
+KosP_SLZ:	binclude	"artkosp/8x8 - SLZ.kosp"	; SLZ primary patterns
 		even
 Blk256_SLZ:	binclude	"map128/SLZ.kosp"
 		even
 Blk16_SYZ:	binclude	"map16/SYZ.eni"
 		even
-Nem_SYZ:	binclude	"artkosp/8x8 - SYZ.kosp"	; SYZ primary patterns
+KosP_SYZ:	binclude	"artkosp/8x8 - SYZ.kosp"	; SYZ primary patterns
 		even
 Blk256_SYZ:	binclude	"map128/SYZ.kosp"
 		even
 Blk16_SBZ:	binclude	"map16/SBZ.eni"
 		even
-Nem_SBZ:	binclude	"artkosp/8x8 - SBZ.kosp"	; SBZ primary patterns
+KosP_SBZ:	binclude	"artkosp/8x8 - SBZ.kosp"	; SBZ primary patterns
 		even
 Blk256_SBZ:	binclude	"map128/SBZ.kosp"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - bosses
 ; ---------------------------------------------------------------------------
-Nem_Eggman:	binclude	"artkospm/Boss - Main.kospm"
+KosPM_Eggman:	binclude	"artkospm/Boss - Main.kospm"
 		even
-Nem_Weapons:	binclude	"artkospm/Boss - Weapons.kospm"
+KosPM_Weapons:	binclude	"artkospm/Boss - Weapons.kospm"
 		even
-Nem_Prison:	binclude	"artkospm/Prison Capsule.kospm"
+KosPM_Prison:	binclude	"artkospm/Prison Capsule.kospm"
 		even
-Nem_Sbz2Eggman:	binclude	"artkospm/Boss - Eggman in SBZ2 & FZ.kospm"
+KosPM_Sbz2Eggman:	binclude	"artkospm/Boss - Eggman in SBZ2 & FZ.kospm"
 		even
-Nem_FzBoss:	binclude	"artkospm/Boss - Final Zone.kospm"
+KosPM_FzBoss:	binclude	"artkospm/Boss - Final Zone.kospm"
 		even
-Nem_FzEggman:	binclude	"artkospm/Boss - Eggman after FZ Fight.kospm"
+KosPM_FzEggman:	binclude	"artkospm/Boss - Eggman after FZ Fight.kospm"
 		even
-Nem_Exhaust:	binclude	"artkospm/Boss - Exhaust Flame.kospm"
+KosPM_Exhaust:	binclude	"artkospm/Boss - Exhaust Flame.kospm"
 		even
-Nem_CreditText:	binclude	"artkospm/Ending - Credits.kospm"
+KosPM_CreditText:	binclude	"artkospm/Ending - Credits.kospm"
 		even
 ; ---------------------------------------------------------------------------
 ; Collision data
