@@ -437,7 +437,13 @@ VBla_00:
 ; ===========================================================================
 
 VBla_02:
-		bsr.w	sub_106E
+		tst.w	(v_demolength).w
+		beq.s	.end
+		subq.w	#1,(v_demolength).w
+
+.end:
+		bra.w	sub_106E
+; ===========================================================================
 
 VBla_14:
 		tst.w	(v_demolength).w
@@ -1543,7 +1549,6 @@ Sega_GotoTitle:
 GM_Title:
 		moveq	#bgm_Stop,d0
 		bsr.w	PlayMusic ; stop music
-		clearRAM Kos_decomp_stored_registers, Kos_module_end
 		bsr.w	PaletteFadeOut
 		disable_ints
 		lea	(vdp_control_port).l,a6
@@ -1557,6 +1562,7 @@ GM_Title:
 		clr.b	(f_wtr_state).w
 		bsr.w	ClearScreen
 
+		clearRAM Kos_decomp_stored_registers, Kos_module_end
 		clearRAM v_objspace
 
 		lea	(Nem_JapNames).l,a1 ; load Japanese credits

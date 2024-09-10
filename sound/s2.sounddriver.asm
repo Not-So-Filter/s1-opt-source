@@ -141,12 +141,10 @@ zVar STRUCT DOTS
 	StopMusic:		ds.b 1	; Set to 7Fh to pause music, set to 80h to unpause. Otherwise 00h
 	FadeOutCounter:		ds.b 1
 	FadeOutDelay:		ds.b 1
-	Communication:		ds.b 1	; Unused byte used to synchronise gameplay events with music
 	DACUpdating:		ds.b 1	; Set to FFh while DAC is updating, then back to 00h
 	QueueToPlay:		ds.b 1	; The head of the queue
 	Queue0:			ds.b 1
 	Queue1:			ds.b 1
-	Queue2:			ds.b 1	; This slot was totally broken in Sonic 1's driver. It's mostly fixed here, but it's still a little broken (see 'zInitMusicPlayback').
 	VoiceTblPtr:		ds.b 2	; Address of the voices
 	FadeInFlag:		ds.b 1
 	FadeInDelay:		ds.b 1
@@ -319,12 +317,10 @@ zWriteFMIorII:    rsttarget
 zWriteFMI:    rsttarget
 	; Write reg/data pair to part I; 'a' is register, 'c' is data
 	ld	(zYM2612_A0),a
-	push	af
 	ld	a,c
 	ld	(zYM2612_D0),a
 	ld	a,2Ah			; DAC port
 	ld	(zYM2612_A0),a		; Set DAC port register
-	pop	af
 	ret
 ; End of function zWriteFMI
 
@@ -334,12 +330,10 @@ zWriteFMI:    rsttarget
 zWriteFMII:    rsttarget
 	; Write reg/data pair to part II; 'a' is register, 'c' is data
 	ld	(zYM2612_A1),a
-	push	af
 	ld	a,c
 	ld	(zYM2612_D1),a
 	ld	a,2Ah			; DAC port
 	ld	(zYM2612_A0),a		; Set DAC port register
-	pop	af
 	ret
 ; End of function zWriteFMII
 
@@ -374,7 +368,6 @@ zUpdateEverything:
 
 	ld	a,(zAbsVar.Queue0)
 	or	(ix+zVar.Queue1)
-	or	(ix+zVar.Queue2)		; This was missing in Sonic 1's driver, breaking the third queue slot.
 	call	nz,zCycleQueue			; If any of those are non-zero, cycle queue
 
 	; Apparently if this is 00h, it does not play anything new,
@@ -979,7 +972,9 @@ zFMUpdateFreq:
 	ld	a,(ix+zTrack.VoiceControl)	; "voice control" byte -> 'a'
 	and	3				; Strip to only channel assignment
 	add	a,0A4h				; Change to proper register
+	push	af
 	rst	zWriteFMIorII			; Write it!
+	pop	af
 	ld	c,l				; lower part of frequency
 	sub	4				; A0h+ register
 	jp	zWriteFMIorII			; Write it!
@@ -1305,7 +1300,7 @@ zCycleQueue:
 	ld	hl,zAbsVar.Queue0		; Get address of next sound
 	ld	a,(zAbsVar.SFXPriorityVal)	; Get current SFX priority
 	ld	c,a				; a -> c
-	ld	b,3				; 3, for Queue0, Queue1, and Queue2
+	ld	b,2				; 2, for Queue0 and Queue1
 
 zInputLoop:
 	ld	a,(hl)				; Get sound to play -> 'a'
@@ -1392,11 +1387,15 @@ zPlaySegaSound:
 	; reset panning (don't want Sega sound playing on only one speaker)
 	ld	a,0B6h		; Set Panning / AMS / FMS
 	ld	c,0C0h		; default Panning / AMS / FMS settings (only stereo L/R enabled)
+	push	af
 	rst	zWriteFMII	; Set it!
+	pop	af
 
 	ld	a,2Bh		; DAC enable/disable register
 	ld	c,80h		; Command to enable DAC
+	push	af
 	rst	zWriteFMI
+	pop	af
 
 	bankswitch Snd_Sega	; We want the Sega sound
 
@@ -1425,7 +1424,10 @@ zPlaySegaSound:
 	call	zBankSwitchToMusic
 	ld	c,(ix+zVar.DACEnabled)
 	ld	a,2Bh			; DAC enable/disable register
-	jp	zWriteFMI
+	push	af
+	rst	zWriteFMI
+	push	af
+	ret
 ; ---------------------------------------------------------------------------
 ; zloc_73D
 zPlayMusic:
@@ -1708,7 +1710,9 @@ zFMOperatorWriteLoop:
 	ld	b,4		; Loop 4 times
 
 .loop:
+	push	af
 	rst	zWriteFMIorII	; Write to part I or II, as appropriate
+	pop	af
 	add	a,4		; a += 4
 	djnz	.loop		; Loop
 	ret
@@ -2058,9 +2062,13 @@ zFMSilenceAll:
 .noteoffloop:
 	ld	c,b		; Current key off -> 'c
 	dec	c		; c--
+	push	af
 	rst	zWriteFMI	; Write key off for part I
+	pop	af
 	set	2,c		; Set part II select
+	push	af
 	rst	zWriteFMI	; Write key off for part II
+	pop	af
 	djnz	.noteoffloop
 
 	ld	a,30h		; Starting at FM register 30h...
@@ -2068,8 +2076,12 @@ zFMSilenceAll:
 	ld	b,60h		; ...up to register 90h
 
 .channelloop:
+	push	af
 	rst	zWriteFMI	; ...on part I
+	pop	af
+	push	af
 	rst	zWriteFMII	; ...and part II
+	pop	af
 	inc	a		; Next register!
 	djnz	.channelloop
 
@@ -2131,8 +2143,6 @@ zInitMusicPlayback:
 	ld	b,(ix+zVar.Queue0)
 	ld	c,(ix+zVar.Queue1)
 	push	bc
-	ld	b,(ix+zVar.Queue2)
-	push	bc
 	; The following clears all playback memory and non-SFX tracks
 	ld	hl,zAbsVar
 	ld	de,zAbsVar+1
@@ -2143,8 +2153,6 @@ zInitMusicPlayback:
 	pop	bc
 	ld	(ix+zVar.Queue0),b
 	ld	(ix+zVar.Queue1),c
-	pop	bc
-	ld	(ix+zVar.Queue2),b
 	pop	bc
 	ld	(ix+zVar.SpeedUpFlag),b		; Speed shoe flag
 	ld	(ix+zVar.FadeInCounter),c	; Fade in frames
@@ -2428,7 +2436,10 @@ cfPanningAMSFMS:
 	ld	a,(ix+zTrack.VoiceControl)	; Get voice control byte
 	and	3				; Channels only!
 	add	a,0B4h				; Add register B4, stereo output control and LFO sensitivity
-	jp	zWriteFMIorII			; Depends on bit 2 of (ix+zTrack.VoiceControl)
+	push	af
+	rst	zWriteFMIorII			; Depends on bit 2 of (ix+zTrack.VoiceControl)
+	pop	af
+	ret
 ; ---------------------------------------------------------------------------
 
 ; (via Saxman's doc): Alter note values by xx
@@ -2443,7 +2454,6 @@ cfDetune:
 ; Used for triggering a boss' attacks in Ristar
 ; zloc_D1E cfUnknown1
 cfSetCommunication:
-	ld	(zAbsVar.Communication),a
 	ret
 ; ---------------------------------------------------------------------------
 
@@ -2700,7 +2710,9 @@ zSetVoice:
 	ld	a,(ix+zTrack.VoiceControl)	; Get "voice control" byte
 	and	3				; Only keep bits 0-2 (bit 2 specifies which chip to write to)
 	add	a,0B0h				; Add to get appropriate feedback/algorithm register
+	push	af
 	rst	zWriteFMIorII			; Write new value to appropriate part
+	pop	af
 
 	; detune/coarse freq, all channels
 	sub	80h		; Subtract 80h from 'a' (Detune/coarse frequency of operator 1 register)
@@ -2709,7 +2721,9 @@ zSetVoice:
 .detuneloop:
 	ld	c,(hl)		; Get next detune/coarse freq
 	inc	hl		; Next voice byte
+	push	af
 	rst	zWriteFMIorII	; Write this detune/coarse freq
+	pop	af
 	add	a,4		; Next detune/coarse freq register
 	djnz	.detuneloop
 
@@ -2722,14 +2736,18 @@ zSetVoice:
 .registerloop:
 	ld	c,(hl)		; Get next reg data value
 	inc	hl		; Next voice byte
+	push	af
 	rst	zWriteFMIorII	; Write to FM
+	pop	af
 	add	a,4		; Next register
 	djnz	.registerloop
 
 	; Now going to set "stereo output control and LFO sensitivity"
 	add	a,24h				; Sets to reg B4h+ (stereo output control and LFO sensitivity)
 	ld	c,(ix+zTrack.AMSFMSPan)		; Panning / AMS / FMS settings from track
+	push	af
 	rst	zWriteFMIorII			; Write it!
+	pop	af
 	ld	(ix+zTrack.TLPtrLow),l		; Save current position (TL bytes begin)
 	ld	(ix+zTrack.TLPtrHigh),h		; ...for updating volume correctly later later
 
@@ -2770,7 +2788,9 @@ zSetFMTLs:
 	pop	af		; Restore 'a'
 
 .write:
+	push	af
 	rst	zWriteFMIorII	; Write TL value
+	pop	af
 	add	a,4		; Next TL reg...
 	djnz	.loop
 
