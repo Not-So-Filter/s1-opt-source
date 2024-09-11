@@ -404,10 +404,10 @@ VBla_Index:
 ptr_VB_00:	dc.w VBla_00
 ptr_VB_02:	dc.w VBla_02
 ptr_VB_04:	dc.w VBla_04
-ptr_VB_06:	dc.w VBla_08
-ptr_VB_08:	dc.w VBla_0C
-ptr_VB_0A:	dc.w VBla_12
-ptr_VB_0C:	dc.w VBla_14
+ptr_VB_06:	dc.w VBla_06
+ptr_VB_08:	dc.w VBla_08
+ptr_VB_0A:	dc.w VBla_0A
+ptr_VB_0C:	dc.w VBla_0C
 ptr_VB_0E:	dc.w Vint_Menu
 ; ===========================================================================
 
@@ -426,14 +426,12 @@ VBla_00:
 
 		writeCRAM	v_palette,0
 		move.w	(v_hbla_hreg).w,(a5)
-		movem.l	(sp)+,d0-a6
-		rte
+		rts
 
 .waterabove:
 		writeCRAM	v_palette_water,0
 		move.w	(v_hbla_hreg).w,(a5)
-		movem.l	(sp)+,d0-a6
-		rte
+		rts
 ; ===========================================================================
 
 VBla_02:
@@ -445,7 +443,7 @@ VBla_02:
 		bra.w	sub_106E
 ; ===========================================================================
 
-VBla_14:
+VBla_0C:
 		tst.w	(v_demolength).w
 		beq.s	.end
 		subq.w	#1,(v_demolength).w
@@ -464,7 +462,7 @@ VBla_04:
 		bra.w	LoadTilesAsYouMove_BGOnly
 ; ===========================================================================
 
-VBla_08:
+VBla_06:
 		bsr.w	ReadJoypads
 		tst.b	(f_wtr_state).w
 		bne.s	.waterabove
@@ -509,7 +507,7 @@ Demo_Time:
 
 ; ===========================================================================
 
-VBla_0C:
+VBla_08:
 		bsr.w	ReadJoypads
 		tst.b	(f_wtr_state).w
 		bne.s	.waterabove
@@ -533,7 +531,7 @@ VBla_0C:
 		jmp	(HUD_Update).l
 ; ===========================================================================
 
-VBla_12:
+VBla_0A:
 		bsr.w	sub_106E
 		move.w	(v_hbla_hreg).w,(a5)
 		rts
