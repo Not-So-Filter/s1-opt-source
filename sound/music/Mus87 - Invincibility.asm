@@ -39,7 +39,6 @@ Mus87_Invincibility_Jump00:
 
 ; FM2 Data
 Mus87_Invincibility_FM2:
-	smpsNop             $01
 	smpsSetvoice        $01
 	dc.b	nRst, $30
 
@@ -54,7 +53,6 @@ Mus87_Invincibility_Loop06:
 	smpsLoop            $00, $02, Mus87_Invincibility_Loop06
 	dc.b	nA2, $0C, nB2, nCs3, nEb3, nB2, $06, nCs3, nEb3, nF3, nCs3, nEb3
 	dc.b	nF3, nFs3
-	smpsNop             $01
 	smpsJump            Mus87_Invincibility_Loop05
 
 ; FM3 Data
@@ -123,9 +121,6 @@ Mus87_Invincibility_Loop00:
 	dc.b	$0C, dSnare, dSnare, $06, dKick, $12, dKick, $0C, dSnare, dSnare, $04, dSnare
 	dc.b	dSnare, dSnare, dSnare, dSnare, dSnare, dSnare, dSnare, dSnare, dSnare, dSnare
 	smpsJump            Mus87_Invincibility_Loop00
-
-; Unreachable
-	smpsStop
 
 Mus87_Invincibility_Voices:
 ;	Voice $00

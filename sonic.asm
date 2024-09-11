@@ -1464,7 +1464,6 @@ WaitForVBla:
 GM_Sega:
 		moveq	#bgm_Stop,d0
 		bsr.w	PlayMusic ; stop music
-		clearRAM Kos_decomp_stored_registers, Kos_module_end
 		bsr.w	PaletteFadeOut
 		lea	(vdp_control_port).l,a6
 		move.w	#$8004,(a6)	; use 8-colour mode
@@ -1474,6 +1473,7 @@ GM_Sega:
 		move.w	#$8B00,(a6)	; full-screen vertical scrolling
 		clr.b	(f_wtr_state).w
 		disable_ints
+		clearRAM Kos_decomp_stored_registers, Kos_module_end
 		displayOff
 		bsr.w	ClearScreen
 		lea	(KosP_SegaLogo).l,a0 ; load Sega	logo patterns
@@ -1707,7 +1707,10 @@ Tit_LoadText:
 
 Tit_MainLoop:
 		move.w	#id_VB_04,(v_vbla_routine).w
+		bsr.w	Process_Kos_Queue
 		bsr.w	WaitForVBla
+		bsr.w	ProcessDMAQueue
+		bsr.w	Process_Kos_Module_Queue
 		jsr	(ExecuteObjects).l
 		bsr.w	DeformLayers
 		jsr	(BuildSprites).l
@@ -3805,7 +3808,7 @@ ExecuteObjects:
 		bhs.s	loc_D362
 
 loc_D348:
-		moveq	#0,d0		; clear high bit of d0
+		moveq	#0,d0
 		move.b	obID(a0),d0		; load object number from RAM
 		beq.s	loc_D358
 		add.w	d0,d0

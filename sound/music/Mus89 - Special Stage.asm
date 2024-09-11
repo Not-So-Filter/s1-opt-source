@@ -1,7 +1,7 @@
 Mus89_Special_Stage_Header:
 	smpsHeaderStartSong 1
 	smpsHeaderVoice     Mus89_Special_Stage_Voices
-	smpsHeaderChan      $07, $03
+	smpsHeaderChan      $07, $02
 	smpsHeaderTempo     $02, $08
 
 	smpsHeaderDAC       Mus89_Special_Stage_DAC
@@ -13,7 +13,6 @@ Mus89_Special_Stage_Header:
 	smpsHeaderFM        Mus89_Special_Stage_FM6,	$E8, $14
 	smpsHeaderPSG       Mus89_Special_Stage_PSG1,	$DC, $03, $00, fTone_04
 	smpsHeaderPSG       Mus89_Special_Stage_PSG2,	$FD, $01, $00, fTone_08
-	smpsHeaderPSG       Mus89_Special_Stage_PSG3,	$DC, $04, $00, fTone_04
 
 ; FM1 Data
 Mus89_Special_Stage_FM1:
@@ -32,7 +31,6 @@ Mus89_Special_Stage_Loop05:
 ; FM2 Data
 Mus89_Special_Stage_FM2:
 	smpsSetvoice        $02
-	smpsNop             $01
 
 Mus89_Special_Stage_Loop04:
 	dc.b	nF5, $0C, nRst, $18, nE5, $0C, nRst, $18, nD5, $0C, nRst, $18
@@ -42,7 +40,6 @@ Mus89_Special_Stage_Loop04:
 	dc.b	nBb4, $0C, nRst, $18, nBb4, $0C, nRst, $18, nC5, $0C, nRst, $18
 	dc.b	nC5, $0C, nRst, $18, nBb4, $0C, nRst, $18, nBb4, $0C, nRst, $18
 	dc.b	nD5, $0C, nRst, $18, nG5, $24
-	smpsNop             $01
 	smpsJump            Mus89_Special_Stage_Loop04
 
 ; FM3 Data
@@ -169,8 +166,6 @@ Mus89_Special_Stage_PSG2:
 
 ; DAC Data
 Mus89_Special_Stage_DAC:
-; PSG3 Data
-Mus89_Special_Stage_PSG3:
 	smpsStop
 
 ; FM6 Data

@@ -17,11 +17,10 @@ MDemo_On:
 		move.w	#id_Title,(v_gamemode).w ; go to title screen
 
 .dontquit:
-		lea	DemoDataPtr(pc),a1
 		moveq	#0,d0
 		move.b	(v_zone).w,d0
 		add.w	d0,d0
-		movea.w	(a1,d0.w),a1	; fetch address for demo data
+		movea.w	DemoDataPtr(pc,d0.w),a1	; fetch address for demo data
 		move.w	(v_btnpushtime1).w,d0
 		adda.w	d0,a1
 		move.b	(a1),d0

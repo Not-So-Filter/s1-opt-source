@@ -1,7 +1,7 @@
 Mus90_Continue_Screen_Header:
 	smpsHeaderStartSong 1
 	smpsHeaderVoice     Mus90_Continue_Screen_Voices
-	smpsHeaderChan      $06, $00
+	smpsHeaderChan      $05, $00
 	smpsHeaderTempo     $01, $07
 
 	smpsHeaderDAC       Mus90_Continue_Screen_DAC
@@ -9,7 +9,6 @@ Mus90_Continue_Screen_Header:
 	smpsHeaderFM        Mus90_Continue_Screen_FM2,	$E8, $08
 	smpsHeaderFM        Mus90_Continue_Screen_FM3,	$F4, $0F
 	smpsHeaderFM        Mus90_Continue_Screen_FM4,	$F4, $0F
-	smpsHeaderFM        Mus90_Continue_Screen_FM5,	$F4, $0A
 
 ; FM1 Data
 Mus90_Continue_Screen_FM1:
@@ -69,9 +68,6 @@ Mus90_Continue_Screen_Loop01:
 	smpsLoop            $00, $03, Mus90_Continue_Screen_Loop01
 	dc.b	nCs6, $06, nRst, nCs6, nRst, nA5, nRst, nA5, nRst, nD6, $0C, nRst
 	dc.b	$06, nD6, $4E
-
-; FM5 Data
-Mus90_Continue_Screen_FM5:
 	smpsStop
 
 ; DAC Data

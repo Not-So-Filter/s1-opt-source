@@ -1,7 +1,7 @@
 Mus88_Extra_Life_Header:
 	smpsHeaderStartSong 1
 	smpsHeaderVoice     Mus88_Extra_Life_Voices
-	smpsHeaderChan      $06, $03
+	smpsHeaderChan      $06, $02
 	smpsHeaderTempo     $02, $05
 
 	smpsHeaderDAC       Mus88_Extra_Life_DAC
@@ -12,7 +12,6 @@ Mus88_Extra_Life_Header:
 	smpsHeaderFM        Mus88_Extra_Life_FM5,	$E8, $10
 	smpsHeaderPSG       Mus88_Extra_Life_PSG1,	$D0, $06, $00, fTone_05
 	smpsHeaderPSG       Mus88_Extra_Life_PSG2,	$DC, $06, $00, fTone_05
-	smpsHeaderPSG       Mus88_Extra_Life_PSG3,	$DC, $00, $00, fTone_04
 
 ; FM4 Data
 Mus88_Extra_Life_FM4:
@@ -36,11 +35,9 @@ Mus88_Extra_Life_Jump01:
 Mus88_Extra_Life_FM2:
 	smpsSetvoice        $01
 	smpsNoteFill        $06
-	smpsNop             $01
 	dc.b	nCs7, $06, $03, $03, $06, $06
 	smpsNoteFill        $00
 	dc.b	nD7, $09, nB6, nA6, $06, nCs7, $18
-	smpsNop             $01
 	smpsStop
 
 ; FM5 Data
@@ -68,8 +65,6 @@ Mus88_Extra_Life_PSG1:
 
 ; PSG2 Data
 Mus88_Extra_Life_PSG2:
-; PSG3 Data
-Mus88_Extra_Life_PSG3:
 	smpsStop
 
 ; DAC Data
