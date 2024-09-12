@@ -426,12 +426,14 @@ VBla_00:
 
 		writeCRAM	v_palette,0
 		move.w	(v_hbla_hreg).w,(a5)
-		rts
+		movem.l	(sp)+,d0-a6
+		rte
 
 .waterabove:
 		writeCRAM	v_palette_water,0
 		move.w	(v_hbla_hreg).w,(a5)
-		rts
+		movem.l	(sp)+,d0-a6
+		rte
 ; ===========================================================================
 
 VBla_02:
