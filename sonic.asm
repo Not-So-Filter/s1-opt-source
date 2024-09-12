@@ -5604,8 +5604,6 @@ KosPM_JapNames:	binclude	"artkospm/Hidden Japanese Credits.kospm"
 ;---------------------------------------------------------------------------------------
 KosPM_FontStuff:	binclude	"artkospm/Standard font.kospm"
 		even
-Eni_MenuBack:	binclude	"tilemaps/Sonic and Miles animated background.eni"
-		even
 Unc_MenuBack:	binclude	"artunc/Sonic and Miles animated background.bin"
 		even
 KosPM_MenuBox:	binclude	"artkospm/A menu box with a shadow.kospm"

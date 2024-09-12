@@ -28,7 +28,7 @@ GM_MenuScreen:
 		lea	(KosPM_LevelSelectPics).l,a1
 		move.w	#tiles_to_bytes(ArtTile_ArtNem_LevelSelectPics),d2
 		bsr.w	Queue_Kos_Module
-		lea	(Eni_MenuBack).l,a0
+		lea	Eni_MenuBack(pc),a0
 		lea	(v_128x128_end).w,a1
 		move.w	#make_art_tile(ArtTile_VRAM_Start,3,0),d0
 		bsr.w	EniDec
@@ -457,9 +457,11 @@ Anim_SonicMilesBG:	zoneanimstart
 
 ; level select picture palettes
 ; byte_9880:
-Pal_LevelIcons:	binclude "palette/Level Select Icons.bin"
+Pal_LevelIcons:	binclude	"palette/Level Select Icons.bin"
 		even
-Eni_LevSel:	binclude "tilemaps/Level Select.eni"
+Eni_LevSel:	binclude	"tilemaps/Level Select.eni"
 		even
-Eni_LevSelIcon:	binclude "tilemaps/Level Select Icons.eni"
+Eni_LevSelIcon:	binclude	"tilemaps/Level Select Icons.eni"
+		even
+Eni_MenuBack:	binclude	"tilemaps/Sonic and Miles animated background.eni"
 		even

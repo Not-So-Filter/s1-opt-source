@@ -9,7 +9,6 @@ AnimateLevelGfx:
 		moveq	#0,d0
 		move.b	(v_zone).w,d0
 		add.w	d0,d0
-		add.w	d0,d0
 		move.w	DynAnimCue_Index(pc,d0.w),d1
 		lea	DynCue_Index(pc,d1.w),a2
 		move.w	DynCue_Index(pc,d0.w),d0
@@ -26,18 +25,20 @@ AnimateLevelGfx:
 ; ---------------------------------------------------------------------------
 DynCue_Index:
 		dc.w Dynamic_Normal-DynCue_Index
+		dc.w Dynamic_Null-DynCue_Index
+		dc.w Dynamic_Normal-DynCue_Index
+		dc.w Dynamic_Null-DynCue_Index
+		dc.w Dynamic_Null-DynCue_Index
+		dc.w Dynamic_Normal-DynCue_Index
+
 DynAnimCue_Index:
 		dc.w AnimCue_GHZ-DynCue_Index
-		dc.w Dynamic_Null-DynCue_Index
 		dc.w AnimCue_Null-DynCue_Index
-		dc.w Dynamic_Normal-DynCue_Index
 		dc.w AnimCue_MZ-DynCue_Index
-		dc.w Dynamic_Null-DynCue_Index
 		dc.w AnimCue_Null-DynCue_Index
-		dc.w Dynamic_Null-DynCue_Index
 		dc.w AnimCue_Null-DynCue_Index
-		dc.w Dynamic_Normal-DynCue_Index
 		dc.w AnimCue_SBZ-DynCue_Index
+
 ; ===========================================================================
 
 Dynamic_Null:
