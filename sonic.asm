@@ -1515,17 +1515,11 @@ Sega_WaitPal:
 		bsr.w	PalCycle_Sega
 		bne.s	Sega_WaitPal
 
+		moveq	#sfx_Sega,d0	; play sega sound
+		bsr.w	PlayMusic
 		move.w	#id_VB_0C,(v_vbla_routine).w
 		bsr.w	WaitForVBla
-		tst.b	(f_palmode).w
-		beq.s	.NTSC
-		move.w	#113,(v_demolength).w ; run title screen for 113 frames (2.25 seconds for PAL)
-		bra.s	.skip
-
-.NTSC:
-		move.w	#135,(v_demolength).w ; wait 2.25 seconds
-
-.skip:
+		move.w	#30,(v_demolength).w ; wait 30 frames (0.5 seconds)
 
 Sega_WaitEnd:
 		move.w	#id_VB_02,(v_vbla_routine).w

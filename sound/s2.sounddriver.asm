@@ -345,7 +345,7 @@ zVInt:    rsttarget
 
 	push	af			; Save 'af'
 	exx				; Effectively backs up 'bc', 'de', and 'hl'
-	call	zBankSwitchToMusic	; Bank switch to the music
+	bankswitch MusicPoint
 	xor	a			; Clear 'a'
 	ld	(zDoSFXFlag),a		; Not updating SFX (updating music)
 	ld	ix,zAbsVar		; ix points to zComRange
@@ -1417,7 +1417,7 @@ zPlaySegaSound:
 	; to pcmLoopCounter should be 86.
 
 .stop:
-	call	zBankSwitchToMusic
+	bankswitch MusicPoint
 	ld	c,(ix+zVar.DACEnabled)
 	ld	a,2Bh			; DAC enable/disable register
 	jp	zWriteFMI
@@ -1498,7 +1498,7 @@ zBGMLoad:
 	ld	hl,zROMWindow
 	add	hl,de				; "hl" now contains 2-byte offset for music address table lookup
 	push	hl				; Save 'hl' (will be damaged by bank switch)
-	call	zBankSwitchToMusic		; Bank switch to start of music in ROM!
+	bankswitch MusicPoint
 	pop	hl				; Restore 'hl'
 	ld	e,(hl)
 	inc	hl
@@ -1875,7 +1875,8 @@ zPlaySound:
 	dec	b				; One less FM channel
 	jp	nz,.sfx_loadloop		; If more to go, loop!
 
-	jp	zBankSwitchToMusic		; Otherwise, prepare to do music...
+	bankswitch MusicPoint
+	ret
 ; ---------------------------------------------------------------------------
 ; zloc_KillSFXPrio
 zKillSFXPrio:
@@ -2294,18 +2295,6 @@ zFMNoteOff:
 	jp	zWriteFMI	; Write to part I (note this particular register is ALWAYS sent to part I)
 ; End of function zFMNoteOff
 
-
-; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
-
-; Performs a bank switch to where the music for the current track is at
-; (there are two possible bank locations for music)
-
-; zsub_C63:
-zBankSwitchToMusic:
-	bankswitch MusicPoint
-	ret
-; End of function zBankSwitchToMusic
-
 ; ---------------------------------------------------------------------------
 
 ; zloc_C89
@@ -2440,12 +2429,7 @@ cfPanningAMSFMS:
 ; zloc_D1A cfAlterNotesUNK cfAlterNotes
 cfDetune:
 	ld	(ix+zTrack.Detune),a	; set new detune value
-	ret
-; ---------------------------------------------------------------------------
 
-; Set otherwise unused communication byte to parameter
-; Used for triggering a boss' attacks in Ristar
-; zloc_D1E cfUnknown1
 cfSetCommunication:
 	ret
 ; ---------------------------------------------------------------------------
@@ -2478,7 +2462,7 @@ cfFadeInToPrevious:
 	ld	bc,zTracksSaveEnd-zTracksSaveStart	; for this many bytes
 	ldir					; Go!
 
-	call	zBankSwitchToMusic
+	bankswitch MusicPoint
 	ld	a,(zSongDAC.PlaybackControl)	; Get DAC's playback bit
 	or	4
 	ld	(zSongDAC.PlaybackControl),a	; Set "SFX is overriding" on it (not normal, but will work for this purpose)
@@ -2901,7 +2885,7 @@ zStoppedChannel:	; General stop track continues here...
 	ld	ix,(zMusicTrackOffs)		; Self-modified code from just above: 'ix' points to corresponding Music FM track
 	bit	2,(ix+zTrack.PlaybackControl)	; If "SFX is overriding this track" is not set...
 	jr	z,zNoVoiceUpdate		; Skip this part (i.e. if SFX was not overriding this track, then nothing to restore)
-	call	zBankSwitchToMusic		; Bank switch back to music track
+	bankswitch MusicPoint
 	res	2,(ix+zTrack.PlaybackControl)	; Clear SFX is overriding this track from playback control
 	set	1,(ix+zTrack.PlaybackControl)	; Set track as resting bit
 	ld	a,(ix+zTrack.VoiceIndex)	; Get voice this track was using
@@ -3068,12 +3052,11 @@ cfOpF9:
 ; ---------------------------------------------------------------------------
 ; zbyte_FD8h
 zSFXPriority:
-	db	80h,70h,70h,70h,70h,70h,70h,70h,70h,70h,68h,70h,70h,70h,60h,70h
-	db	70h,60h,70h,60h,70h,70h,70h,70h,70h,70h,70h,70h,70h,70h,70h,7Fh
-	db	6Fh,70h,70h,70h,70h,70h,70h,70h,70h,70h,70h,70h,70h,6Fh,70h,70h
-	db	70h,60h,60h,70h,70h,70h,70h,70h,70h,70h,60h,62h,60h,60h,60h,70h
-	db	70h,70h,70h,70h,60h,60h,60h,6Fh,70h,70h,6Fh,6Fh,70h,71h,70h,70h
-	db	6Fh
+	db     90h,90h,90h,90h,90h,90h,90h,90h,90h,90h,90h,90h,90h,90h,90h	; 01h
+	db 90h,90h,90h,90h,80h,70h,70h,70h,70h,70h,70h,70h,70h,70h,68h,70h	; 10h
+	db 70h,70h,60h,70h,70h,60h,70h,60h,70h,70h,70h,70h,70h,70h,70h,70h	; 20h
+	db 70h,70h,70h,7Fh,60h,70h,70h,70h,70h,70h,70h,70h,70h,70h,70h,70h	; 30h
+	db 70h,70h,70h,70h,80h,80h,80h,80h					; 40h
 
 ; zoff_1029 zPSG_Index zPSG_FlutterTbl
 zPSG_EnvTbl:

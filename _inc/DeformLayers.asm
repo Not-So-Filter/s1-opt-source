@@ -85,7 +85,7 @@ Deform_GHZ:
 		move.w	(v_bgscroll_buffer).w,d0
 		add.w	(v_bg3screenposx).w,d0
 		neg.w	d0
-		moveq	#$1F,d1
+		moveq	#32-1,d1
 		sub.w	d4,d1
 		bcs.s	.gotoCloud2
 	.cloudLoop1:		; upper cloud (32px)
@@ -96,7 +96,7 @@ Deform_GHZ:
 		move.w	(v_bgscroll_buffer+4).w,d0
 		add.w	(v_bg3screenposx).w,d0
 		neg.w	d0
-		moveq	#$F,d1
+		moveq	#16-1,d1
 	.cloudLoop2:		; middle cloud (16px)
 		move.l	d0,(a1)+
 		dbf	d1,.cloudLoop2
@@ -104,19 +104,19 @@ Deform_GHZ:
 		move.w	(v_bgscroll_buffer+8).w,d0
 		add.w	(v_bg3screenposx).w,d0
 		neg.w	d0
-		moveq	#$F,d1
+		moveq	#16-1,d1
 	.cloudLoop3:		; lower cloud (16px)
 		move.l	d0,(a1)+
 		dbf	d1,.cloudLoop3
 
-		moveq	#$2F,d1
+		moveq	#48-1,d1
 		move.w	(v_bg3screenposx).w,d0
 		neg.w	d0
 	.mountainLoop:		; distant mountains (48px)
 		move.l	d0,(a1)+
 		dbf	d1,.mountainLoop
 
-		moveq	#$27,d1
+		moveq	#40-1,d1
 		move.w	(v_bg2screenposx).w,d0
 		neg.w	d0
 	.hillLoop:			; hills & waterfalls (40px)
@@ -133,7 +133,7 @@ Deform_GHZ:
 		asl.l	#8,d2
 		moveq	#0,d3
 		move.w	d0,d3
-		moveq	#$47,d1
+		moveq	#72-1,d1
 		add.w	d4,d1
 	.waterLoop:			; water deformation
 		move.w	d3,d0
