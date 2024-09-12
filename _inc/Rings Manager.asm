@@ -29,10 +29,9 @@ RingsManager_Init:
 
 		move.w	(v_zone).w,d0	; get the current zone and act
 		lsl.b	#6,d0
-		lsr.w	#5,d0
+		lsr.w	#4,d0
 		lea	(RingPos_Index).l,a1	; get the rings for the act
-		move.w	(a1,d0.w),d0
-		lea	(a1,d0.w),a1
+		movea.l	(a1,d0.w),a1
 		move.l	a1,(Ring_start_addr_ROM).w
 		addq.w	#4,a1
 		moveq	#0,d5
@@ -257,7 +256,7 @@ BuildRings_Loop:
 		addi.w	#128-8,d1
 		move.w	(a0),d0
 		sub.w	(a3),d0
-		addi.w	#$80,d0
+		addi.w	#128,d0
 		move.b	-1(a4),d6	; get ring frame
 		bne.s	+		; if this ring is using a specific frame, branch
 		move.b	(v_ani1_frame).w,d6	; use global frame

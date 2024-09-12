@@ -395,8 +395,8 @@ VBlank:
 		movea.w	VBla_Index(pc,d0.w),a0
 		jsr	(a0)
 
-VBla_Exit:
 		addq.l	#1,(v_vbla_count).w
+VBla_Exit:
 		movem.l	(sp)+,d0-a6
 		rte
 ; ===========================================================================
@@ -6141,35 +6141,35 @@ ObjPos_Null:	dc.b $FF, $FF, 0, 0, 0,	0
 
 RingPos_Index:
 		; GHZ
-		dc.w RingPos_GHZ1-RingPos_Index
-		dc.w RingPos_GHZ2-RingPos_Index
-		dc.w RingPos_GHZ3-RingPos_Index
-		dc.w RingPos_GHZ1-RingPos_Index
+		dc.l RingPos_GHZ1
+		dc.l RingPos_GHZ2
+		dc.l RingPos_GHZ3
+		dc.l RingPos_GHZ1
 		; LZ
-		dc.w RingPos_LZ1-RingPos_Index
-		dc.w RingPos_LZ2-RingPos_Index
-		dc.w RingPos_LZ3-RingPos_Index
-		dc.w RingPos_SBZ3-RingPos_Index
+		dc.l RingPos_LZ1
+		dc.l RingPos_LZ2
+		dc.l RingPos_LZ3
+		dc.l RingPos_SBZ3
 		; MZ
-		dc.w RingPos_MZ1-RingPos_Index
-		dc.w RingPos_MZ2-RingPos_Index
-		dc.w RingPos_MZ3-RingPos_Index
-		dc.w RingPos_MZ1-RingPos_Index
+		dc.l RingPos_MZ1
+		dc.l RingPos_MZ2
+		dc.l RingPos_MZ3
+		dc.l RingPos_MZ1
 		; SLZ
-		dc.w RingPos_SLZ1-RingPos_Index
-		dc.w RingPos_SLZ2-RingPos_Index
-		dc.w RingPos_SLZ3-RingPos_Index
-		dc.w RingPos_SLZ1-RingPos_Index
+		dc.l RingPos_SLZ1
+		dc.l RingPos_SLZ2
+		dc.l RingPos_SLZ3
+		dc.l RingPos_SLZ1
 		; SYZ
-		dc.w RingPos_SYZ1-RingPos_Index
-		dc.w RingPos_SYZ2-RingPos_Index
-		dc.w RingPos_SYZ3-RingPos_Index
-		dc.w RingPos_SYZ1-RingPos_Index
+		dc.l RingPos_SYZ1
+		dc.l RingPos_SYZ2
+		dc.l RingPos_SYZ3
+		dc.l RingPos_SYZ1
 		; SBZ
-		dc.w RingPos_SBZ1-RingPos_Index
-		dc.w RingPos_SBZ2-RingPos_Index
-		dc.w RingPos_Null-RingPos_Index
-		dc.w RingPos_SBZ1-RingPos_Index
+		dc.l RingPos_SBZ1
+		dc.l RingPos_SBZ2
+		dc.l RingPos_Null
+		dc.l RingPos_SBZ1
 
 RingPos_Null:	dc.w $FFFF, 0
 
