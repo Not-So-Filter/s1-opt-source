@@ -4437,13 +4437,11 @@ OPL_Main:
 		lsl.b	#6,d0
 		lsr.w	#4,d0
 		lea	(ObjPos_Index).l,a0
-		movea.l	a0,a1
 		adda.w	(a0,d0.w),a0
 		move.l	a0,(v_opl_data).w
 		move.l	a0,(v_opl_data+4).w
-		adda.w	2(a1,d0.w),a1
-		move.l	a1,(v_opl_data+8).w
-		move.l	a1,(v_opl_data+$C).w
+		move.l	a0,(v_opl_data+8).w
+		move.l	a0,(v_opl_data+$C).w
 		lea	(v_objstate).w,a2
 		move.w	#$101,(a2)+
 		moveq	#bytesToLcnt(v_objstate_end-v_objstate-2),d0
