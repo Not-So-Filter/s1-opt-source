@@ -29,7 +29,7 @@ LWall_Main:	; Routine 0
 		bne.s	.fail
 
 .make:
-		move.b	#id_LavaWall,obID(a1)	; load object
+		move.l	#LavaWall,obID(a1)	; load object
 		move.l	#Map_LWall,obMap(a1)
 		move.w	#make_art_tile(ArtTile_MZ_Lava,3,0),obGfx(a1)
 		move.b	#4,obRender(a1)
@@ -107,10 +107,9 @@ LWall_Solid:	; Routine 2
 ; ===========================================================================
 
 .chkgone:
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
-		bclr	#7,2(a2,d0.w)
+		move.w	obRespawnNo(a0),d0
+		movea.w	d0,a2
+		bclr	#7,2(a2)
 		move.b	#8,obRoutine(a0)
 		rts
 ; ===========================================================================

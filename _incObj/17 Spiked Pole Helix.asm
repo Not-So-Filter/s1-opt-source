@@ -28,7 +28,7 @@ Hel_Main:	; Routine 0
 		move.b	#8,obActWid(a0)
 		move.w	obY(a0),d2
 		move.w	obX(a0),d3
-		move.b	obID(a0),d4
+		move.l	obID(a0),d4
 		lea	obSubtype(a0),a2 ; move helix length to a2
 		moveq	#0,d1
 		move.b	(a2),d1		; move helix length to d1
@@ -55,7 +55,7 @@ Hel_Build:
 		andi.w	#$7F,d5
 		move.b	d5,(a2)+	; copy child address to parent RAM
 		move.b	#4,obRoutine(a1)
-		move.b	d4,obID(a1)
+		move.l	d4,obID(a1)
 		move.w	d2,obY(a1)
 		move.w	d3,obX(a1)
 		move.l	#Map_Hel,obMap(a1)

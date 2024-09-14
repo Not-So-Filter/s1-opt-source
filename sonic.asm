@@ -1583,7 +1583,7 @@ GM_Title:
 
 		moveq	#palid_Sonic,d0	; load Sonic's palette
 		bsr.w	PalLoad_Fade
-		move.b	#id_CreditsText,(v_sonicteam).w ; load "SONIC TEAM PRESENTS" object
+		move.l	#CreditsText,(v_sonicteam).w ; load "SONIC TEAM PRESENTS" object
 		jsr	(ExecuteObjects).l
 		jsr	(BuildSprites).l
 		bsr.w	PaletteFadeIn
@@ -1673,16 +1673,16 @@ Tit_LoadText:
 .skip:
 		clearRAM v_sonicteam,v_sonicteam+object_size
 
-		move.b	#id_TitleSonic,(v_titlesonic).w ; load big Sonic object
-		move.b	#id_PSBTM,(v_pressstart).w ; load "PRESS START BUTTON" object
+		move.l	#TitleSonic,(v_titlesonic).w ; load big Sonic object
+		move.l	#PSBTM,(v_pressstart).w ; load "PRESS START BUTTON" object
 		;clr.b	(v_pressstart+obRoutine).w ; The 'Mega Games 10' version of Sonic 1 added this line, to fix the 'PRESS START BUTTON' object not appearing
 
 		tst.b   (v_megadrive).w	; is console Japanese?
 		bpl.s   .isjap		; if yes, branch
-		move.b	#id_PSBTM,(v_titletm).w ; load "TM" object
+		move.l	#PSBTM,(v_titletm).w ; load "TM" object
 		move.b	#3,(v_titletm+obFrame).w
 .isjap:
-		move.b	#id_PSBTM,(v_ttlsonichide).w ; load object which hides part of Sonic
+		move.l	#PSBTM,(v_ttlsonichide).w ; load object which hides part of Sonic
 		move.b	#2,(v_ttlsonichide+obFrame).w
 		jsr	(ExecuteObjects).l
 		bsr.w	DeformLayers
@@ -1960,7 +1960,7 @@ Level_GetBgm:
 		lea	MusicList(pc),a1 ; load	music playlist
 		move.b	(a1,d0.w),d0
 		bsr.w	PlayMusic	; play music
-		move.b	#id_TitleCard,(v_titlecard).w ; load title card object
+		move.l	#TitleCard,(v_titlecard).w ; load title card object
 
 Level_TtlCardLoop:
 		move.w	#id_VB_08,(v_vbla_routine).w
@@ -1985,7 +1985,7 @@ Level_TtlCardLoop:
 		bsr.w	LoadTilesFromStart
 		bsr.w	ColIndexLoad
 		bsr.w	LZWaterFeatures
-		move.b	#id_SonicPlayer,(v_player).w ; load Sonic object
+		move.l	#SonicPlayer,(v_player).w ; load Sonic object
 		moveq	#1,d0
 		move.b	d0,(f_hud).w
 		move.b	d0,(HUD_scroll_flag).w
@@ -2003,9 +2003,9 @@ Level_ChkWater:
 		clr.l	(v_jpadhold_stored).w
 		tst.b	(f_water).w ; does level have water?
 		beq.s	Level_LoadObj	; if not, branch
-		move.b	#id_WaterSurface,(v_watersurface1).w ; load water surface object
+		move.l	#WaterSurface,(v_watersurface1).w ; load water surface object
 		move.w	#$60,(v_watersurface1+obX).w
-		move.b	#id_WaterSurface,(v_watersurface2).w
+		move.l	#WaterSurface,(v_watersurface2).w
 		move.w	#$120,(v_watersurface2+obX).w
 
 Level_LoadObj:
@@ -3372,7 +3372,7 @@ loc_8486:
 		adda.w	(a3,d0.w),a3
 		addq.w	#2,a3
 		bset	#5,obRender(a0)
-		move.b	obID(a0),d4
+		move.l	obID(a0),d4
 		move.b	obRender(a0),d5
 		movea.l	a0,a1
 		bra.s	loc_84B2
@@ -3385,7 +3385,7 @@ loc_84AA:
 
 loc_84B2:
 		move.b	#6,obRoutine(a1)
-		move.b	d4,obID(a1)
+		move.l	d4,obID(a1)
 		move.l	a3,obMap(a1)
 		move.b	d5,obRender(a1)
 		move.w	obX(a0),obX(a1)
@@ -3802,12 +3802,9 @@ ExecuteObjects:
 		bhs.s	loc_D362
 
 loc_D348:
-		moveq	#0,d0
-		move.b	obID(a0),d0		; load object number from RAM
+		move.l	obID(a0),d0		; load object number from RAM
 		beq.s	loc_D358
-		add.w	d0,d0
-		add.w	d0,d0
-		movea.l	Obj_Index-4(pc,d0.w),a1
+		movea.l	d0,a1
 		jsr	(a1)		; run the object's code
 
 loc_D358:
@@ -3822,8 +3819,7 @@ loc_D362:
 		moveq	#(v_lvlobjend-v_lvlobjspace)/object_size-1,d7
 
 loc_D368:
-		moveq	#0,d0
-		move.b	obID(a0),d0
+		move.l	obID(a0),d0
 		beq.s	loc_D378
 		tst.b	obRender(a0)
 		bpl.s	loc_D378
@@ -3912,10 +3908,10 @@ BuildDrawScreenY:
 		bra.s	BuildDrawObject
 
 BuildAssumeHeight:
-		addi.w	#$80,d1
-		cmpi.w	#$60,d1
+		addi.w	#128,d1
+		cmpi.w	#-32+128,d1
 		blo.s	BuildSprites_NextObj
-		cmpi.w	#$180,d1
+		cmpi.w	#32+128+224,d1
 		bhs.s	BuildSprites_NextObj
 
 BuildDrawObject:
@@ -3955,7 +3951,7 @@ loc_1AE10:
 		dbf	d7,loc_1AE10
 
 loc_1AE18:
-		subi.w	#$4F,d6
+		subi.w	#$50-1,d6
 		neg.w	d6
 		move.b	d6,(v_spritecount).w
 		rts
@@ -3964,7 +3960,8 @@ loc_1AE18:
 ; ---------------------------------------------------------------------------
 
 Build_1AE58:
-		move.w	mainspr_width(a0),d2
+		moveq	#0,d2
+		move.b	mainspr_width(a0),d2
 		sub.w	(a3),d0
 		move.w	d0,d3
 		add.w	d2,d3
@@ -3973,18 +3970,18 @@ Build_1AE58:
 		sub.w	d2,d3
 		cmpi.w	#320,d3
 		bge.s	BuildSprites_NextObj
-		addi.w	#$80,d0
+		addi.w	#128,d0
 		btst	#4,d6
 		beq.s	.assumeheight
 		sub.w	4(a3),d1
-		move.w	mainspr_height(a0),d2
+		move.b	mainspr_height(a0),d2
 		add.w	d2,d1
 		move.w	d2,d3
 		add.w	d2,d2
-		addi.w	#$E0,d2
+		addi.w	#224,d2
 		cmp.w	d2,d1
 		bhs.s	BuildSprites_NextObj
-		addi.w	#$80,d1
+		addi.w	#128,d1
 		sub.w	d3,d1
 		bra.s	Build_1AEE4
 
@@ -4018,9 +4015,8 @@ Build_1AEE4:
 		bmi.w	BuildSprites_NextObj
 
 Build_1AF1C:
-		moveq	#0,d3
-		move.b	mainspr_childsprites(a0),d3
-		subq.b	#1,d3
+		move.w	mainspr_childsprites(a0),d3
+		subq.w	#1,d3
 		bcs.w	BuildSprites_NextObj
 		lea	sub2_x_pos(a0),a0
 
@@ -4413,231 +4409,7 @@ Build_1B1EC:
 
 		include	"_incObj/sub ChkObjectVisible.asm"
 		include	"_inc/Rings Manager.asm"
-
-; ---------------------------------------------------------------------------
-; Subroutine to	load a level's objects
-; ---------------------------------------------------------------------------
-
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
-
-ObjPosLoad:
-		move.w	(v_opl_routine).w,d0
-		jmp	OPL_Index(pc,d0.w)
-; End of function ObjPosLoad
-
-; ===========================================================================
-OPL_Index:	bra.w	OPL_Main
-		bra.w	OPL_Next
-; ===========================================================================
-
-OPL_Main:
-		addq.w	#4,(v_opl_routine).w
-		move.w	(v_zone).w,d0
-		lsl.b	#6,d0
-		lsr.w	#4,d0
-		lea	(ObjPos_Index).l,a0
-		adda.w	(a0,d0.w),a0
-		move.l	a0,(v_opl_data).w
-		move.l	a0,(v_opl_data+4).w
-		move.l	a0,(v_opl_data+8).w
-		move.l	a0,(v_opl_data+$C).w
-		lea	(v_objstate).w,a2
-		move.w	#$101,(a2)+
-		moveq	#bytesToLcnt(v_objstate_end-v_objstate-2),d0
-		moveq	#0,d1
-
-OPL_ClrList:
-		move.l	d1,(a2)+
-		dbf	d0,OPL_ClrList	; clear	pre-destroyed object list
-
-		move.w	d1,(a2)+
-
-		lea	(v_objstate).w,a2
-		moveq	#0,d2
-		move.w	(v_screenposx).w,d6
-		subi.w	#$80,d6
-		bhs.s	loc_D93C
-		moveq	#0,d6
-
-loc_D93C:
-		andi.w	#$FF80,d6
-		movea.l	(v_opl_data).w,a0
-
-loc_D944:
-		cmp.w	(a0),d6
-		bls.s	loc_D956
-		tst.b	4(a0)
-		bpl.s	loc_D952
-		move.b	(a2),d2
-		addq.b	#1,(a2)
-
-loc_D952:
-		addq.w	#6,a0
-		bra.s	loc_D944
-; ===========================================================================
-
-loc_D956:
-		move.l	a0,(v_opl_data).w
-		movea.l	(v_opl_data+4).w,a0
-		subi.w	#$80,d6
-		blo.s	loc_D976
-
-loc_D964:
-		cmp.w	(a0),d6
-		bls.s	loc_D976
-		tst.b	4(a0)
-		bpl.s	loc_D972
-		addq.b	#1,1(a2)
-
-loc_D972:
-		addq.w	#6,a0
-		bra.s	loc_D964
-; ===========================================================================
-
-loc_D976:
-		move.l	a0,(v_opl_data+4).w
-		move.w	#-1,(v_opl_screen).w
-
-OPL_Next:
-		move.w	(v_screenposx).w,d1
-		subi.w	#128,d1
-		andi.w	#$FF80,d1
-		move.w	d1,(Camera_X_pos_coarse).w
-		lea	(v_objstate).w,a2
-		moveq	#0,d2
-		move.w	(v_screenposx).w,d6
-		andi.w	#$FF80,d6
-		cmp.w	(v_opl_screen).w,d6
-		beq.w	locret_DA3A
-		bge.s	loc_D9F6
-		move.w	d6,(v_opl_screen).w
-		movea.l	(v_opl_data+4).w,a0
-		subi.w	#$80,d6
-		blo.s	loc_D9D2
-
-loc_D9A6:
-		cmp.w	-6(a0),d6
-		bge.s	loc_D9D2
-		subq.w	#6,a0
-		tst.b	4(a0)
-		bpl.s	loc_D9BC
-		subq.b	#1,1(a2)
-		move.b	1(a2),d2
-
-loc_D9BC:
-		bsr.w	loc_DA3C
-		bne.s	loc_D9C6
-		subq.w	#6,a0
-		bra.s	loc_D9A6
-; ===========================================================================
-
-loc_D9C6:
-		tst.b	4(a0)
-		bpl.s	loc_D9D0
-		addq.b	#1,1(a2)
-
-loc_D9D0:
-		addq.w	#6,a0
-
-loc_D9D2:
-		move.l	a0,(v_opl_data+4).w
-		movea.l	(v_opl_data).w,a0
-		addi.w	#$300,d6
-
-loc_D9DE:
-		cmp.w	-6(a0),d6
-		bgt.s	loc_D9F0
-		tst.b	-2(a0)
-		bpl.s	loc_D9EC
-		subq.b	#1,(a2)
-
-loc_D9EC:
-		subq.w	#6,a0
-		bra.s	loc_D9DE
-; ===========================================================================
-
-loc_D9F0:
-		move.l	a0,(v_opl_data).w
-		rts
-; ===========================================================================
-
-loc_D9F6:
-		move.w	d6,(v_opl_screen).w
-		movea.l	(v_opl_data).w,a0
-		addi.w	#$280,d6
-
-loc_DA02:
-		cmp.w	(a0),d6
-		bls.s	loc_DA16
-		tst.b	4(a0)
-		bpl.s	loc_DA10
-		move.b	(a2),d2
-		addq.b	#1,(a2)
-
-loc_DA10:
-		bsr.s	loc_DA3C
-		beq.s	loc_DA02
-
-loc_DA16:
-		move.l	a0,(v_opl_data).w
-		movea.l	(v_opl_data+4).w,a0
-		subi.w	#$300,d6
-		blo.s	loc_DA36
-
-loc_DA24:
-		cmp.w	(a0),d6
-		bls.s	loc_DA36
-		tst.b	4(a0)
-		bpl.s	loc_DA32
-		addq.b	#1,1(a2)
-
-loc_DA32:
-		addq.w	#6,a0
-		bra.s	loc_DA24
-; ===========================================================================
-
-loc_DA36:
-		move.l	a0,(v_opl_data+4).w
-
-locret_DA3A:
-		rts
-; ===========================================================================
-
-loc_DA3C:
-		tst.b	4(a0)
-		bpl.s	OPL_MakeItem
-		bset	#7,2(a2,d2.w)
-		beq.s	OPL_MakeItem
-		addq.w	#6,a0
-		moveq	#0,d0
-		rts
-; ===========================================================================
-
-OPL_MakeItem:
-		bsr.s	FindFreeObj
-		bne.s	locret_DA8A
-		move.w	(a0)+,obX(a1)
-		move.w	(a0)+,d0
-		move.w	d0,d1
-		andi.w	#$FFF,d0
-		move.w	d0,obY(a1)
-		rol.w	#2,d1
-		andi.b	#3,d1
-		move.b	d1,obRender(a1)
-		move.b	d1,obStatus(a1)
-		move.b	(a0)+,d0
-		bpl.s	loc_DA80
-		andi.b	#$7F,d0
-		move.b	d2,obRespawnNo(a1)
-
-loc_DA80:
-		move.b	d0,obID(a1)
-		move.b	(a0)+,obSubtype(a1)
-		moveq	#0,d0
-
-locret_DA8A:
-		rts
+		include	"_inc/Object Manager.asm"
 
 		include	"_incObj/sub FindFreeObj.asm"
 		include	"_incObj/41 Springs.asm"
@@ -5450,7 +5222,7 @@ BossDefeated:
 		bne.s	locret_178A2
 		jsr	(FindFreeObj).l
 		bne.s	locret_178A2
-		move.b	#id_ExplosionBomb,obID(a1)	; load explosion object
+		move.l	#ExplosionBomb,obID(a1)	; load explosion object
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
 		jsr	(RandomNumber).w
@@ -6030,35 +5802,35 @@ Art_BigRing:	binclude	"artunc/Giant Ring.bin"
 ; ---------------------------------------------------------------------------
 ObjPos_Index:
 		; GHZ
-		dc.w ObjPos_GHZ1-ObjPos_Index, ObjPos_Null-ObjPos_Index
-		dc.w ObjPos_GHZ2-ObjPos_Index, ObjPos_Null-ObjPos_Index
-		dc.w ObjPos_GHZ3-ObjPos_Index, ObjPos_Null-ObjPos_Index
-		dc.w ObjPos_GHZ1-ObjPos_Index, ObjPos_Null-ObjPos_Index
+		dc.l ObjPos_GHZ1
+		dc.l ObjPos_GHZ2
+		dc.l ObjPos_GHZ3
+		dc.l ObjPos_GHZ1
 		; LZ
-		dc.w ObjPos_LZ1-ObjPos_Index, ObjPos_Null-ObjPos_Index
-		dc.w ObjPos_LZ2-ObjPos_Index, ObjPos_Null-ObjPos_Index
-		dc.w ObjPos_LZ3-ObjPos_Index, ObjPos_Null-ObjPos_Index
-		dc.w ObjPos_SBZ3-ObjPos_Index, ObjPos_Null-ObjPos_Index
+		dc.l ObjPos_LZ1
+		dc.l ObjPos_LZ2
+		dc.l ObjPos_LZ3
+		dc.l ObjPos_SBZ3
 		; MZ
-		dc.w ObjPos_MZ1-ObjPos_Index, ObjPos_Null-ObjPos_Index
-		dc.w ObjPos_MZ2-ObjPos_Index, ObjPos_Null-ObjPos_Index
-		dc.w ObjPos_MZ3-ObjPos_Index, ObjPos_Null-ObjPos_Index
-		dc.w ObjPos_MZ1-ObjPos_Index, ObjPos_Null-ObjPos_Index
+		dc.l ObjPos_MZ1
+		dc.l ObjPos_MZ2
+		dc.l ObjPos_MZ3
+		dc.l ObjPos_MZ1
 		; SLZ
-		dc.w ObjPos_SLZ1-ObjPos_Index, ObjPos_Null-ObjPos_Index
-		dc.w ObjPos_SLZ2-ObjPos_Index, ObjPos_Null-ObjPos_Index
-		dc.w ObjPos_SLZ3-ObjPos_Index, ObjPos_Null-ObjPos_Index
-		dc.w ObjPos_SLZ1-ObjPos_Index, ObjPos_Null-ObjPos_Index
+		dc.l ObjPos_SLZ1
+		dc.l ObjPos_SLZ2
+		dc.l ObjPos_SLZ3
+		dc.l ObjPos_SLZ1
 		; SYZ
-		dc.w ObjPos_SYZ1-ObjPos_Index, ObjPos_Null-ObjPos_Index
-		dc.w ObjPos_SYZ2-ObjPos_Index, ObjPos_Null-ObjPos_Index
-		dc.w ObjPos_SYZ3-ObjPos_Index, ObjPos_Null-ObjPos_Index
-		dc.w ObjPos_SYZ1-ObjPos_Index, ObjPos_Null-ObjPos_Index
+		dc.l ObjPos_SYZ1
+		dc.l ObjPos_SYZ2
+		dc.l ObjPos_SYZ3
+		dc.l ObjPos_SYZ1
 		; SBZ
-		dc.w ObjPos_SBZ1-ObjPos_Index, ObjPos_Null-ObjPos_Index
-		dc.w ObjPos_SBZ2-ObjPos_Index, ObjPos_Null-ObjPos_Index
-		dc.w ObjPos_FZ-ObjPos_Index, ObjPos_Null-ObjPos_Index
-		dc.w ObjPos_SBZ1-ObjPos_Index, ObjPos_Null-ObjPos_Index
+		dc.l ObjPos_SBZ1
+		dc.l ObjPos_SBZ2
+		dc.l ObjPos_FZ
+		dc.l ObjPos_SBZ1
 		; --- Put extra object data here. ---
 ObjPosLZPlatform_Index:
 		dc.w ObjPos_LZ1pf1-ObjPos_Index, ObjPos_LZ1pf2-ObjPos_Index

@@ -31,7 +31,7 @@ BGHZ_Loop:
 
 BGHZ_LoadBoss:
 		move.b	(a2)+,obRoutine(a1)
-		move.b	#id_BossGreenHill,obID(a1)
+		move.l	#BossGreenHill,obID(a1)
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
 		move.l	#Map_Eggman,obMap(a1)

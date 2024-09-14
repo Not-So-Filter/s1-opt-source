@@ -38,7 +38,7 @@ BossSpringYard_Main:	; Routine 0
 BossSpringYard_Loop:
 		jsr	(FindNextFreeObj).l
 		bne.s	BossSpringYard_ShipMain
-		move.b	#id_BossSpringYard,obID(a1)
+		move.l	#BossSpringYard,obID(a1)
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
 
@@ -351,11 +351,11 @@ BossSpringYard_FindBlocks:
 		clr.w	objoff_36(a0)
 		lea	(v_lvlobjspace).w,a1
 		moveq	#(v_lvlobjend-v_lvlobjspace)/object_size-1,d0
-		moveq	#id_BossBlock,d1
+		move.l	#BossBlock,d1
 		move.b	objoff_34(a0),d2
 
 BossSpringYard_FindLoop:
-		cmp.b	obID(a1),d1		; is object a SYZ boss block?
+		cmp.l	obID(a1),d1		; is object a SYZ boss block?
 		bne.s	loc_1946A	; if not, branch
 		cmp.b	obSubtype(a1),d2
 		bne.s	loc_1946A

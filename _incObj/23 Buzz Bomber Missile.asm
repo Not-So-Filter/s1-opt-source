@@ -52,7 +52,7 @@ Msl_Animate:	; Routine 2
 
 Msl_ChkCancel:
 		movea.l	msl_parent(a0),a1
-		cmpi.b	#id_ExplosionItem,obID(a1) ; has Buzz Bomber been destroyed?
+		cmpi.l	#ExplosionItem,obID(a1) ; has Buzz Bomber been destroyed?
 		bne.s	.return
 		bsr.s	Msl_Delete
 		moveq	#0,d0

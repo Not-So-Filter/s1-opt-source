@@ -51,11 +51,10 @@ Roll_Action:	; Routine 2
 ; ===========================================================================
 
 Roll_ChkGone:
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
+		move.w	obRespawnNo(a0),d0
 		beq.s	Roll_Delete
-		bclr	#7,2(a2,d0.w)
+		movea.w	d0,a2
+		bclr	#7,2(a2)
 
 Roll_Delete:
 		bra.w	DeleteObject

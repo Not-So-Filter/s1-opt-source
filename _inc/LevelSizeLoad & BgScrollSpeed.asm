@@ -23,6 +23,7 @@ LevelSizeLoad:
 		move.w	d0,(v_limitleft3).w
 		move.w	#$1010,(v_fg_xblock).w ; and v_fg_yblock
 		move.w	#$60,(v_lookshift).w
+		move.w	#-1,(Screen_Y_wrap_value).w
 		bra.w	LevSz_ChkLamp
 ; ===========================================================================
 ; ---------------------------------------------------------------------------

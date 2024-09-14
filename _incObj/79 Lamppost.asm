@@ -26,11 +26,10 @@ Lamp_Main:	; Routine 0
 		move.b	#4,obRender(a0)
 		move.b	#8,obActWid(a0)
 		move.w	#5*$80,obPriority(a0)
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
-		bclr	#7,2(a2,d0.w)
-		btst	#0,2(a2,d0.w)
+		move.w	obRespawnNo(a0),d0
+		movea.w	d0,a2
+		bclr	#7,2(a2)
+		btst	#0,2(a2)
 		bne.s	.red
 		move.b	(v_lastlamp).w,d1
 		andi.b	#$7F,d1
@@ -40,7 +39,7 @@ Lamp_Main:	; Routine 0
 		blo.s	Lamp_Blue	; if yes, branch
 
 .red:
-		bset	#0,2(a2,d0.w)
+		bset	#0,2(a2)
 		move.b	#4,obRoutine(a0) ; goto Lamp_Finish next
 		move.b	#3,obFrame(a0)	; use red lamppost frame
 		rts
@@ -57,10 +56,9 @@ Lamp_Blue:	; Routine 2
 		andi.b	#$7F,d2
 		cmp.b	d2,d1		; is this a "new" lamppost?
 		blo.s	.chkhit		; if yes, branch
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
-		bset	#0,2(a2,d0.w)
+		move.w	obRespawnNo(a0),d0
+		movea.w	d0,a2
+		bset	#0,2(a2)
 		move.b	#4,obRoutine(a0)
 		move.b	#3,obFrame(a0)
 
@@ -85,7 +83,7 @@ Lamp_Blue:	; Routine 2
 		addq.b	#2,obRoutine(a0)
 		jsr	(FindFreeObj).l
 		bne.s	.fail
-		move.b	#id_Lamppost,obID(a1)	; load twirling	lamp object
+		move.l	#Lamppost,obID(a1)	; load twirling	lamp object
 		move.b	#6,obRoutine(a1) ; goto Lamp_Twirl next
 		move.w	obX(a0),lamp_origX(a1)
 		move.w	obY(a0),lamp_origY(a1)
@@ -101,10 +99,9 @@ Lamp_Blue:	; Routine 2
 .fail:
 		move.b	#1,obFrame(a0)	; use "post only" frame
 		bsr.s	Lamp_StoreInfo
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
-		bset	#0,2(a2,d0.w)
+		move.w	obRespawnNo(a0),d0
+		movea.w	d0,a2
+		bset	#0,2(a2)
 
 .donothing:
 Lamp_Finish:	; Routine 4
@@ -156,7 +153,7 @@ Lamp_StoreInfo:
 		move.w	(v_waterpos2).w,(v_lamp_wtrpos).w 	; water height
 		move.b	(v_wtr_routine).w,(v_lamp_wtrrout).w	; rountine counter for water
 		move.b	(f_wtr_state).w,(v_lamp_wtrstat).w 	; water direction
-		rts	
+		rts
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to	load stored info when you start	a level	from a lamppost
@@ -202,4 +199,4 @@ Lamp_LoadInfo:
 		move.w	d0,(v_limitleft2).w
 
 locret_170F6:
-		rts	
+		rts

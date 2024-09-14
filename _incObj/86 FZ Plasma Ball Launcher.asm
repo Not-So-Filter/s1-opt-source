@@ -33,7 +33,7 @@ BossPlasma_Generator:; Routine 2
 		movea.l	objoff_34(a0),a1
 		cmpi.b	#6,objoff_34(a1)
 		bne.s	loc_1A850
-		move.b	#id_ExplosionBomb,obID(a0)
+		move.l	#ExplosionBomb,obID(a0)
 		clr.b	obRoutine(a0)
 		jmp	(DisplaySprite).l
 ; ===========================================================================
@@ -80,7 +80,7 @@ BossPlasma_MakeBalls:; Routine 4
 BossPlasma_Loop:
 		jsr	(FindNextFreeObj).l
 		bne.w	loc_1A954
-		move.b	#id_BossPlasma,obID(a1)
+		move.l	#BossPlasma,obID(a1)
 		move.w	obX(a0),obX(a1)
 		move.w	#boss_fz_y+$2C,obY(a1)
 		move.b	#8,obRoutine(a1)

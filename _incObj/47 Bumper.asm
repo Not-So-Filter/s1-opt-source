@@ -45,20 +45,19 @@ Bump_Hit:	; Routine 2
 		move.b	#1,obAnim(a0)	; use "hit" animation
 		moveq	#sfx_Bumper,d0
 		jsr	(PlaySound).w	; play bumper sound
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
+		move.w	obRespawnNo(a0),d0
 		beq.s	.addscore
-		cmpi.b	#$8A,2(a2,d0.w)	; has bumper been hit 10 times?
+		movea.w	d0,a2
+		cmpi.b	#$8A,2(a2)	; has bumper been hit 10 times?
 		bhs.s	.display	; if yes, Sonic	gets no	points
-		addq.b	#1,2(a2,d0.w)
+		addq.b	#1,2(a2)
 
 .addscore:
 		moveq	#1,d0
 		jsr	(AddPoints).l	; add 10 to score
 		bsr.w	FindFreeObj
 		bne.s	.display
-		move.b	#id_Points,obID(a1) ; load points object
+		move.l	#Points,obID(a1) ; load points object
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
 		move.b	#4,obFrame(a1)
@@ -71,11 +70,10 @@ Bump_Hit:	; Routine 2
 ; ===========================================================================
 
 .resetcount:
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
+		move.w	obRespawnNo(a0),d0
 		beq.s	.delete
-		bclr	#7,2(a2,d0.w)
+		movea.w	d0,a2
+		bclr	#7,2(a2)
 
 .delete:
 		bra.w	DeleteObject

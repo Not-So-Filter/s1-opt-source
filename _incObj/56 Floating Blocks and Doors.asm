@@ -93,12 +93,11 @@ FBlock_Main:	; Routine 0
 		move.w	#$80,fb_height(a0)
 
 .chkstate:
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
+		move.w	obRespawnNo(a0),d0
 		beq.s	FBlock_Action
-		bclr	#7,2(a2,d0.w)
-		btst	#0,2(a2,d0.w)
+		movea.w	d0,a2
+		bclr	#7,2(a2)
+		btst	#0,2(a2)
 		beq.s	FBlock_Action
 		addq.b	#1,obSubtype(a0)
 		clr.w	fb_height(a0)
@@ -253,11 +252,10 @@ FBlock_Action:	; Routine 2
 .loc_104C8:
 		addq.b	#1,obSubtype(a0)
 		clr.b	objoff_38(a0)
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
+		move.w	obRespawnNo(a0),d0
 		beq.s	.loc_104AE
-		bset	#0,2(a2,d0.w)
+		movea.w	d0,a2
+		bset	#0,2(a2)
 		bra.s	.loc_104AE
 ; ===========================================================================
 
@@ -295,11 +293,10 @@ FBlock_Action:	; Routine 2
 .loc_1052C:
 		subq.b	#1,obSubtype(a0)
 		clr.b	objoff_38(a0)
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
+		move.w	obRespawnNo(a0),d0
 		beq.s	.loc_10512
-		bclr	#0,2(a2,d0.w)
+		movea.w	d0,a2
+		bclr	#0,2(a2)
 		bra.s	.loc_10512
 ; ===========================================================================
 
@@ -357,11 +354,10 @@ FBlock_Action:	; Routine 2
 .loc_105C0:
 		addq.b	#1,obSubtype(a0)
 		clr.b	objoff_38(a0)
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
+		move.w	obRespawnNo(a0),d0
 		beq.s	.loc_105A2
-		bset	#0,2(a2,d0.w)
+		movea.w	d0,a2
+		bset	#0,2(a2)
 		bra.s	.loc_105A2
 ; ===========================================================================
 
@@ -398,11 +394,10 @@ FBlock_Action:	; Routine 2
 .loc_10624:
 		subq.b	#1,obSubtype(a0)
 		clr.b	objoff_38(a0)
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
+		move.w	obRespawnNo(a0),d0
 		beq.s	.wtf
-		bclr	#0,2(a2,d0.w)
+		movea.w	d0,a2
+		bclr	#0,2(a2)
 		bra.s	.wtf
 ; ===========================================================================
 

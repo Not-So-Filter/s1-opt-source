@@ -49,7 +49,7 @@ Orb_Main:	; Routine 0
 		lsr.w	#object_size_bits,d5
 		andi.w	#$7F,d5
 		move.b	d5,(a2)+
-		move.b	#id_Orbinaut,obID(a1)	; load spiked orb object
+		move.l	#Orbinaut,obID(a1)	; load spiked orb object
 		move.b	#6,obRoutine(a1) ; use Orb_MoveOrb routine
 		move.l	#Map_Orb,obMap(a1)
 		move.w	obGfx(a0),obGfx(a1)
@@ -117,11 +117,10 @@ Orb_ChkDel:
 		bra.w	DisplaySprite
 
 .chkgone:
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
+		move.w	obRespawnNo(a0),d0
 		beq.s	loc_11E34
-		bclr	#7,2(a2,d0.w)
+		movea.w	d0,a2
+		bclr	#7,2(a2)
 
 loc_11E34:
 		lea	objoff_37(a0),a2
@@ -133,7 +132,11 @@ loc_11E34:
 loc_11E40:
 		moveq	#0,d0
 		move.b	(a2)+,d0
+	if object_size=$40
 		lsl.w	#object_size_bits,d0
+	else
+		mulu.w	#object_size,d0
+	endif
 		addi.l	#v_objspace,d0
 		movea.l	d0,a1
 		bsr.w	DeleteChild
@@ -145,7 +148,7 @@ Orb_Delete:
 
 Orb_MoveOrb:	; Routine 6
 		movea.l	orb_parent(a0),a1
-		cmpi.b	#id_Orbinaut,obID(a1) ; does parent object still exist?
+		cmpi.l	#Orbinaut,obID(a1) ; does parent object still exist?
 		bne.w	DeleteObject	; if not, delete
 		cmpi.b	#2,obFrame(a1)	; is orbinaut angry?
 		bne.s	.circle		; if not, branch

@@ -71,9 +71,10 @@ Perfect_rings_left:	ds.w	1
 Ring_consumption_table:	ds.b	$80
 Ring_consumption_table_End:
 
-			ds.b	$200		; unused
+			ds.b	$100		; unused
 v_bgscroll_buffer:	ds.b	$200		; background scroll buffer
-			ds.b	$200		; unused
+Object_respawn_table:	ds.b	1*768		; 1 byte per object, every object in the level gets an entry
+Object_respawn_table_End:
 
 v_spritequeue:		SpriteQueue		; sprite display queue, in order of priority (in this case, there is only 0 up to 7, so multiply by 7+1)
 v_spritequeue_end:
@@ -136,7 +137,7 @@ v_objspace_end	= v_lvlobjend
 ; Credits objects
 v_credits	= v_objspace+object_size*2	; object variable space for the credits text ($40 bytes)
 
-			ds.b	$600		; unused
+			ds.b	$100		; unused
 
 v_gamemode:		ds.w	1		; game mode (00=Sega; 04=Title; 08=Demo; 0C=Level; 10=SS; 14=Cont; 18=End; 1C=Credit; +8C=PreLevel)
 v_jpadhold_stored:	ds.b	1		; joypad input - held (storage)
@@ -236,11 +237,18 @@ v_anglebuffer2:		ds.b	1		; other angle of collision block that Sonic or object i
 			ds.b	1		; unused
 			ds.b	1		; unused
 v_opl_routine:		ds.w	1		; ObjPosLoad - routine counter
-v_opl_screen:		ds.w	1		; ObjPosLoad - screen variable
-v_opl_data:		ds.b	$10		; ObjPosLoad - data buffer
-			ds.b	4		; unused
+Camera_X_pos_coarse:	ds.w	1		; rounded down to the nearest chunk boundary (128th pixel)
+Camera_Y_pos_coarse:	ds.w	1		; rounded down to the nearest chunk boundary (128th pixel)
+Object_load_addr_front:	ds.l	1		; the address inside the object placement data of the first object whose X pos is >= Camera_X_pos_coarse + $280
+Object_load_addr_back:	ds.l	1		; the address inside the object placement data of the first object whose X pos is >= Camera_X_pos_coarse - $80
+Object_respawn_index_front:	ds.w	1	; the object respawn table index for the object at Obj_load_addr_front
+Object_respawn_index_back:	ds.w	1	; the object respawn table index for the object at Obj_load_addr_back
+Camera_Y_pos_coarse_back:	ds.w	1	; Camera_Y_pos_coarse - $80
+Object_index_addr:	ds.l	1		; unused
 Rings_manager_routine:	ds.w	1
-			ds.b	$A		; unused
+Camera_X_pos_coarse_back:	ds.w	1
+Screen_Y_wrap_value:	ds.w	1		; either $7FF or $FFF
+			ds.b	6		; unused
 v_btnpushtime1:		ds.w	1		; button push duration - in level
 v_btnpushtime2:		ds.w	1		; button push duration - in demo
 v_palchgspeed:		ds.w	1		; palette fade/transition speed (0 is fastest)
@@ -271,8 +279,7 @@ v_ringbonus:		ds.w	1		; ring bonus at the end of an act
 f_endactbonus:		ds.b	1		; time/ring bonus update flag at the end of an act
 			ds.b	1		; unused
 v_lz_deform:		ds.w	1		; LZ deformation offset, in units of $80
-Camera_X_pos_coarse:	ds.w	1		; (Camera_X_pos - 128) / 256
-			ds.b	2		; unused
+			ds.b	4		; unused
 f_switch:		ds.b	$10		; flags set when Sonic stands on a switch
 v_scroll_block_1_size:	ds.w	1
 Anim_Counters:		ds.b	$10
@@ -289,8 +296,8 @@ Normal_palette_line3: = v_palette+$40
 v_palette_fading:	ds.b	$80		; duplicate palette, used for transitions
 v_palette_fading_end:
 Target_palette_line3: = v_palette_fading+$40
-v_objstate:		ds.b	$C0		; object state list
-v_objstate_end:
+			ds.b	$C0		; unused
+
 			ds.b	$140		; stack
 v_systemstack:
 v_crossresetram:				; RAM beyond this point is only cleared on a cold-boot

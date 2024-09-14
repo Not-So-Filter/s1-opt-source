@@ -13,7 +13,7 @@ SmashObject:
 		adda.w	(a3,d0.w),a3
 		addq.w	#2,a3
 		bset	#5,obRender(a0)
-		move.b	obID(a0),d4
+		move.l	obID(a0),d4
 		move.b	obRender(a0),d5
 		move.w	obGfx(a0),d3
 		move.w	#4*$80,d6
@@ -30,7 +30,7 @@ SmashObject:
 
 .loadfrag:
 		move.b	#4,obRoutine(a1)
-		move.b	d4,obID(a1)
+		move.l	d4,obID(a1)
 		move.l	a3,obMap(a1)
 		move.b	d5,obRender(a1)
 		move.w	obX(a0),obX(a1)

@@ -33,7 +33,7 @@ GBall_MakeLinks:
 		bne.s	GBall_MakeBall
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
-		move.b	#id_BossBall,obID(a1) ; load chain link object
+		move.l	#BossBall,obID(a1) ; load chain link object
 		move.b	#6,obRoutine(a1)
 		move.l	#Map_Swing_GHZ,obMap(a1)
 		move.w	#make_art_tile(ArtTile_GHZ_MZ_Swing,0,0),obGfx(a1)
@@ -43,7 +43,11 @@ GBall_MakeLinks:
 loc_17B60:
 		move.w	a1,d5
 		subi.w	#v_objspace,d5
+	if object_size=$40
 		lsr.w	#object_size_bits,d5
+	else
+		divu.w	#object_size,d5
+	endif
 		andi.w	#$7F,d5
 		move.b	d5,(a2)+
 		move.b	#4,obRender(a1)
@@ -75,7 +79,11 @@ GBall_Base:	; Routine 2
 loc_17BC6:
 		moveq	#0,d4
 		move.b	(a2)+,d4
+	if object_size=$40
 		lsl.w	#object_size_bits,d4
+	else
+		mulu.w	#object_size,d4
+	endif
 		addi.l	#v_objspace,d4
 		movea.l	d4,a1
 		move.b	(a3)+,d0
@@ -127,7 +135,7 @@ loc_17C3C:
 		move.b	obStatus(a1),obStatus(a0)
 		tst.b	obStatus(a1)
 		bpl.s	locret_17C66
-		move.b	#id_ExplosionBomb,obID(a0)
+		move.l	#ExplosionBomb,obID(a0)
 		clr.b	obRoutine(a0)
 
 locret_17C66:
@@ -140,7 +148,7 @@ loc_17C68:	; Routine 6
 		movea.l	objoff_34(a0),a1
 		tst.b	obStatus(a1)
 		bpl.s	GBall_Display3
-		move.b	#id_ExplosionBomb,obID(a0)
+		move.l	#ExplosionBomb,obID(a0)
 		clr.b	obRoutine(a0)
 
 GBall_Display3:
@@ -162,7 +170,7 @@ GBall_Vanish:
 		bsr.w	BossDefeated
 		subq.b	#1,objoff_3C(a0)
 		bpl.s	GBall_Display4
-		move.b	#id_ExplosionBomb,obID(a0)
+		move.l	#ExplosionBomb,obID(a0)
 		clr.b	obRoutine(a0)
 
 GBall_Display4:

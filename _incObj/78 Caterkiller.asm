@@ -62,7 +62,7 @@ Cat_Main:	; Routine 0
 Cat_Loop:
 		jsr	(FindNextFreeObj).l
 		bne.w	Cat_ChkGone
-		move.b	#id_Caterkiller,obID(a1) ; load body segment object
+		move.l	#Caterkiller,obID(a1) ; load body segment object
 		move.b	d6,obRoutine(a1) ; goto Cat_BodySeg1 or Cat_BodySeg2 next
 		addq.b	#2,d6		; alternate between the two
 		move.l	#Map_Cat,obMap(a1)
@@ -115,11 +115,10 @@ Cat_Head:	; Routine 2
 		jmp	(DisplaySprite).l
 
 Cat_ChkGone:
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
+		move.w	obRespawnNo(a0),d0
 		beq.s	.delete
-		bclr	#7,2(a2,d0.w)
+		movea.w	d0,a2
+		bclr	#7,2(a2)
 
 .delete:
 		move.b	#$A,obRoutine(a0)	; goto Cat_Delete next
@@ -303,7 +302,7 @@ loc_16C64:
 		; at high speed causes Sonic to be hurt.
 
 		; Has the head been destroyed?
-		cmpi.b	#id_ExplosionItem,obID(a1)
+		cmpi.l	#ExplosionItem,obID(a1)
 		beq.s	.delete
 		; Is the parent going to delete itself?
 		cmpi.b	#$A,obRoutine(a1)

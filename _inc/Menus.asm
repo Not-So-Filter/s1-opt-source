@@ -411,7 +411,7 @@ LevSel_IconTable:
                 dc.b $04, $04, $04 ; SLZ
                 dc.b $05, $05, $05 ; SBZ
                 dc.b $06 ; FZ
-                dc.b $0E ; Sound Test
+                dc.b $07 ; Sound Test
 		even
 ;byte_96EE:
 LevSel_MarkTable:	; 4 bytes per level select entry
@@ -437,7 +437,7 @@ LevSel_MarkTable:	; 4 bytes per level select entry
 ; --- second column ---
 		dc.b   3,$2C,  3,$48	; FZ
 		dc.b $12,$2C,$12,$48	; Sound Test
-		
+
 ; ------------------------------------------------------------------------
 ; MENU ANIMATION SCRIPT
 ; ------------------------------------------------------------------------
@@ -457,7 +457,20 @@ Anim_SonicMilesBG:	zoneanimstart
 
 ; level select picture palettes
 ; byte_9880:
-Pal_LevelIcons:	binclude	"palette/Level Select Icons.bin"
+Pal_LevelIcons:
+		binclude	"palette/GHZ LS Icon.bin"
+		even
+		binclude	"palette/MZ LS Icon.bin"
+		even
+		binclude	"palette/SYZ LS Icon.bin"
+		even
+		binclude	"palette/LZ LS Icon.bin"
+		even
+		binclude	"palette/SLZ LS Icon.bin"
+		even
+		binclude	"palette/SBZ LS Icon.bin"
+		even
+		binclude	"palette/Sonic LS Icon.bin"
 		even
 Eni_LevSel:	binclude	"tilemaps/Level Select.eni"
 		even

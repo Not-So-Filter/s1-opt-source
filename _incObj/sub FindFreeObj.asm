@@ -41,7 +41,7 @@ FindNextFreeObj:
 
 NFree_Loop:
 		lea	object_size(a1),a1
-		tst.b	obID(a1)
+		tst.l	obID(a1)
 		dbeq	d0,NFree_Loop
 
 NFree_Found:

@@ -167,12 +167,12 @@ locret_18EA8:
 
 loc_18EAA:	; Routine 6
 		lea	(v_lvlobjspace).w,a1
-		moveq	#id_BossStarLight,d0
+		move.l	#BossStarLight,d0
 		moveq	#object_size,d1
 		moveq	#(v_lvlobjend-v_lvlobjspace)/object_size-1,d2
 
 loc_18EB4:
-		cmp.b	obID(a1),d0
+		cmp.l	obID(a1),d0
 		beq.s	loc_18EC0
 		adda.w	d1,a1
 		dbf	d2,loc_18EB4
@@ -315,7 +315,7 @@ BossSpikeball_BallHitbox:
 ; ===========================================================================
 
 BossSpikeball_Explode:	; Routine 8
-		move.b	#id_ExplosionBomb,obID(a0)
+		move.l	#ExplosionBomb,obID(a0)
 		clr.b	obRoutine(a0)
 		cmpi.w	#$20,obSubtype(a0)
 		beq.s	BossSpikeball_MakeFrag
@@ -330,7 +330,7 @@ BossSpikeball_MakeFrag:
 BossSpikeball_Loop:
 		jsr	(FindFreeObj).l
 		bne.s	loc_1909A
-		move.b	#id_BossSpikeball,obID(a1) ; load shrapnel object
+		move.l	#BossSpikeball,obID(a1) ; load shrapnel object
 		move.b	#$A,obRoutine(a1)
 		move.l	#Map_BSBall,obMap(a1)
 		move.w	#3*$80,obPriority(a1)
@@ -366,4 +366,4 @@ BossSpikeball_MoveFrag:	; Routine $A
 		move.b	d0,obFrame(a0)
 		tst.b	obRender(a0)
 		bpl.w	BossStarLight_Delete
-		rts	
+		rts

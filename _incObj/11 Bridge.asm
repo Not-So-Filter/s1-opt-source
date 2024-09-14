@@ -66,7 +66,7 @@ Bri_Main:	; Routine 0
 Obj11_MakeBdgSegment:
 		bsr.w	FindNextFreeObj
 		bne.s	+	; rts
-		move.b	#id_Bridge,obID(a1) ; load obj11
+		move.l	#Bridge,obID(a1) ; load obj11
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
 		move.l	#Map_Bri,obMap(a1)
@@ -74,7 +74,7 @@ Obj11_MakeBdgSegment:
 		move.b	#4,obRender(a1)
 		bset	#6,obRender(a1)
 		move.w	#$40,mainspr_width(a1)
-		move.b	d1,mainspr_childsprites(a1)
+		move.w	d1,mainspr_childsprites(a1)
 		subq.b	#1,d1
 		lea	subspr_data(a1),a2 ; starting address for subsprite data
 

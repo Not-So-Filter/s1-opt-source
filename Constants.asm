@@ -99,8 +99,12 @@ bitUp:		equ 0
 
 ; Object variables
 obj struct DOTS
-ID:		ds.b 1	; object ID number
+ID:		ds.l 1	; object ID number
 Render:		ds.b 1	; bitfield for x/y flip, display mode
+Routine:	ds.b 1	; routine number
+Height:		ds.b 1	; height/2
+Width:		ds.b 1	; width/2
+Priority:	ds.w 1	; sprite stack priority -- 0 is front
 Gfx:		ds.w 1	; palette line & VRAM setting (2 bytes)
 Map:		ds.l 1	; mappings address (4 bytes)
 X:		ds.w 1	; x-axis position (2-4 bytes)
@@ -110,9 +114,6 @@ VelX:		ds.w 1	; x-axis velocity (2 bytes)
 VelY:		ds.w 1	; y-axis velocity (2 bytes)
 ActWid:		ds.b 1	; action width
 		ds.b 1	; unused
-Height:		ds.b 1	; height/2
-Width:		ds.b 1	; width/2
-Priority:	ds.w 1	; sprite stack priority -- 0 is front
 Frame:		ds.b 1	; current frame displayed
 AniFrame:	ds.b 1	; current frame in animation script
 Anim:		ds.b 1	; current animation
@@ -123,13 +124,12 @@ Inertia:		; potential speed (2 bytes)
 ColType:	ds.b 1	; collision response type
 ColProp:	ds.b 1	; collision extra property
 Status:		ds.b 1	; orientation or mode
-RespawnNo:	ds.b 1	; respawn list index number
-Routine:	ds.b 1	; routine number
+		ds.b 1	; unused
+RespawnNo:	ds.w 1	; respawn list index number
 2ndRout:
 off_25:		ds.b 1	; secondary routine number
 Angle:
 off_26:		ds.b 1	; angle
-		ds.b 1	; unused
 Subtype:	ds.b 1	; object subtype
 off_29:		ds.b 1
 off_2A:		ds.b 1
@@ -154,6 +154,12 @@ off_3C:		ds.b 1
 off_3D:		ds.b 1
 off_3E:		ds.b 1
 off_3F:		ds.b 1
+		ds.b 1	; unused
+		ds.b 1	; unused
+		ds.b 1	; unused
+		ds.b 1	; unused
+		ds.b 1	; unused
+		ds.b 1	; unused
 
 	endstruct
 
@@ -190,35 +196,35 @@ obSolid:	equ obj.2ndRout ; solid status flag
 ; ---------------------------------------------------------------------------
 ; when childsprites are activated (i.e. bit #6 of render_flags set)
 next_subspr:		equ 6
-mainspr_width:		equ $A
-mainspr_height:		equ $C
-mainspr_mapframe:	equ $E
-mainspr_childsprites: 	equ $F	; amount of child sprites
-subspr_data:		equ $10
-sub2_x_pos:		equ $10	;x_vel
-sub2_y_pos:		equ $12	;y_vel
-sub2_mapframe:		equ $15
-sub3_x_pos:		equ $16	;y_radius
-sub3_y_pos:		equ $18	;anim
-sub3_mapframe:		equ $1B	;anim_frame
-sub4_x_pos:		equ $1C	;anim_frame_timer
-sub4_y_pos:		equ $1E	;angle
-sub4_mapframe:		equ $21	;collision_property
-sub5_x_pos:		equ $22	;status
-sub5_y_pos:		equ $24	;subtype
-sub5_mapframe:		equ $27
-sub6_x_pos:		equ $28
-sub6_y_pos:		equ $2A
-sub6_mapframe:		equ $2D
-sub7_x_pos:		equ $2E
-sub7_y_pos:		equ $30
-sub7_mapframe:		equ $33
-sub8_x_pos:		equ $34
-sub8_y_pos:		equ $36
-sub8_mapframe:		equ $39
-sub9_x_pos:		equ $3A
-sub9_y_pos:		equ $3C
-sub9_mapframe:		equ $3F
+mainspr_width:		equ obWidth
+mainspr_height:		equ obHeight
+mainspr_mapframe:	equ obFrame
+mainspr_childsprites: 	equ $16	; amount of child sprites
+subspr_data:		equ $18
+sub2_x_pos:		equ $18	;x_vel
+sub2_y_pos:		equ $1A	;y_vel
+sub2_mapframe:		equ $1D
+sub3_x_pos:		equ $1E	;y_radius
+sub3_y_pos:		equ $20	;anim
+sub3_mapframe:		equ $23	;anim_frame
+sub4_x_pos:		equ $24	;anim_frame_timer
+sub4_y_pos:		equ $26	;angle
+sub4_mapframe:		equ $29	;collision_property
+sub5_x_pos:		equ $2A	;status
+sub5_y_pos:		equ $2C	;subtype
+sub5_mapframe:		equ $2F
+sub6_x_pos:		equ $30
+sub6_y_pos:		equ $32
+sub6_mapframe:		equ $35
+sub7_x_pos:		equ $36
+sub7_y_pos:		equ $38
+sub7_mapframe:		equ $3B
+sub8_x_pos:		equ $3C
+sub8_y_pos:		equ $3E
+sub8_mapframe:		equ $41
+sub9_x_pos:		equ $42
+sub9_y_pos:		equ $44
+sub9_mapframe:		equ $47
 
 ; Object variables used by Sonic
 flashtime:	equ objoff_30	; time between flashes after getting hit
@@ -366,94 +372,86 @@ bgm_Stop	= id(CmdPtr_Stop)
 flg__Last	= id(CmdPtr__End)
 
 ; Sonic frame IDs
-fr_Null:	equ 0
-fr_Stand:	equ 1
-fr_Wait1:	equ 2
-fr_Wait2:	equ 3
-fr_Wait3:	equ 4
-fr_LookUp:	equ 5
-fr_Walk11:	equ 6
-fr_Walk12:	equ 7
-fr_Walk13:	equ 8
-fr_Walk14:	equ 9
-fr_Walk15:	equ $A
-fr_Walk16:	equ $B
-fr_Walk21:	equ $C
-fr_Walk22:	equ $D
-fr_Walk23:	equ $E
-fr_Walk24:	equ $F
-fr_Walk25:	equ $10
-fr_Walk26:	equ $11
-fr_Walk31:	equ $12
-fr_Walk32:	equ $13
-fr_Walk33:	equ $14
-fr_Walk34:	equ $15
-fr_Walk35:	equ $16
-fr_Walk36:	equ $17
-fr_Walk41:	equ $18
-fr_Walk42:	equ $19
-fr_Walk43:	equ $1A
-fr_Walk44:	equ $1B
-fr_Walk45:	equ $1C
-fr_Walk46:	equ $1D
-fr_Run11:	equ $1E
-fr_Run12:	equ $1F
-fr_Run13:	equ $20
-fr_Run14:	equ $21
-fr_Run21:	equ $22
-fr_Run22:	equ $23
-fr_Run23:	equ $24
-fr_Run24:	equ $25
-fr_Run31:	equ $26
-fr_Run32:	equ $27
-fr_Run33:	equ $28
-fr_Run34:	equ $29
-fr_Run41:	equ $2A
-fr_Run42:	equ $2B
-fr_Run43:	equ $2C
-fr_Run44:	equ $2D
-fr_Roll1:	equ $2E
-fr_Roll2:	equ $2F
-fr_Roll3:	equ $30
-fr_Roll4:	equ $31
-fr_Roll5:	equ $32
-fr_Warp1:	equ $33
-fr_Warp2:	equ $34
-fr_Warp3:	equ $35
-fr_Warp4:	equ $36
-fr_Stop1:	equ $37
-fr_Stop2:	equ $38
-fr_Duck:	equ $39
-fr_Balance1:	equ $3A
-fr_Balance2:	equ $3B
-fr_Float1:	equ $3C
-fr_Float2:	equ $3D
-fr_Float3:	equ $3E
-fr_Float4:	equ $3F
-fr_Spring:	equ $40
-fr_Hang1:	equ $41
-fr_Hang2:	equ $42
-fr_Leap1:	equ $43
-fr_Leap2:	equ $44
-fr_Push1:	equ $45
-fr_Push2:	equ $46
-fr_Push3:	equ $47
-fr_Push4:	equ $48
-fr_Surf:	equ $49
-fr_BubStand:	equ $4A
-fr_Burnt:	equ $4B
-fr_Drown:	equ $4C
-fr_Death:	equ $4D
-fr_Shrink1:	equ $4E
-fr_Shrink2:	equ $4F
-fr_Shrink3:	equ $50
-fr_Shrink4:	equ $51
-fr_Shrink5:	equ $52
-fr_Float5:	equ $53
-fr_Float6:	equ $54
-fr_Injury:	equ $55
-fr_GetAir:	equ $56
-fr_WaterSlide:	equ $57
+
+	phase 0
+fr_Null:	ds.b 1 ;  0
+fr_Stand:	ds.b 1 ;  1
+fr_Wait1:	ds.b 1 ;  2
+fr_Wait2:	ds.b 1 ;  3
+fr_Wait3:	ds.b 1 ;  4
+fr_LookUp:	ds.b 1 ;  5
+fr_Walk11:	ds.b 1 ;  6
+fr_Walk12:	ds.b 1 ;  7
+fr_Walk13:	ds.b 1 ;  8
+fr_Walk14:	ds.b 1 ;  9
+fr_Walk15:	ds.b 1 ;  $A
+fr_Walk16:	ds.b 1 ;  $B
+fr_Walk21:	ds.b 1 ;  $C
+fr_Walk22:	ds.b 1 ;  $D
+fr_Walk23:	ds.b 1 ;  $E
+fr_Walk24:	ds.b 1 ;  $F
+fr_Walk25:	ds.b 1 ;  $10
+fr_Walk26:	ds.b 1 ;  $11
+fr_Walk31:	ds.b 1 ;  $12
+fr_Walk32:	ds.b 1 ;  $13
+fr_Walk33:	ds.b 1 ;  $14
+fr_Walk34:	ds.b 1 ;  $15
+fr_Walk35:	ds.b 1 ;  $16
+fr_Walk36:	ds.b 1 ;  $17
+fr_Walk41:	ds.b 1 ;  $18
+fr_Walk42:	ds.b 1 ;  $19
+fr_Walk43:	ds.b 1 ;  $1A
+fr_Walk44:	ds.b 1 ;  $1B
+fr_Walk45:	ds.b 1 ;  $1C
+fr_Walk46:	ds.b 1 ;  $1D
+fr_Run11:	ds.b 1 ;  $1E
+fr_Run12:	ds.b 1 ;  $1F
+fr_Run13:	ds.b 1 ;  $20
+fr_Run14:	ds.b 1 ;  $21
+fr_Run21:	ds.b 1 ;  $22
+fr_Run22:	ds.b 1 ;  $23
+fr_Run23:	ds.b 1 ;  $24
+fr_Run24:	ds.b 1 ;  $25
+fr_Run31:	ds.b 1 ;  $26
+fr_Run32:	ds.b 1 ;  $27
+fr_Run33:	ds.b 1 ;  $28
+fr_Run34:	ds.b 1 ;  $29
+fr_Run41:	ds.b 1 ;  $2A
+fr_Run42:	ds.b 1 ;  $2B
+fr_Run43:	ds.b 1 ;  $2C
+fr_Run44:	ds.b 1 ;  $2D
+fr_Roll1:	ds.b 1 ;  $2E
+fr_Roll2:	ds.b 1 ;  $2F
+fr_Roll3:	ds.b 1 ;  $30
+fr_Roll4:	ds.b 1 ;  $31
+fr_Roll5:	ds.b 1 ;  $32
+fr_Stop1:	ds.b 1 ;  $37
+fr_Stop2:	ds.b 1 ;  $38
+fr_Duck:	ds.b 1 ;  $39
+fr_Balance1:	ds.b 1 ;  $3A
+fr_Balance2:	ds.b 1 ;  $3B
+fr_Float1:	ds.b 1 ;  $3C
+fr_Float2:	ds.b 1 ;  $3D
+fr_Float3:	ds.b 1 ;  $3E
+fr_Float4:	ds.b 1 ;  $3F
+fr_Spring:	ds.b 1 ;  $40
+fr_Hang1:	ds.b 1 ;  $41
+fr_Hang2:	ds.b 1 ;  $42
+fr_Leap1:	ds.b 1 ;  $43
+fr_Leap2:	ds.b 1 ;  $44
+fr_Push1:	ds.b 1 ;  $45
+fr_Push2:	ds.b 1 ;  $46
+fr_Push3:	ds.b 1 ;  $47
+fr_Push4:	ds.b 1 ;  $48
+fr_Drown:	ds.b 1 ;  $4C
+fr_Death:	ds.b 1 ;  $4D
+fr_Float5:	ds.b 1 ;  $53
+fr_Float6:	ds.b 1 ;  $54
+fr_Injury:	ds.b 1 ;  $55
+fr_GetAir:	ds.b 1 ;  $56
+fr_WaterSlide:	ds.b 1 ;  $57
+	dephase
+	!org 0
 
 ; Boss locations
 ; The main values are based on where the camera boundaries mainly lie

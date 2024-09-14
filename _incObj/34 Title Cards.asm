@@ -40,7 +40,7 @@ Card_LoadConfig:
 		moveq	#3,d1
 
 Card_Loop:
-		move.b	#id_TitleCard,obID(a1)
+		move.l	#TitleCard,obID(a1)
 		move.w	(a3),obX(a1)	; load start x-position
 		move.w	(a3)+,card_finalX(a1) ; load finish x-position (same as start)
 		move.w	(a3)+,card_mainX(a1) ; load main x-position
@@ -119,7 +119,7 @@ Card_Move2:
 ; ===========================================================================
 
 locret_C412:
-		rts	
+		rts
 ; ===========================================================================
 
 Card_ChangeArt:

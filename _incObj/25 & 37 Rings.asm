@@ -117,7 +117,7 @@ RLoss_Count:	; Routine 0
 		bne.w	.resetcounter
 
 .makerings:
-		move.b	#id_RingLoss,obID(a1) ; load bouncing ring object
+		move.l	#RingLoss,obID(a1) ; load bouncing ring object
 		addq.b	#2,obRoutine(a1)
 		move.b	#8,obHeight(a1)
 		move.b	#8,obWidth(a1)

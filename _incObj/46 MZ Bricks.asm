@@ -87,7 +87,7 @@ Brick_Type03:
 		addi.w	#$18,obVelY(a0)	; increase falling speed
 		bsr.w	ObjFloorDist
 		tst.w	d1		; has the block	hit the	floor?
-		bpl.w	locret_E8EE	; if not, branch
+		bpl.s	locret_E8EE	; if not, branch
 		add.w	d1,obY(a0)
 		clr.w	obVelY(a0)	; stop the block falling
 		move.w	obY(a0),brick_origY(a0)
@@ -99,7 +99,7 @@ Brick_Type03:
 		move.b	#0,obSubtype(a0)
 
 locret_E8EE:
-		rts	
+		rts
 ; ===========================================================================
 
 Brick_Type04:
@@ -109,4 +109,4 @@ Brick_Type04:
 		move.w	brick_origY(a0),d1
 		sub.w	d0,d1
 		move.w	d1,obY(a0)	; make the block wobble
-		rts	
+		rts

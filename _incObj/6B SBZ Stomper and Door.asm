@@ -41,11 +41,10 @@ Sto_Main:	; Routine 0
 		beq.s	.isSBZ3
 
 .chkdel:
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
+		move.w	obRespawnNo(a0),d0
 		beq.s	.delete
-		bclr	#7,2(a2,d0.w)
+		movea.w	d0,a2
+		bclr	#7,2(a2)
 
 .delete:
 		jmp	(DeleteObject).l
@@ -55,11 +54,10 @@ Sto_Main:	; Routine 0
 		move.w	#make_art_tile(ArtTile_Level+$1F0,2,0),obGfx(a0)
 		cmpi.w	#$A80,obX(a0)
 		bne.s	.isSBZ12
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
+		move.w	obRespawnNo(a0),d0
 		beq.s	.isSBZ12
-		btst	#0,2(a2,d0.w)
+		movea.w	d0,a2
+		btst	#0,2(a2)
 		beq.s	.isSBZ12
 		clr.b	(v_obj6B).w
 		bra.s	.chkdel
@@ -84,11 +82,10 @@ Sto_Main:	; Routine 0
 		bset	#4,obRender(a0)
 
 .chkgone:
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
+		move.w	obRespawnNo(a0),d0
 		beq.s	Sto_Action
-		bclr	#7,2(a2,d0.w)
+		movea.w	d0,a2
+		bclr	#7,2(a2)
 
 Sto_Action:	; Routine 2
 		move.w	obX(a0),-(sp)
@@ -118,11 +115,10 @@ Sto_Action:	; Routine 2
 		cmpi.b	#id_LZ,(v_zone).w
 		bne.s	.delete
 		clr.b	(v_obj6B).w
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
+		move.w	obRespawnNo(a0),d0
 		beq.s	.delete
-		bclr	#7,2(a2,d0.w)
+		movea.w	d0,a2
+		bclr	#7,2(a2)
 
 .delete:
 		jmp	(DeleteObject).l
@@ -163,18 +159,17 @@ Sto_Action:	; Routine 2
 		move.w	sto_origX(a0),d1
 		sub.w	d0,d1
 		move.w	d1,obX(a0)
-		rts	
+		rts
 ; ===========================================================================
 
 .loc_15DE0:
 		addq.b	#1,obSubtype(a0)
 		move.w	#$B4,objoff_36(a0)
 		clr.b	sto_active(a0)
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
+		move.w	obRespawnNo(a0),d0
 		beq.s	.loc_15DC2
-		bset	#0,2(a2,d0.w)
+		movea.w	d0,a2
+		bset	#0,2(a2)
 		bra.s	.loc_15DC2
 ; ===========================================================================
 
@@ -201,17 +196,16 @@ Sto_Action:	; Routine 2
 		move.w	sto_origX(a0),d1
 		sub.w	d0,d1
 		move.w	d1,obX(a0)
-		rts	
+		rts
 ; ===========================================================================
 
 .loc_15E3C:
 		subq.b	#1,obSubtype(a0)
 		clr.b	sto_active(a0)
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
+		move.w	obRespawnNo(a0),d0
 		beq.s	.loc_15E1E
-		bclr	#0,2(a2,d0.w)
+		movea.w	d0,a2
+		bclr	#0,2(a2)
 		bra.s	.loc_15E1E
 ; ===========================================================================
 
@@ -248,7 +242,7 @@ Sto_Action:	; Routine 2
 		move.w	sto_origY(a0),d1
 		add.w	d0,d1
 		move.w	d1,obY(a0)
-		rts	
+		rts
 ; ===========================================================================
 
 .type04:
@@ -291,7 +285,7 @@ Sto_Action:	; Routine 2
 		move.w	sto_origY(a0),d1
 		add.w	d0,d1
 		move.w	d1,obY(a0)
-		rts	
+		rts
 ; ===========================================================================
 
 .type05:
@@ -303,11 +297,10 @@ Sto_Action:	; Routine 2
 		btst	#0,(a2,d0.w)
 		beq.s	.locret_15F5C
 		move.b	#1,sto_active(a0)
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
+		move.w	obRespawnNo(a0),d0
 		beq.s	.loc_15F3E
-		bset	#0,2(a2,d0.w)
+		movea.w	d0,a2
+		bset	#0,2(a2)
 
 .loc_15F3E:
 		subi.l	#$10000,obX(a0)
@@ -317,10 +310,10 @@ Sto_Action:	; Routine 2
 		beq.s	.loc_15F5E
 
 .locret_15F5C:
-		rts	
+		rts
 ; ===========================================================================
 
 .loc_15F5E:
 		clr.b	obSubtype(a0)
 		clr.b	sto_active(a0)
-		rts	
+		rts

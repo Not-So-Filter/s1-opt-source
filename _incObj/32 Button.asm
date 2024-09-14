@@ -102,7 +102,7 @@ But_MZBlock:
 But_MZLoop:
 		tst.b	obRender(a1)
 		bpl.s	loc_BE4E
-		cmpi.b	#id_PushBlock,obID(a1) ; is the object a green MZ block?
+		cmpi.l	#PushBlock,obID(a1) ; is the object a green MZ block?
 		beq.s	loc_BE5E	; if yes, branch
 
 loc_BE4E:

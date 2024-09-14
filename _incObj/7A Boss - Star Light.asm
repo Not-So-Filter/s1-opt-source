@@ -37,7 +37,7 @@ BossStarLight_Main:
 BossStarLight_Loop:
 		jsr	(FindNextFreeObj).l
 		bne.s	loc_1895C
-		move.b	#id_BossStarLight,obID(a1)
+		move.l	#BossStarLight,obID(a1)
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
 
@@ -61,11 +61,11 @@ BossStarLight_LoadBoss:
 loc_1895C:
 		lea	(v_lvlobjspace).w,a1
 		lea	objoff_2A(a0),a2
-		moveq	#id_Seesaw,d0
+		move.l	#Seesaw,d0
 		moveq	#(v_lvlobjend-v_lvlobjspace)/object_size-1,d1
 
 loc_18968:
-		cmp.b	obID(a1),d0
+		cmp.l	obID(a1),d0
 		bne.s	loc_18974
 		tst.b	obSubtype(a1)
 		beq.s	loc_18974
@@ -238,7 +238,7 @@ loc_18AFA:
 		jsr	(FindNextFreeObj).l
 		movea.l	(sp)+,a0
 		bne.s	loc_18B40
-		move.b	#id_BossSpikeball,obID(a1) ; load spiked ball object
+		move.l	#BossSpikeball,obID(a1) ; load spiked ball object
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
 		addi.w	#$20,obY(a1)

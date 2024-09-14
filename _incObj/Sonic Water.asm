@@ -23,7 +23,7 @@ Sonic_Water:
 		asr	obVelY(a0)
 		asr	obVelY(a0)	; slow Sonic
 		beq.s	.exit		; branch if Sonic stops moving
-		move.b	#id_Splash,(v_splash).w ; load splash object
+		move.l	#Splash,(v_splash).w ; load splash object
 
 .exit:
 		rts
@@ -38,7 +38,7 @@ Sonic_Water:
 		move.w	#$80,(v_sonspeeddec).w ; restore Sonic's deceleration
 		asl	obVelY(a0)
 		beq.s	.belowmaxspeed
-		move.b	#id_Splash,(v_splash).w ; load splash object
+		move.l	#Splash,(v_splash).w ; load splash object
 		cmpi.w	#-$1000,obVelY(a0)
 		bgt.s	.belowmaxspeed
 		move.w	#-$1000,obVelY(a0) ; set maximum speed on leaving water

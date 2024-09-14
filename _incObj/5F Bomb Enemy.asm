@@ -116,7 +116,7 @@ Bom_Action:	; Routine 2
 		move.b	#2,obAnim(a0)	; use activated animation
 		bsr.w	FindNextFreeObj
 		bne.s	.outofrange
-		move.b	#id_Bomb,obID(a1)	; load fuse object
+		move.l	#Bomb,obID(a1)	; load fuse object
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
 		move.w	obY(a0),bom_origY(a1)
@@ -165,7 +165,7 @@ loc_11B7C:
 		bne.s	.fail
 
 .makeshrapnel:
-		move.b	#id_Bomb,obID(a1)	; load shrapnel	object
+		move.l	#Bomb,obID(a1)	; load shrapnel	object
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
 		move.b	#6,obSubtype(a1)

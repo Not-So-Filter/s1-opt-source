@@ -24,11 +24,10 @@ Mon_Main:	; Routine 0
 		move.b	#4,obRender(a0)
 		move.w	#3*$80,obPriority(a0)
 		move.b	#$F,obActWid(a0)
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
-		bclr	#7,2(a2,d0.w)
-		btst	#0,2(a2,d0.w)	; has monitor been broken?
+		move.w	obRespawnNo(a0),d0
+		movea.w	d0,a2
+		bclr	#7,2(a2)
+		btst	#0,2(a2)	; has monitor been broken?
 		beq.s	.notbroken	; if not, branch
 		move.b	#8,obRoutine(a0) ; run "Mon_Display" routine
 		move.b	#$B,obFrame(a0)	; use broken monitor frame
@@ -148,7 +147,7 @@ Mon_BreakOpen:	; Routine 4
 		move.b	#0,obColType(a0)
 		bsr.w	FindFreeObj
 		bne.s	Mon_Explode
-		move.b	#id_PowerUp,obID(a1) ; load monitor contents object
+		move.l	#PowerUp,obID(a1) ; load monitor contents object
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
 		move.b	obAnim(a0),obAnim(a1)
@@ -156,15 +155,14 @@ Mon_BreakOpen:	; Routine 4
 Mon_Explode:
 		bsr.w	FindFreeObj
 		bne.s	.fail
-		move.b	#id_ExplosionItem,obID(a1) ; load explosion object
+		move.l	#ExplosionItem,obID(a1) ; load explosion object
 		addq.b	#2,obRoutine(a1) ; don't create an animal
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
 
 .fail:
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
-		bset	#0,2(a2,d0.w)
+		move.w	obRespawnNo(a0),d0
+		movea.w	d0,a2
+		bset	#0,2(a2)
 		move.b	#9,obAnim(a0)	; set monitor type to broken
 		bra.w	DisplaySprite

@@ -67,7 +67,7 @@ Sign_Spin:	; Routine 4
 		lea	Sign_SparkPos(pc,d0.w),a2 ; load sparkle position data
 		bsr.w	FindFreeObj
 		bne.s	.fail
-		move.b	#id_Rings,obID(a1)	; load rings object
+		move.l	#Rings,obID(a1)	; load rings object
 		move.b	#id_Ring_Sparkle,obRoutine(a1) ; jump to ring sparkle subroutine
 		move.b	(a2)+,d0
 		ext.w	d0
@@ -132,7 +132,7 @@ GotThroughAct:
 		move.b	d0,(v_invinc).w	; disable invincibility
 		move.b	d0,(f_timecount).w	; stop time counter
 		move.b	d0,(HUD_scroll_flag).w
-		move.b	#id_GotThroughCard,(v_endcard).w
+		move.l	#GotThroughCard,(v_endcard).w
 		moveq	#plcid_TitleCard,d0
 		jsr	(NewPLC).w	; load title card patterns
 		move.b	#1,(f_endactbonus).w

@@ -43,12 +43,11 @@ PushB_Main:	; Routine 0
 		move.w	#make_art_tile(ArtTile_MZ_Block,2,1),obGfx(a0)
 
 .chkgone:
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
+		move.w	obRespawnNo(a0),d0
 		beq.s	loc_BF6E
-		bclr	#7,2(a2,d0.w)
-		bset	#0,2(a2,d0.w)
+		movea.w	d0,a2
+		bclr	#7,2(a2)
+		bset	#0,2(a2)
 		bne.w	DeleteObject
 
 loc_BF6E:	; Routine 2
@@ -89,11 +88,10 @@ loc_ppppp:
 ; ===========================================================================
 
 loc_C016:
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
+		move.w	obRespawnNo(a0),d0
 		beq.s	loc_C028
-		bclr	#0,2(a2,d0.w)
+		movea.w	d0,a2
+		bclr	#0,2(a2)
 
 loc_C028:
 		bra.w	DeleteObject
@@ -222,7 +220,7 @@ PushB_NoLava:
 PushB_LoadLava:
 		bsr.w	FindFreeObj
 		bne.s	locret_C184
-		move.b	#id_GeyserMaker,obID(a1) ; load lava geyser object
+		move.l	#GeyserMaker,obID(a1) ; load lava geyser object
 		move.w	obX(a0),obX(a1)
 		add.w	d2,obX(a1)
 		move.w	obY(a0),obY(a1)
@@ -294,7 +292,7 @@ loc_C218:
 		bmi.w	locret_C2E4
 		tst.b	objoff_32(a0)
 		beq.s	loc_C230
-		bra.w	locret_C2E4
+		rts
 ; ===========================================================================
 
 loc_C230:
@@ -361,4 +359,4 @@ loc_C2E0:
 		add.w	d1,obY(a0)
 
 locret_C2E4:
-		rts	
+		rts

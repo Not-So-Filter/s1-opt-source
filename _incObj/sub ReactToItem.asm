@@ -24,7 +24,7 @@ ReactToItem:
 		moveq	#$10,d4
 		add.w	d5,d5
 		lea	(v_lvlobjspace).w,a1 ; set object RAM start address
-		moveq	#(v_lvlobjend-v_lvlobjspace)/$40-1,d6
+		moveq	#(v_lvlobjend-v_lvlobjspace)/object_size-1,d6
 
 .loop:
 		tst.b	obRender(a1)
@@ -207,7 +207,7 @@ React_Enemy:
 
 .lessthan16:
 		bsr.w	AddPoints
-		move.b	#id_ExplosionItem,obID(a1) ; change object to explosion
+		move.l	#ExplosionItem,obID(a1) ; change object to explosion
 		clr.b	obRoutine(a1)
 		tst.w	obVelY(a0)
 		bmi.s	.bouncedown
@@ -266,7 +266,7 @@ HurtSonic:
 
 		jsr	(FindFreeObj).l
 		bne.s	.hasshield
-		move.b	#id_RingLoss,obID(a1) ; load bouncing multi rings object
+		move.l	#RingLoss,obID(a1) ; load bouncing multi rings object
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
 
@@ -294,9 +294,9 @@ HurtSonic:
 		move.b	#id_Hurt,obAnim(a0)
 		move.b	#120,flashtime(a0)	; set temp invincible time to 2 seconds
 		moveq	#sfx_HitSpikes,d0
-		cmpi.b	#id_Spikes,obID(a2)	; was damage caused by spikes?
+		cmpi.l	#Spikes,obID(a2)	; was damage caused by spikes?
 		beq.s	.sound
-		cmpi.b	#id_Harpoon,obID(a2)	; was damage caused by LZ harpoon?
+		cmpi.l	#Harpoon,obID(a2)	; was damage caused by LZ harpoon?
 		beq.s	.sound
 		moveq	#sfx_Death,d0
 
@@ -331,9 +331,9 @@ KillSonic:
 		move.b	#id_Death,obAnim(a0)
 		bset	#7,obGfx(a0)
 		moveq	#sfx_HitSpikes,d0 ; play spikes death sound
-		cmpi.b	#id_Spikes,obID(a2)	; check	if you were killed by spikes
+		cmpi.l	#Spikes,obID(a2)	; check	if you were killed by spikes
 		beq.s	.sound
-		cmpi.b	#id_Harpoon,obID(a2)	; check	if you were killed by a harpoon
+		cmpi.l	#Harpoon,obID(a2)	; check	if you were killed by a harpoon
 		beq.s	.sound
 		moveq	#sfx_Death,d0	; play normal death sound
 

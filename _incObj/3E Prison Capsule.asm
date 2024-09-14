@@ -113,7 +113,7 @@ Pri_Explosion:	; Routine 6, 8, $A
 		bne.s	.noexplosion
 		jsr	(FindFreeObj).l
 		bne.s	.noexplosion
-		move.b	#id_ExplosionBomb,obID(a1) ; load explosion object
+		move.l	#ExplosionBomb,obID(a1) ; load explosion object
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
 		jsr	(RandomNumber).w
@@ -145,7 +145,7 @@ Pri_Explosion:	; Routine 6, 8, $A
 .loop:
 		jsr	(FindFreeObj).l
 		bne.s	.fail
-		move.b	#id_Animals,obID(a1) ; load animal object
+		move.l	#Animals,obID(a1) ; load animal object
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
 		add.w	d4,obX(a1)
@@ -164,7 +164,7 @@ Pri_Animals:	; Routine $C
 		bne.s	.noanimal
 		jsr	(FindFreeObj).l
 		bne.s	.noanimal
-		move.b	#id_Animals,obID(a1) ; load animal object
+		move.l	#Animals,obID(a1) ; load animal object
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
 		jsr	(RandomNumber).w
@@ -190,11 +190,11 @@ Pri_Animals:	; Routine $C
 
 Pri_EndAct:	; Routine $E
 		moveq	#(v_lvlobjend-v_lvlobjspace)/object_size-1,d0
-		moveq	#id_Animals,d1
+		move.l	#Animals,d1
 		lea	(v_lvlobjspace).w,a1
 
 .findanimal:
-		cmp.b	obID(a1),d1		; is object $28	(animal) loaded?
+		cmp.l	obID(a1),d1		; is object $28	(animal) loaded?
 		beq.s	.found		; if yes, branch
 		lea	object_size(a1),a1	; next object RAM
 		dbf	d0,.findanimal	; repeat $3E times
