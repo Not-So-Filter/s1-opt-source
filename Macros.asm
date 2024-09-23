@@ -46,6 +46,10 @@ start:
 zoneanimcount := zoneanimcount + 1
     endm
     
+; Function to make a little endian (z80) pointer
+k68z80Pointer function addr,((((addr&$7FFF)+$8000)<<8)&$FF00)+(((addr&$7FFF)+$8000)>>8)
+
+little_endian function x,(x)<<8&$FF00|(x)>>8&$FF
 
 ; function to make a little-endian 16-bit pointer for the Z80 sound driver
 z80_ptr function x,(x)<<8&$FF00|(x)>>8&$7F|$80

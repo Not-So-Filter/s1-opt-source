@@ -324,7 +324,17 @@ sub_1BA0C:
 		move.l	(a4,d2.w),obID(a1)
 		move.b	(a0)+,obSubtype(a1)
 		move.w	a3,obRespawnNo(a1)
-		bra.w	CreateNewSprite4
+;CreateNewSprite4:
+		subq.w	#1,d0
+		bmi.s	.found
+
+.loop:
+		lea	object_size(a1),a1
+		tst.l	obID(a1)
+		dbeq	d0,.loop
+
+.found:
+		rts
 ; ---------------------------------------------------------------------------
 
 loc_1BA40:
@@ -367,7 +377,17 @@ loc_1BA64:
 		move.l	(a4,d2.w),obID(a1)
 		move.b	(a0)+,obSubtype(a1)
 		move.w	a3,obRespawnNo(a1)
-		bra.s	CreateNewSprite4
+;CreateNewSprite4:
+		subq.w	#1,d0
+		bmi.s	.found
+
+.loop:
+		lea	object_size(a1),a1
+		tst.l	obID(a1)
+		dbeq	d0,.loop
+
+.found:
+		rts
 ; ---------------------------------------------------------------------------
 
 loc_1BA92:

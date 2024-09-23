@@ -14,7 +14,7 @@ Sonic_Water:
 		bset	#6,obStatus(a0)
 		bne.s	.exit
 		bsr.w	ResumeMusic
-		move.b	#id_DrownCount,(v_sonicbubbles).w ; load bubbles object from Sonic's mouth
+		move.l	#DrownCount,(v_sonicbubbles).w ; load bubbles object from Sonic's mouth
 		move.b	#$81,(v_sonicbubbles+obSubtype).w
 		move.w	#$300,(v_sonspeedmax).w ; change Sonic's top speed
 		move.w	#6,(v_sonspeedacc).w ; change Sonic's acceleration

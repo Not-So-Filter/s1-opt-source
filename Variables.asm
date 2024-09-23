@@ -78,7 +78,7 @@ Object_respawn_table_End:
 
 v_spritequeue:		SpriteQueue		; sprite display queue, in order of priority (in this case, there is only 0 up to 7, so multiply by 7+1)
 v_spritequeue_end:
-v_16x16:		ds.b	$1800		; 16x16 tile mappings
+v_16x16:		ds.b	16*384		; 16x16 tile mappings
 
 VDP_Command_Buffer:	ds.w	7*$12		; $FC bytes
 
@@ -234,8 +234,7 @@ v_sonframenum:		ds.b	1		; frame to display for Sonic
 f_sonframechg:		ds.b	1		; flag set to update Sonic's sprite frame
 v_anglebuffer:		ds.b	1		; angle of collision block that Sonic or object is standing on
 v_anglebuffer2:		ds.b	1		; other angle of collision block that Sonic or object is standing on
-			ds.b	1		; unused
-			ds.b	1		; unused
+			ds.b	2		; unused
 v_opl_routine:		ds.w	1		; ObjPosLoad - routine counter
 Camera_X_pos_coarse:	ds.w	1		; rounded down to the nearest chunk boundary (128th pixel)
 Camera_Y_pos_coarse:	ds.w	1		; rounded down to the nearest chunk boundary (128th pixel)

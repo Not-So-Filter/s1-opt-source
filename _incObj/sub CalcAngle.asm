@@ -42,7 +42,6 @@ CalcAngle_Divide:
 		move.b	(a2,d2.w),d2
 		sub.b	(a2,d1.w),d2
 		bne.s	CalcAngle_GetAtan2Val
-;		move.w	#$FF,d2			; Edge case where X and Y values are too close for the division to handle
 		moveq	#signextendB($FF),d2	; Edge case where X and Y values are too close for the division to handle
 
 CalcAngle_GetAtan2Val:

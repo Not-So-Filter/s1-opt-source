@@ -11,7 +11,14 @@
 FindFreeObj:
 		lea	(v_lvlobjspace).w,a1 ; start address for object RAM
 		moveq	#(v_lvlobjend-v_lvlobjspace)/object_size-1,d0
-		bra.s	NFree_Loop
+
+.loop:
+		lea	object_size(a1),a1
+		tst.l	obID(a1)
+		dbeq	d0,.loop
+
+.found:
+		rts
 
 ; End of function FindFreeObj
 

@@ -73,7 +73,8 @@ Obj11_MakeBdgSegment:
 		move.w	#make_art_tile(ArtTile_GHZ_Bridge,2,0),obGfx(a1)
 		move.b	#4,obRender(a1)
 		bset	#6,obRender(a1)
-		move.w	#$40,mainspr_width(a1)
+		move.b	#$40,mainspr_width(a1)
+		move.b	#8,mainspr_height(a1)
 		move.w	d1,mainspr_childsprites(a1)
 		subq.b	#1,d1
 		lea	subspr_data(a1),a2 ; starting address for subsprite data
@@ -134,6 +135,12 @@ Obj11_Unload:
 		movea.l	Obj11_child2(a0),a1 ; a1=object
 		bsr.w	DeleteChild
 +
+		move.w	obRespawnNo(a0),d0
+		beq.s	.delete
+		movea.w	d0,a2
+		bclr	#7,(a2)
+
+.delete:
 		bra.w	DeleteObject
 ; ===========================================================================
 ; loc_F80C: BranchTo_DisplaySprite:
@@ -237,27 +244,11 @@ PlatformObject_ChkYRange:
 RideObject_SetRide:
 		btst	#3,obStatus(a1)
 		beq.s	loc_19E30
-		moveq	#0,d0
-		move.b	standonobject(a1),d0
-	if object_size=$40
-		lsl.w	#object_size_bits,d0
-	else
-		mulu.w	#object_size,d0
-	endif
-		addi.l	#v_objspace,d0
-		movea.l	d0,a3	; a3=object
+		movea.w	standonobject(a1),a3	; a3=object
 		bclr	#3,obStatus(a3)
 
 loc_19E30:
-		move.w	a0,d0
-		subi.w	#v_objspace,d0
-	if object_size=$40
-		lsr.w	#object_size_bits,d0
-	else
-		divu.w	#object_size,d0
-	endif
-		andi.w	#$7F,d0
-		move.b	d0,standonobject(a1)
+		move.w	a0,standonobject(a1)
 		move.b	#0,obAngle(a1)
 		move.w	#0,obVelY(a1)
 		move.w	obVelX(a1),obInertia(a1)

@@ -134,7 +134,7 @@ SBall_Move:	; Routine 2
 	else
 		mulu.w	#object_size,d4
 	endif
-		addi.l	#v_objspace,d4
+		addi.w	#v_objspace,d4
 		movea.l	d4,a1
 		moveq	#0,d4
 		move.b	sball_radius(a1),d4
@@ -152,7 +152,9 @@ SBall_Move:	; Routine 2
 ; ===========================================================================
 
 .chkdel:
-		out_of_range.s	.delete,sball_origX(a0)
+		out_of_range.s	SBall_Display.delete,sball_origX(a0)
+
+SBall_Display:	; Routine 4
 		bra.w	DisplaySprite
 ; ===========================================================================
 
@@ -175,7 +177,3 @@ SBall_Move:	; Routine 2
 		dbf	d2,.deleteloop ; delete all pieces of	chain
 
 		rts
-; ===========================================================================
-
-SBall_Display:	; Routine 4
-		bra.w	DisplaySprite

@@ -19,7 +19,7 @@ loc_137E4:
 		bclr	#5,obStatus(a0)
 		bclr	#4,obStatus(a0)
 		moveq	#0,d0
-		move.b	d0,objoff_3C(a0)
+		move.b	d0,jumpflag(a0)
 		move.w	d0,(v_itembonus).w
 		rts	
 ; End of function Sonic_ResetOnFloor

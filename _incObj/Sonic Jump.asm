@@ -34,7 +34,7 @@ loc_1341C:
 		bset	#1,obStatus(a0)
 		bclr	#5,obStatus(a0)
 		addq.l	#4,sp
-		st.b	objoff_3C(a0)
+		st.b	jumpflag(a0)
 		clr.b	stick_to_convex(a0)
 		moveq	#sfx_Jump,d0
 		jsr	(PlaySound).w	; play jumping sound

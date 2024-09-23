@@ -3148,14 +3148,14 @@ Platform3:
 		add.w	d2,d1
 		addq.w	#4,d1
 		sub.w	d1,d0
-		bhi.w	Plat_Exit
+		bhi.s	Plat_Exit
 		cmpi.w	#-$10,d0
-		blo.w	Plat_Exit
+		blo.s	Plat_Exit
 
 		tst.b	(f_playerctrl).w
-		bmi.w	Plat_Exit
+		bmi.s	Plat_Exit
 		cmpi.b	#6,obRoutine(a1)
-		bhs.w	Plat_Exit
+		bhs.s	Plat_Exit
 		add.w	d0,d2
 		addq.w	#3,d2
 		move.w	d2,obY(a1)
@@ -3164,15 +3164,7 @@ Platform3:
 loc_74AE:
 		btst	#3,obStatus(a1)
 		beq.s	loc_74DC
-		moveq	#0,d0
-		move.b	standonobject(a1),d0
-	if object_size=$40
-		lsl.w	#object_size_bits,d0
-	else
-		mulu.w	#object_size,d0
-	endif
-		addi.l	#v_objspace,d0
-		movea.l	d0,a2
+		movea.w	standonobject(a1),a2
 		bclr	#3,obStatus(a2)
 		clr.b	ob2ndRout(a2)
 		cmpi.b	#4,obRoutine(a2)
@@ -3180,15 +3172,7 @@ loc_74AE:
 		subq.b	#2,obRoutine(a2)
 
 loc_74DC:
-		move.w	a0,d0
-		subi.w	#v_objspace,d0
-	if object_size=$40
-		lsr.w	#object_size_bits,d0
-	else
-		divu.w	#object_size,d0
-	endif
-		andi.w	#$7F,d0
-		move.b	d0,standonobject(a1)
+		move.w	a0,standonobject(a1)
 		move.b	#0,obAngle(a1)
 		move.w	#0,obVelY(a1)
 		move.w	obVelX(a1),obInertia(a1)
@@ -3879,7 +3863,7 @@ BuildObjectLoop:
 		btst	#2,d6		; get drawing coordinates
 		beq.s	BuildDrawScreenY	; branch if 0 (screen coordinates)
 		moveq	#0,d2
-		move.b	obActWid(a0),d2
+		move.b	obWidth(a0),d2
 		sub.w	(a3),d0
 		move.w	d0,d3
 		add.w	d2,d3
@@ -4026,9 +4010,9 @@ Build_1AF2A:
 		btst	#2,d6
 		beq.s	Build_1AF46
 		sub.w	(a3),d0
-		addi.w	#$80,d0
+		addi.w	#128,d0
 		sub.w	4(a3),d1
-		addi.w	#$80,d1
+		addi.w	#128,d1
 
 Build_1AF46:
 		addq.w	#1,a0
@@ -5426,7 +5410,7 @@ KosPM_Water:	binclude	"artkospm/LZ Water Surface.kospm"
 		even
 KosPM_Splash:	binclude	"artkospm/LZ Water & Splashes.kospm"
 		even
-KosPM_LzSpikeBall:binclude	"artkospm/LZ Spiked Ball & Chain.kospm"
+KosPM_LzSpikeBall:	binclude	"artkospm/LZ Spiked Ball & Chain.kospm"
 		even
 KosPM_FlapDoor:	binclude	"artkospm/LZ Flapping Door.kospm"
 		even
@@ -5622,13 +5606,13 @@ Blk256_GHZ:	binclude	"map128/GHZ.kosp"
 		even
 Blk16_LZ:	binclude	"map16/LZ.eni"
 		even
-KosP_LZ:		binclude	"artkosp/8x8 - LZ.kosp"	; LZ primary patterns
+KosP_LZ:	binclude	"artkosp/8x8 - LZ.kosp"	; LZ primary patterns
 		even
 Blk256_LZ:	binclude	"map128/LZ.kosp"
 		even
 Blk16_MZ:	binclude	"map16/MZ.eni"
 		even
-KosP_MZ:		binclude	"artkosp/8x8 - MZ.kosp"	; MZ primary patterns
+KosP_MZ:	binclude	"artkosp/8x8 - MZ.kosp"	; MZ primary patterns
 		even
 Blk256_MZ:	binclude	"map128/MZ.kosp"
 		even
@@ -5842,7 +5826,7 @@ ObjPosSBZPlatform_Index:
 		dc.w ObjPos_SBZ1pf3-ObjPos_Index, ObjPos_SBZ1pf4-ObjPos_Index
 		dc.w ObjPos_SBZ1pf5-ObjPos_Index, ObjPos_SBZ1pf6-ObjPos_Index
 		dc.w ObjPos_SBZ1pf1-ObjPos_Index, ObjPos_SBZ1pf2-ObjPos_Index
-		dc.b $FF, $FF, 0, 0, 0,	0
+		dc.w $FFFF, 0, 0
 ObjPos_GHZ1:	binclude	"objpos/ghz1.bin"
 		even
 ObjPos_GHZ2:	binclude	"objpos/ghz2.bin"
@@ -5905,7 +5889,7 @@ ObjPos_SBZ1pf5:	binclude	"objpos/sbz1pf5.bin"
 		even
 ObjPos_SBZ1pf6:	binclude	"objpos/sbz1pf6.bin"
 		even
-ObjPos_Null:	dc.b $FF, $FF, 0, 0, 0,	0
+ObjPos_Null:	dc.w $FFFF, 0, 0
 
 RingPos_Index:
 		; GHZ
@@ -5977,7 +5961,7 @@ RingPos_SBZ2:	binclude	"ringpos/sbz2_INDIVIDUAL.bin"
 		even
 RingPos_SBZ3:	binclude	"ringpos/sbz3_INDIVIDUAL.bin"
 		even
-		
+
 ; ---------------------------------------------------------------------------
 ; Subroutine to	load the sound driver
 ; ---------------------------------------------------------------------------
@@ -6026,15 +6010,15 @@ SoundDriver:
 SndDAC_Start:
 
 SndDAC_Kick:
-	BINCLUDE	"sound/dac/kick.dpcm"
+		binclude	"sound/dac/kick.dpcm"
 SndDAC_Kick_End
 
 SndDAC_Snare:
-	BINCLUDE	"sound/dac/snare.dpcm"
+		binclude	"sound/dac/snare.dpcm"
 SndDAC_Snare_End
 
 SndDAC_Timpani:
-	BINCLUDE	"sound/dac/timpani.dpcm"
+		binclude	"sound/dac/timpani.dpcm"
 SndDAC_Timpani_End
 
 SndDAC_End
@@ -6285,7 +6269,7 @@ SoundD0:	include	"sound/sfx/SndD0 - Waterfall.asm"
 ; 8-bit unsigned raw audio at 16Khz
 ; -------------------------------------------------------------------------------
 ; loc_F1E8C:
-Snd_Sega:	BINCLUDE	"sound/dac/sega.pcm"
+Snd_Sega:	binclude	"sound/dac/sega.pcm"
 Snd_Sega_End:
 
 	if Snd_Sega_End - Snd_Sega > $8000
@@ -6300,7 +6284,7 @@ Snd_Sega_End:
 ; Debugging modules
 ; --------------------------------------------------------------
 
-	include	"errorhandler/ErrorHandler.asm"
+		include	"errorhandler/ErrorHandler.asm"
 
 ; --------------------------------------------------------------
 ; WARNING!

@@ -33,15 +33,7 @@ Sonic_Move:
 		move.b	#id_Wait,obAnim(a0) ; use "standing" animation
 		btst	#3,obStatus(a0)
 		beq.s	Sonic_Balance
-		moveq	#0,d0
-		move.b	standonobject(a0),d0
-	if object_size=$40
-		lsl.w	#object_size_bits,d0
-	else
-		mulu.w	#object_size,d0
-	endif
-		lea	(v_objspace).w,a1
-		lea	(a1,d0.w),a1
+		movea.w	standonobject(a0),a1
 		tst.b	obStatus(a1)
 		bmi.s	Sonic_LookUp
 		moveq	#0,d1

@@ -167,7 +167,7 @@ zBankRegister =	$6000
 zPSG =		$7F11
 zROMWindow =	$8000
 ; More equates: addresses specific to this program (besides labelled addresses)
-zStack =	$1100
+zStack =	$1800
 
 	phase zStack
 zAbsVar:		zVar
@@ -308,7 +308,11 @@ zPalModeByte:
 zWriteFMIorII:    rsttarget
 	bit	2,(ix+zTrack.VoiceControl)
 	jr	z,zWriteFMI
-	jp	zWriteFMII
+	; Write reg/data pair to part II; 'a' is register, 'c' is data
+	ld	(zYM2612_A1),a
+	ld	a,c
+	ld	(zYM2612_D1),a
+	ret
 ; End of function zWriteFMIorII
 
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
@@ -319,8 +323,6 @@ zWriteFMI:    rsttarget
 	ld	(zYM2612_A0),a
 	ld	a,c
 	ld	(zYM2612_D0),a
-	ld	a,2Ah			; DAC port
-	ld	(zYM2612_A0),a		; Set DAC port register
 	ret
 ; End of function zWriteFMI
 
@@ -332,8 +334,6 @@ zWriteFMII:    rsttarget
 	ld	(zYM2612_A1),a
 	ld	a,c
 	ld	(zYM2612_D1),a
-	ld	a,2Ah			; DAC port
-	ld	(zYM2612_A0),a		; Set DAC port register
 	ret
 ; End of function zWriteFMII
 
@@ -427,6 +427,8 @@ zUpdateEverything:
 	; sound to be played.  This is called after updating the DAC track.
 	; Otherwise it just mucks with the timing loop, forcing an update.
 zUpdateDAC:
+	ld	a,2Ah			; DAC port
+	ld	(zYM2612_A0),a		; Set DAC port register
 	bankswitch SndDAC_Start		; Bankswitch to the DAC data
 
 	ld	a,(zCurDAC)		; Get currently playing DAC sound
@@ -899,19 +901,8 @@ zDoModulation:
 	ld	(ix+zTrack.ModulationSpeed),a	; Restore speed counter
 	ld	a,(ix+zTrack.ModulationSteps)	; Get number of steps in modulation
 	or	a
-	jr	nz,.calcfreq			; If not zero, skip to .calcfreq
+	jr	z,.stepszero			; If zero, skip to .stepszero
 
-	; If steps have reached zero...
-	inc	hl				; passed mod speed
-	inc	hl				; passed mod change per mod step
-	ld	a,(hl)				; get number of steps in modulation
-	ld	(ix+zTrack.ModulationSteps),a	; restore modulation steps
-	ld	a,(ix+zTrack.ModulationDelta)	; get modulation change per mod step
-	neg					; flip it negative
-	ld	(ix+zTrack.ModulationDelta),a	; store negated value
-	ret
-
-.calcfreq:
 	dec	(ix+zTrack.ModulationSteps)	; Decrement the step
 	ld	l,(ix+zTrack.ModulationValLow)
 	ld	h,(ix+zTrack.ModulationValHigh)	; Get 16-bit modulation value
@@ -930,6 +921,18 @@ zDoModulation:
 	add	hl,bc				; Add modulation value
 	ex	de,hl
 	jp	(hl)				; WILL return to zUpdateTrack
+
+
+.stepszero:
+	; If steps have reached zero...
+	inc	hl				; passed mod speed
+	inc	hl				; passed mod change per mod step
+	ld	a,(hl)				; get number of steps in modulation
+	ld	(ix+zTrack.ModulationSteps),a	; restore modulation steps
+	ld	a,(ix+zTrack.ModulationDelta)	; get modulation change per mod step
+	neg					; flip it negative
+	ld	(ix+zTrack.ModulationDelta),a	; store negated value
+	ret
 ; End of function zDoModulation
 
 ; ---------------------------------------------------------------------------

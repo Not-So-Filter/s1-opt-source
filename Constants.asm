@@ -102,8 +102,8 @@ obj struct DOTS
 ID:		ds.l 1	; object ID number
 Render:		ds.b 1	; bitfield for x/y flip, display mode
 Routine:	ds.b 1	; routine number
-Height:		ds.b 1	; height/2
-Width:		ds.b 1	; width/2
+ActHigh:	ds.b 1	; action height
+ActWid:		ds.b 1	; action width
 Priority:	ds.w 1	; sprite stack priority -- 0 is front
 Gfx:		ds.w 1	; palette line & VRAM setting (2 bytes)
 Map:		ds.l 1	; mappings address (4 bytes)
@@ -112,29 +112,26 @@ ScreenY:	ds.w 1	; y-axis position for screen-fixed items (2 bytes)
 Y:		ds.l 1	; y-axis position (2-4 bytes)
 VelX:		ds.w 1	; x-axis velocity (2 bytes)
 VelY:		ds.w 1	; y-axis velocity (2 bytes)
-ActWid:		ds.b 1	; action width
-		ds.b 1	; unused
-Frame:		ds.b 1	; current frame displayed
-AniFrame:	ds.b 1	; current frame in animation script
+Height:		ds.b 1	; height/2
+Width:		ds.b 1	; width/2
+Inertia:	ds.w 1	; potential speed (2 bytes)
 Anim:		ds.b 1	; current animation
 PrevAni:	ds.b 1	; previous animation
+Frame:		ds.b 1	; current frame displayed
+AniFrame:	ds.b 1	; current frame in animation script
 TimeFrame:	ds.b 1	; time to next frame
-DelayAni:	ds.b 1	; time to delay animation
-Inertia:		; potential speed (2 bytes)
+DelayAni:
+off_25:		ds.b 1	; time to delay animation
+off_26:		ds.b 1
+Angle:		ds.b 1	; angle
 ColType:	ds.b 1	; collision response type
-ColProp:	ds.b 1	; collision extra property
-Status:		ds.b 1	; orientation or mode
-		ds.b 1	; unused
-RespawnNo:	ds.w 1	; respawn list index number
-2ndRout:
-off_25:		ds.b 1	; secondary routine number
-Angle:
-off_26:		ds.b 1	; angle
-Subtype:	ds.b 1	; object subtype
-off_29:		ds.b 1
-off_2A:		ds.b 1
+ColProp:
+off_29:		ds.b 1	; collision extra property
+Status:
+off_2A:		ds.b 1	; orientation or mode
 off_2B:		ds.b 1
-off_2C:		ds.b 1
+Subtype:
+off_2C:		ds.b 1	; object subtype
 off_2D:		ds.b 1
 off_2E:		ds.b 1
 off_2F:		ds.b 1
@@ -150,16 +147,20 @@ off_38:		ds.b 1
 off_39:		ds.b 1
 off_3A:		ds.b 1
 off_3B:		ds.b 1
-off_3C:		ds.b 1
+2ndRout:
+off_3C:		ds.b 1	; secondary routine number
 off_3D:		ds.b 1
 off_3E:		ds.b 1
 off_3F:		ds.b 1
-		ds.b 1	; unused
-		ds.b 1	; unused
-		ds.b 1	; unused
-		ds.b 1	; unused
-		ds.b 1	; unused
-		ds.b 1	; unused
+off_40:		ds.b 1
+off_41:		ds.b 1
+off_42:		ds.b 1
+off_43:		ds.b 1
+off_44:		ds.b 1
+off_45:		ds.b 1
+off_46:		ds.b 1
+off_47:		ds.b 1
+RespawnNo:	ds.w 1	; respawn list index number
 
 	endstruct
 
@@ -172,6 +173,7 @@ obScreenY:	equ obj.ScreenY
 obY:		equ obj.Y
 obVelX:		equ obj.VelX
 obVelY:		equ obj.VelY
+obActHigh:	equ obj.ActHigh
 obActWid:	equ obj.ActWid
 obHeight:	equ obj.Height
 obWidth:	equ obj.Width
@@ -231,7 +233,8 @@ flashtime:	equ objoff_30	; time between flashes after getting hit
 invtime:	equ objoff_32	; time left for invincibility
 shoetime:	equ objoff_34	; time left for speed shoes
 stick_to_convex:equ objoff_38
-standonobject:	equ objoff_3D	; object Sonic stands on
+jumpflag:	equ objoff_3C
+standonobject:	equ objoff_42	; object Sonic stands on
 
 ; Miscellaneous object scratch-RAM
 objoff_25:	equ obj.off_25
@@ -258,6 +261,14 @@ objoff_3C:	equ obj.off_3C
 objoff_3D:	equ obj.off_3D
 objoff_3E:	equ obj.off_3E
 objoff_3F:	equ obj.off_3F
+objoff_40:	equ obj.off_40
+objoff_41:	equ obj.off_41
+objoff_42:	equ obj.off_42
+objoff_43:	equ obj.off_43
+objoff_44:	equ obj.off_44
+objoff_45:	equ obj.off_45
+objoff_46:	equ obj.off_46
+objoff_47:	equ obj.off_47
 
 object_size_bits:	equ 6
 object_size:	equ obj.len
