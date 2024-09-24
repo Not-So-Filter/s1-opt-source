@@ -19,7 +19,7 @@ PathSwapper:
 		move.w	obRespawnNo(a0),d0
 		beq.s	.delete
 		movea.w	d0,a2
-		bclr	#7,2(a2)
+		bclr	#7,(a2)
 
 	.delete:
 		bra.w	DeleteObject

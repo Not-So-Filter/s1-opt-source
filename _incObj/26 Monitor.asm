@@ -26,8 +26,8 @@ Mon_Main:	; Routine 0
 		move.b	#$F,obActWid(a0)
 		move.w	obRespawnNo(a0),d0
 		movea.w	d0,a2
-		bclr	#7,2(a2)
-		btst	#0,2(a2)	; has monitor been broken?
+		bclr	#7,(a2)
+		btst	#0,(a2)	; has monitor been broken?
 		beq.s	.notbroken	; if not, branch
 		move.b	#8,obRoutine(a0) ; run "Mon_Display" routine
 		move.b	#$B,obFrame(a0)	; use broken monitor frame
@@ -163,6 +163,6 @@ Mon_Explode:
 .fail:
 		move.w	obRespawnNo(a0),d0
 		movea.w	d0,a2
-		bset	#0,2(a2)
+		bset	#0,(a2)
 		move.b	#9,obAnim(a0)	; set monitor type to broken
 		bra.w	DisplaySprite

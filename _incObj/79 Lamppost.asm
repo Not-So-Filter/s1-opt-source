@@ -28,8 +28,8 @@ Lamp_Main:	; Routine 0
 		move.w	#5*$80,obPriority(a0)
 		move.w	obRespawnNo(a0),d0
 		movea.w	d0,a2
-		bclr	#7,2(a2)
-		btst	#0,2(a2)
+		bclr	#7,(a2)
+		btst	#0,(a2)
 		bne.s	.red
 		move.b	(v_lastlamp).w,d1
 		andi.b	#$7F,d1
@@ -39,7 +39,7 @@ Lamp_Main:	; Routine 0
 		blo.s	Lamp_Blue	; if yes, branch
 
 .red:
-		bset	#0,2(a2)
+		bset	#0,(a2)
 		move.b	#4,obRoutine(a0) ; goto Lamp_Finish next
 		move.b	#3,obFrame(a0)	; use red lamppost frame
 		rts
@@ -58,7 +58,7 @@ Lamp_Blue:	; Routine 2
 		blo.s	.chkhit		; if yes, branch
 		move.w	obRespawnNo(a0),d0
 		movea.w	d0,a2
-		bset	#0,2(a2)
+		bset	#0,(a2)
 		move.b	#4,obRoutine(a0)
 		move.b	#3,obFrame(a0)
 
@@ -101,7 +101,7 @@ Lamp_Blue:	; Routine 2
 		bsr.s	Lamp_StoreInfo
 		move.w	obRespawnNo(a0),d0
 		movea.w	d0,a2
-		bset	#0,2(a2)
+		bset	#0,(a2)
 
 .donothing:
 Lamp_Finish:	; Routine 4

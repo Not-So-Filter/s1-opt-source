@@ -46,8 +46,8 @@ PushB_Main:	; Routine 0
 		move.w	obRespawnNo(a0),d0
 		beq.s	loc_BF6E
 		movea.w	d0,a2
-		bclr	#7,2(a2)
-		bset	#0,2(a2)
+		bclr	#7,(a2)
+		bset	#0,(a2)
 		bne.w	DeleteObject
 
 loc_BF6E:	; Routine 2
@@ -91,7 +91,7 @@ loc_C016:
 		move.w	obRespawnNo(a0),d0
 		beq.s	loc_C028
 		movea.w	d0,a2
-		bclr	#0,2(a2)
+		bclr	#0,(a2)
 
 loc_C028:
 		bra.w	DeleteObject

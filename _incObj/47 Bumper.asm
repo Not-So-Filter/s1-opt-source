@@ -48,9 +48,9 @@ Bump_Hit:	; Routine 2
 		move.w	obRespawnNo(a0),d0
 		beq.s	.addscore
 		movea.w	d0,a2
-		cmpi.b	#$8A,2(a2)	; has bumper been hit 10 times?
+		cmpi.b	#$8A,(a2)	; has bumper been hit 10 times?
 		bhs.s	.display	; if yes, Sonic	gets no	points
-		addq.b	#1,2(a2)
+		addq.b	#1,(a2)
 
 .addscore:
 		moveq	#1,d0
@@ -73,7 +73,7 @@ Bump_Hit:	; Routine 2
 		move.w	obRespawnNo(a0),d0
 		beq.s	.delete
 		movea.w	d0,a2
-		bclr	#7,2(a2)
+		bclr	#7,(a2)
 
 .delete:
 		bra.w	DeleteObject

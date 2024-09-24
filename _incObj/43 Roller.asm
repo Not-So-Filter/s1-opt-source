@@ -39,11 +39,11 @@ Roll_Action:	; Routine 2
 		jsr	Roll_Index2(pc,d1.w)
 		lea	Ani_Roll(pc),a1
 		bsr.w	AnimateSprite
-		move.w	obX(a0),d0
-		andi.w	#$FF80,d0
+		moveq	#-$80,d0
+		and.w	obX(a0),d0
 		move.w	(v_screenposx).w,d1
 		subi.w	#$80,d1
-		andi.w	#$FF80,d1
+		andi.w	#-$80,d1
 		sub.w	d1,d0
 		cmpi.w	#$280,d0
 		bgt.s	Roll_ChkGone
@@ -54,7 +54,7 @@ Roll_ChkGone:
 		move.w	obRespawnNo(a0),d0
 		beq.s	Roll_Delete
 		movea.w	d0,a2
-		bclr	#7,2(a2)
+		bclr	#7,(a2)
 
 Roll_Delete:
 		bra.w	DeleteObject

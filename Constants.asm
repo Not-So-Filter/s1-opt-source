@@ -122,8 +122,9 @@ AniFrame:	ds.b 1	; current frame in animation script
 TimeFrame:	ds.b 1	; time to next frame
 DelayAni:
 off_25:		ds.b 1	; time to delay animation
-off_26:		ds.b 1
-Angle:		ds.b 1	; angle
+Angle:
+off_26:		ds.b 1	; angle
+		ds.b 1
 ColType:	ds.b 1	; collision response type
 ColProp:
 off_29:		ds.b 1	; collision extra property
