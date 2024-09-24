@@ -3863,7 +3863,7 @@ BuildObjectLoop:
 		btst	#2,d6		; get drawing coordinates
 		beq.s	BuildDrawScreenY	; branch if 0 (screen coordinates)
 		moveq	#0,d2
-		move.b	obWidth(a0),d2
+		move.b	obActWid(a0),d2
 		sub.w	(a3),d0
 		move.w	d0,d3
 		add.w	d2,d3

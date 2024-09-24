@@ -198,7 +198,7 @@ obSolid:	equ obj.2ndRout ; solid status flag
 ; ---------------------------------------------------------------------------
 ; when childsprites are activated (i.e. bit #6 of render_flags set)
 next_subspr:		equ 6
-mainspr_width:		equ obWidth
+mainspr_width:		equ obActWid
 mainspr_height:		equ obHeight
 mainspr_mapframe:	equ obFrame
 mainspr_childsprites: 	equ $16	; amount of child sprites

@@ -76,8 +76,8 @@ loc_1AAEE:
 		; Get VRAM destination address
 		move.w	4(a2),d2
 		; Get ROM source address
-		move.l	(a2),d1				; Get start address of animated tile art
-		andi.l	#$FFFFFF,d1
+		move.l	#$FFFFFF,d1
+		and.l	(a2),d1				; Get start address of animated tile art
 		add.l	d0,d1				; Offset into art, to get the address of new frame
 		; Get size of art to be transferred
 		moveq	#0,d3

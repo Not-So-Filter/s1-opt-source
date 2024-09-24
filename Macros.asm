@@ -383,12 +383,12 @@ jmi:		macro loc
 ; ---------------------------------------------------------------------------
 
 out_of_range:	macro exit,specpos
+		moveq	#-$80,d0	; round down to nearest $80
 		if ("specpos"<>"")
-		move.w	specpos,d0	; get object position (if specified as not obX)
+		and.w	specpos,d0	; get object position (if specified as not obX)
 		else
-		move.w	obX(a0),d0	; get object position
+		and.w	obX(a0),d0	; get object position
 		endif
-		andi.w	#$FF80,d0	; round down to nearest $80
 		sub.w	(Camera_X_pos_coarse).w,d0	; approx distance between object and screen
 		cmpi.w	#128+320+192,d0
 		bhi.ATTRIBUTE	exit

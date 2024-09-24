@@ -287,48 +287,48 @@ BuildRings_NextRing:
 ; off_1736A:
 MapUnc_Rings:;frame1:
 		dc.w -8
-		dc.w $0005
+		dc.w 5
 		dc.w $0000+make_art_tile(ArtTile_Ring,1,0)
 		dc.w -8
 
 ;frame2:
 		dc.w -8
-		dc.w $0005
+		dc.w 5
 		dc.w $0004+make_art_tile(ArtTile_Ring,1,0)
 		dc.w -8
 
 ;frame3:
 		dc.w -8
-		dc.w $0001
+		dc.w 1
 		dc.w $0008+make_art_tile(ArtTile_Ring,1,0)
 		dc.w -4
 
 ;frame4:
 		dc.w -8
-		dc.w $0005
+		dc.w 5
 		dc.w $0804+make_art_tile(ArtTile_Ring,1,0)
 		dc.w -8
 
 ;frame5:
 		dc.w -8
-		dc.w $0005
+		dc.w 5
 		dc.w $000A+make_art_tile(ArtTile_Ring,1,0)
 		dc.w -8
 
 ;frame6:
 		dc.w -8
-		dc.w $0005
+		dc.w 5
 		dc.w $180A+make_art_tile(ArtTile_Ring,1,0)
 		dc.w -8
 
 ;frame7:
 		dc.w -8
-		dc.w $0005
+		dc.w 5
 		dc.w $080A+make_art_tile(ArtTile_Ring,1,0)
 		dc.w -8
 
 ;frame8:
 		dc.w -8
-		dc.w $0005
+		dc.w 5
 		dc.w $100A+make_art_tile(ArtTile_Ring,1,0)
 		dc.w -8

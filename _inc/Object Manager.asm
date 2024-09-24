@@ -41,7 +41,7 @@ loc_1B6E8:
 		moveq	#0,d6
 
 loc_1B79A:
-		andi.w	#$FF80,d6
+		andi.w	#-$80,d6
 		movea.l	(Object_load_addr_front).w,a0
 
 loc_1B7A2:
@@ -72,25 +72,25 @@ loc_1B7D8:
 		move.l	a0,(Object_load_addr_back).w
 		move.w	a3,(Object_respawn_index_back).w
 		move.w	#-1,(Camera_X_pos_coarse).w
-		move.w	(v_screenposy).w,d0
-		andi.w	#$FF80,d0
+		moveq	#-$80,d0
+		and.w	(v_screenposy).w,d0
 		move.w	d0,(Camera_Y_pos_coarse).w
 
 OPL_Next:
 		move.w	(v_screenposy).w,d1
 		subi.w	#$80,d1
-		andi.w	#$FF80,d1
+		andi.w	#-$80,d1
 		move.w	d1,(Camera_Y_pos_coarse_back).w
 		move.w	(v_screenposx).w,d1
 		subi.w	#$80,d1
-		andi.w	#$FF80,d1
+		andi.w	#-$80,d1
 		move.w	d1,(Camera_X_pos_coarse_back).w
 		movea.l	(Object_index_addr).w,a4
 		tst.w	(v_limittop2).w
 		bpl.s	loc_1B84A
 		lea	loc_1BA40(pc),a6
-		move.w	(v_screenposy).w,d3
-		andi.w	#$FF80,d3
+		moveq	#-$80,d3
+		and.w	(v_screenposy).w,d3
 		move.w	d3,d4
 		addi.w	#$200,d4
 		subi.w	#$80,d3
@@ -109,8 +109,8 @@ loc_1B83A:
 ; ---------------------------------------------------------------------------
 
 loc_1B84A:
-		move.w	(v_screenposy).w,d3
-		andi.w	#$FF80,d3
+		moveq	#-$80,d3
+		and.w	(v_screenposy).w,d3
 		move.w	d3,d4
 		addi.w	#$200,d4
 		subi.w	#$80,d3
@@ -122,8 +122,8 @@ loc_1B860:
 
 loc_1B864:
 		move.w	#$FFF,d5
-		move.w	(v_screenposx).w,d6
-		andi.w	#$FF80,d6
+		moveq	#-$80,d6
+		and.w	(v_screenposx).w,d6
 		cmp.w	(Camera_X_pos_coarse).w,d6
 		beq.w	loc_1B91A
 		bge.s	loc_1B8D2
@@ -207,8 +207,8 @@ loc_1B912:
 		move.w	a3,(Object_respawn_index_back).w
 
 loc_1B91A:
-		move.w	(v_screenposy).w,d6
-		andi.w	#$FF80,d6
+		moveq	#-$80,d6
+		and.w	(v_screenposy).w,d6
 		move.w	d6,d3
 		cmp.w	(Camera_Y_pos_coarse).w,d6
 		beq.w	loc_1B9FA

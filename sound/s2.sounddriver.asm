@@ -327,17 +327,6 @@ zWriteFMI:    rsttarget
 ; End of function zWriteFMI
 
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
-	align	8
-; zsub_28
-zWriteFMII:    rsttarget
-	; Write reg/data pair to part II; 'a' is register, 'c' is data
-	ld	(zYM2612_A1),a
-	ld	a,c
-	ld	(zYM2612_D1),a
-	ret
-; End of function zWriteFMII
-
-; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 	org	38h
 zVInt:    rsttarget
 	; This is called every VBLANK (38h is the interrupt entry point,
@@ -1390,11 +1379,17 @@ zPlaySegaSound:
 	; reset panning (don't want Sega sound playing on only one speaker)
 	ld	a,0B6h		; Set Panning / AMS / FMS
 	ld	c,0C0h		; default Panning / AMS / FMS settings (only stereo L/R enabled)
-	rst	zWriteFMII	; Set it!
+	; Write reg/data pair to part II; 'a' is register, 'c' is data
+	ld	(zYM2612_A1),a
+	ld	a,c
+	ld	(zYM2612_D1),a
 
 	ld	a,2Bh		; DAC enable/disable register
 	ld	c,80h		; Command to enable DAC
-	rst	zWriteFMI
+	; Write reg/data pair to part I; 'a' is register, 'c' is data
+	ld	(zYM2612_A0),a
+	ld	a,c
+	ld	(zYM2612_D0),a
 
 	bankswitch Snd_Sega	; We want the Sega sound
 
@@ -1423,7 +1418,11 @@ zPlaySegaSound:
 	bankswitch MusicPoint
 	ld	c,(ix+zVar.DACEnabled)
 	ld	a,2Bh			; DAC enable/disable register
-	jp	zWriteFMI
+	; Write reg/data pair to part I; 'a' is register, 'c' is data
+	ld	(zYM2612_A0),a
+	ld	a,c
+	ld	(zYM2612_D0),a
+	ret
 ; ---------------------------------------------------------------------------
 ; zloc_73D
 zPlayMusic:
@@ -1577,7 +1576,10 @@ zBGMLoad:
 	; (or at least it shouldn't), so we reset the panning here.
 	ld	a,0B6h			; Set Panning / AMS / FMS
 	ld	c,0C0h			; default Panning / AMS / FMS settings (only stereo L/R enabled)
-	rst	zWriteFMII		; Set it!
+	; Write reg/data pair to part II; 'a' is register, 'c' is data
+	ld	(zYM2612_A1),a
+	ld	a,c
+	ld	(zYM2612_D1),a
 	ld	a,80h			; FM Channel 6 is NOT in use (will enable DAC)
 
 ; zloc_87E
@@ -1585,7 +1587,10 @@ zBGMLoad:
 	ld	c,a
 	ld	(zAbsVar.DACEnabled),a	; Note whether FM Channel 6 is in use (enables DAC if not)
 	ld	a,2Bh			; Set DAC Enable appropriately
-	rst	zWriteFMI		; Set it!
+	; Write reg/data pair to part I; 'a' is register, 'c' is data
+	ld	(zYM2612_A0),a
+	ld	a,c
+	ld	(zYM2612_D0),a
 
 	; End of DAC/FM init, begin PSG init
 
@@ -2060,11 +2065,17 @@ zFMSilenceAll:
 	ld	c,b		; Current key off -> 'c
 	dec	c		; c--
 	push	af
-	rst	zWriteFMI	; Write key off for part I
+	; Write reg/data pair to part I; 'a' is register, 'c' is data
+	ld	(zYM2612_A0),a
+	ld	a,c
+	ld	(zYM2612_D0),a
 	pop	af
 	set	2,c		; Set part II select
 	push	af
-	rst	zWriteFMI	; Write key off for part II
+	; Write reg/data pair to part I; 'a' is register, 'c' is data
+	ld	(zYM2612_A0),a
+	ld	a,c
+	ld	(zYM2612_D0),a
 	pop	af
 	djnz	.noteoffloop
 
@@ -2074,10 +2085,16 @@ zFMSilenceAll:
 
 .channelloop:
 	push	af
-	rst	zWriteFMI	; ...on part I
+	; Write reg/data pair to part I; 'a' is register, 'c' is data
+	ld	(zYM2612_A0),a
+	ld	a,c
+	ld	(zYM2612_D0),a
 	pop	af
 	push	af
-	rst	zWriteFMII	; ...and part II
+	; Write reg/data pair to part II; 'a' is register, 'c' is data
+	ld	(zYM2612_A1),a
+	ld	a,c
+	ld	(zYM2612_D1),a
 	pop	af
 	inc	a		; Next register!
 	djnz	.channelloop
@@ -2099,12 +2116,18 @@ zClearTrackPlaybackMem:
 	; This totally wipes out the track memory and resets playback hardware
 	ld	a,2Bh			; DAC Enable register
 	ld	c,80h			; Enable DAC
-	rst	zWriteFMI		; Write it!
+	; Write reg/data pair to part I; 'a' is register, 'c' is data
+	ld	(zYM2612_A0),a
+	ld	a,c
+	ld	(zYM2612_D0),a
 	ld	a,c			; 80h -> 'a'
 	ld	(zAbsVar.DACEnabled),a	; Store that to DAC Enabled byte
 	ld	a,27h			; Channel 3 special settings
 	ld	c,0			; All clear
-	rst	zWriteFMI		; Write it!
+	; Write reg/data pair to part I; 'a' is register, 'c' is data
+	ld	(zYM2612_A0),a
+	ld	a,c
+	ld	(zYM2612_D0),a
 	; This performs a full clear across all track/playback memory
 	ld	hl,zAbsVar
 	ld	de,zAbsVar+1
@@ -2275,7 +2298,11 @@ zFMNoteOn:
 	or	0F0h				; Turn on ALL operators
 	ld	c,a				; Set as data to write to FM
 	ld	a,28h				; Write to KEY ON/OFF port (key ON in this case)
-	jp	zWriteFMI			; Do it!
+	; Write reg/data pair to part I; 'a' is register, 'c' is data
+	ld	(zYM2612_A0),a
+	ld	a,c
+	ld	(zYM2612_D0),a
+	ret
 ; End of function zFMNoteOn
 
 
@@ -2295,7 +2322,11 @@ zFMNoteOff:
 	; Where 4321 are the bits for which operator,
 	; and ccc is which channel (0-2 for channels 1-3, 4-6 for channels 4-6 WATCH BIT GAP)
 
-	jp	zWriteFMI	; Write to part I (note this particular register is ALWAYS sent to part I)
+	; Write reg/data pair to part I; 'a' is register, 'c' is data
+	ld	(zYM2612_A0),a
+	ld	a,c
+	ld	(zYM2612_D0),a
+	ret
 ; End of function zFMNoteOff
 
 ; ---------------------------------------------------------------------------
@@ -2524,7 +2555,10 @@ cfFadeInToPrevious:
 	ld	a,(zAbsVar.DACEnabled)		; DAC not yet enabled...
 	ld	c,a
 	ld	a,2Bh
-	rst	zWriteFMI			; Tell hardware his DAC ain't enabled yet either
+	; Write reg/data pair to part I; 'a' is register, 'c' is data
+	ld	(zYM2612_A0),a
+	ld	a,c
+	ld	(zYM2612_D0),a
 	pop	bc
 	pop	bc
 	pop	bc				; These screw with the return address to make sure DAC doesn't run any further
@@ -3045,10 +3079,16 @@ cfJumpToGosub:
 cfOpF9:
 	ld	a,88h		; D1L/RR of Operator 3
 	ld	c,0Fh		; Loaded with fixed value (max RR, 1TL)
-	rst	zWriteFMI	; Written to part I
+	; Write reg/data pair to part I; 'a' is register, 'c' is data
+	ld	(zYM2612_A0),a
+	ld	a,c
+	ld	(zYM2612_D0),a
 	ld	a,8Ch		; D1L/RR of Operator 4
 	ld	c,0Fh		; Loaded with fixed value (max RR, 1TL)
-	rst	zWriteFMI	; Written to part I
+	; Write reg/data pair to part I; 'a' is register, 'c' is data
+	ld	(zYM2612_A0),a
+	ld	a,c
+	ld	(zYM2612_D0),a
 	dec	hl		; Doesn't take an arg, so put back one byte
 	ret
 

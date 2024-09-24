@@ -120,8 +120,8 @@ loc_F7BC:
 ; loc_F7D4:
 Obj11_Unload:
 		; this is essentially MarkObjGone, except we need to delete our subsprite objects as well
-		move.w	obX(a0),d0
-		andi.w	#$FF80,d0
+		moveq	#-$80,d0
+		and.w	obX(a0),d0
 		sub.w	(Camera_X_pos_coarse).w,d0	; approx distance between object and screen
 		cmpi.w	#128+320+192,d0
 		bhi.s	+
