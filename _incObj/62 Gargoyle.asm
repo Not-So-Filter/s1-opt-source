@@ -7,7 +7,8 @@ Gargoyle:
 		move.b	obRoutine(a0),d0
 		move.w	Gar_Index(pc,d0.w),d1
 		jsr	Gar_Index(pc,d1.w)
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite
 ; ===========================================================================
 Gar_Index:	dc.w Gar_Main-Gar_Index
 		dc.w Gar_MakeFire-Gar_Index

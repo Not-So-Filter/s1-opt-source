@@ -94,5 +94,5 @@ Fan_Delay:	; Routine 2
 		move.b	d0,obFrame(a0)
 
 .chkdel:
-		out_of_range.w	DeleteObject
+		out_of_range.w	DeleteObject_Respawn
 		bra.w	DisplaySprite

@@ -54,4 +54,5 @@ Flap_OpenClose:	; Routine 2
 		bsr.w	SolidObject	; make the door	solid
 
 .display:
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite

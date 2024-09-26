@@ -48,7 +48,7 @@ Spin_Main:	; Routine 0
 		add.w	d1,d1
 		subq.w	#1,d1
 		move.w	d1,objoff_36(a0)
-		bra.s	Spin_Spinner
+		bra.w	Spin_Spinner
 ; ===========================================================================
 
 Spin_Trapdoor:	; Routine 2
@@ -72,7 +72,11 @@ Spin_Trapdoor:	; Routine 2
 		moveq	#$D,d3
 		move.w	obX(a0),d4
 		bsr.w	SolidObject
-		bra.w	RememberState
+		out_of_range.s	.delete
+		jmp	(DisplaySprite).l
+
+.delete:
+		jmp	(DeleteObject_Respawn).l
 ; ===========================================================================
 
 .notsolid:
@@ -84,7 +88,8 @@ Spin_Trapdoor:	; Routine 2
 		clr.b	obSolid(a0)
 
 .display:
-		bra.w	RememberState
+		out_of_range.s	.delete
+		jmp	(DisplaySprite).l
 ; ===========================================================================
 
 Spin_Spinner:	; Routine 4
@@ -112,7 +117,11 @@ Spin_Spinner:	; Routine 4
 		moveq	#8,d3
 		move.w	obX(a0),d4
 		bsr.w	SolidObject
-		bra.w	RememberState
+		out_of_range.s	.delete
+		jmp	(DisplaySprite).l
+		
+.delete:
+		jmp	(DeleteObject_Respawn).l
 ; ===========================================================================
 
 .notsolid2:
@@ -124,4 +133,5 @@ Spin_Spinner:	; Routine 4
 		clr.b	obSolid(a0)
 
 .display:
-		bra.w	RememberState
+		out_of_range.s	.delete
+		jmp	(DisplaySprite).l

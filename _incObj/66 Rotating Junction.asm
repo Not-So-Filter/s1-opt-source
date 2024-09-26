@@ -92,7 +92,11 @@ Jun_Action:	; Routine 2
 		asr	obY(a1)
 
 Jun_Display:	; Routine 4
-		bra.w	RememberState
+		out_of_range.s	.delete
+		jmp	(DisplaySprite).l
+		
+.delete:
+		jmp	(DeleteObject_Respawn).l
 ; ===========================================================================
 
 Jun_Release:	; Routine 6
@@ -120,7 +124,11 @@ Jun_Release:	; Routine 6
 .dontrelease:
 		bsr.s	Jun_ChkSwitch
 		bsr.s	Jun_ChgPos
-		bra.w	RememberState
+		out_of_range.s	.delete
+		jmp	(DisplaySprite).l
+		
+.delete:
+		jmp	(DeleteObject_Respawn).l
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 

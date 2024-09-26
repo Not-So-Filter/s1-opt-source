@@ -159,4 +159,4 @@ Disc_ChkDel:
 		jmp	(DisplaySprite).l
 
 .delete:
-		jmp	(DeleteObject).l
+		jmp	(DeleteObject_Respawn).l

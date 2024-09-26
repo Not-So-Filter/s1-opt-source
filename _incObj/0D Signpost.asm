@@ -9,7 +9,7 @@ Signpost:
 		jsr	Sign_Index(pc,d1.w)
 		lea	Ani_Sign(pc),a1
 		bsr.w	AnimateSprite
-		out_of_range.w	DeleteObject
+		out_of_range.w	DeleteObject_Respawn
 		bra.w	DisplaySprite
 ; ===========================================================================
 Sign_Index:	dc.w Sign_Main-Sign_Index

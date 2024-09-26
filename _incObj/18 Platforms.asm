@@ -285,7 +285,7 @@ Plat_Move:
 ; ===========================================================================
 
 Plat_ChkDel:
-		out_of_range.s	Plat_Delete,objoff_32(a0)
+		out_of_range.w	DeleteObject_Respawn,objoff_32(a0)
 		bra.w	DisplaySprite
 ; ===========================================================================
 

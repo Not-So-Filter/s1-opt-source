@@ -72,7 +72,7 @@ MBlock_StandOn:	; Routine 4
 		jsr	(MvSonicOnPtfm2).l
 
 MBlock_ChkDel:
-		out_of_range.w	DeleteObject,mblock_origX(a0)
+		out_of_range.w	DeleteObject_Respawn,mblock_origX(a0)
 		bra.w	DisplaySprite
 ; ===========================================================================
 

@@ -30,5 +30,5 @@ Light_Animate:	; Routine 2
 		clr.b	obFrame(a0)
 
 .chkdel:
-		out_of_range.w	DeleteObject
+		out_of_range.w	DeleteObject_Respawn
 		bra.w	DisplaySprite

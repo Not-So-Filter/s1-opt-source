@@ -51,4 +51,4 @@ Invis_Solid:	; Routine 2
 		rts	
 
 .delete:
-		jmp	(DeleteObject).l
+		jmp	(DeleteObject_Respawn).l

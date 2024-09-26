@@ -42,12 +42,14 @@ Hog_Action:	; Routine 2
 		bne.s	.setlaunchflag	; if not, branch
 		tst.b	hog_launchflag(a0)	; is it	set to launch cannonball?
 		beq.s	.makeball	; if yes, branch
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite
 ; ===========================================================================
 
 .setlaunchflag:
 		clr.b	hog_launchflag(a0)	; set to launch	cannonball
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite
 ; ===========================================================================
 
 .makeball:
@@ -71,4 +73,5 @@ Hog_Action:	; Routine 2
 		move.b	obSubtype(a0),obSubtype(a1) ; copy object type from Ball Hog
 
 .fail:
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite

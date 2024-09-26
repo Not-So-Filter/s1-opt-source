@@ -26,5 +26,5 @@ Rock_Solid:	; Routine 2
 		moveq	#$10,d3
 		move.w	obX(a0),d4
 		bsr.w	SolidObject
-		out_of_range.w	DeleteObject
+		out_of_range.w	DeleteObject_Respawn
 		bra.w	DisplaySprite

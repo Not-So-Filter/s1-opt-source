@@ -44,7 +44,7 @@ Sto_Main:	; Routine 0
 		move.w	obRespawnNo(a0),d0
 		beq.s	.delete
 		movea.w	d0,a2
-		bclr	#7,2(a2)
+		bclr	#7,(a2)
 
 .delete:
 		jmp	(DeleteObject).l
@@ -57,7 +57,7 @@ Sto_Main:	; Routine 0
 		move.w	obRespawnNo(a0),d0
 		beq.s	.isSBZ12
 		movea.w	d0,a2
-		btst	#0,2(a2)
+		btst	#0,(a2)
 		beq.s	.isSBZ12
 		clr.b	(v_obj6B).w
 		bra.s	.chkdel
@@ -85,7 +85,7 @@ Sto_Main:	; Routine 0
 		move.w	obRespawnNo(a0),d0
 		beq.s	Sto_Action
 		movea.w	d0,a2
-		bclr	#7,2(a2)
+		bclr	#7,(a2)
 
 Sto_Action:	; Routine 2
 		move.w	obX(a0),-(sp)
@@ -118,7 +118,7 @@ Sto_Action:	; Routine 2
 		move.w	obRespawnNo(a0),d0
 		beq.s	.delete
 		movea.w	d0,a2
-		bclr	#7,2(a2)
+		bclr	#7,(a2)
 
 .delete:
 		jmp	(DeleteObject).l
@@ -169,7 +169,7 @@ Sto_Action:	; Routine 2
 		move.w	obRespawnNo(a0),d0
 		beq.s	.loc_15DC2
 		movea.w	d0,a2
-		bset	#0,2(a2)
+		bset	#0,(a2)
 		bra.s	.loc_15DC2
 ; ===========================================================================
 
@@ -205,7 +205,7 @@ Sto_Action:	; Routine 2
 		move.w	obRespawnNo(a0),d0
 		beq.s	.loc_15E1E
 		movea.w	d0,a2
-		bclr	#0,2(a2)
+		bclr	#0,(a2)
 		bra.s	.loc_15E1E
 ; ===========================================================================
 
@@ -300,7 +300,7 @@ Sto_Action:	; Routine 2
 		move.w	obRespawnNo(a0),d0
 		beq.s	.loc_15F3E
 		movea.w	d0,a2
-		bset	#0,2(a2)
+		bset	#0,(a2)
 
 .loc_15F3E:
 		subi.l	#$10000,obX(a0)

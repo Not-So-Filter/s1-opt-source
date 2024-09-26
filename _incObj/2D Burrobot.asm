@@ -34,7 +34,8 @@ Burro_Action:	; Routine 2
 		jsr	.index(pc,d1.w)
 		lea	Ani_Burro(pc),a1
 		bsr.w	AnimateSprite
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite
 ; ===========================================================================
 .index:		dc.w .changedir-.index
 		dc.w Burro_Move-.index

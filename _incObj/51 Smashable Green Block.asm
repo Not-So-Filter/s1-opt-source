@@ -7,7 +7,8 @@ SmashBlock:
 		move.b	obRoutine(a0),d0
 		move.w	Smab_Index(pc,d0.w),d1
 		jsr	Smab_Index(pc,d1.w)
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite
 ; ===========================================================================
 Smab_Index:	dc.w Smab_Main-Smab_Index
 		dc.w Smab_Solid-Smab_Index

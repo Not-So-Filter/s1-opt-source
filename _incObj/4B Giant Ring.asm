@@ -34,7 +34,7 @@ GRing_Okay:
 
 GRing_Animate:	; Routine 2
 		move.b	(v_ani1_frame).w,obFrame(a0)
-		out_of_range.w	DeleteObject
+		out_of_range.w	DeleteObject_Respawn
 		bra.w	DisplaySprite
 ; ===========================================================================
 

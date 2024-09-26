@@ -34,7 +34,8 @@ Buzz_Action:	; Routine 2
 		jsr	.index(pc,d1.w)
 		lea	Ani_Buzz(pc),a1
 		bsr.w	AnimateSprite
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite
 ; ===========================================================================
 .index:		dc.w .move-.index
 		dc.w .chknearsonic-.index

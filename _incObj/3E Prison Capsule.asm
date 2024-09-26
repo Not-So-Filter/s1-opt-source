@@ -11,7 +11,7 @@ Prison:
 		jmp	(DisplaySprite).l
 
 .delete:
-		jmp	(DeleteObject).l
+		jmp	(DeleteObject_Respawn).l
 ; ===========================================================================
 Pri_Index:	dc.w Pri_Main-Pri_Index
 		dc.w Pri_BodyMain-Pri_Index

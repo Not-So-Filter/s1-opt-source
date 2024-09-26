@@ -76,7 +76,8 @@ Yad_Action:	; Routine 2
 		jsr	Yad_Index2(pc,d1.w)
 		lea	Ani_Yad(pc),a1
 		bsr.w	AnimateSprite
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite
 ; ===========================================================================
 Yad_Index2:	dc.w Yad_Move-Yad_Index2
 		dc.w Yad_FixToFloor-Yad_Index2

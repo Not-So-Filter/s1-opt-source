@@ -29,7 +29,8 @@ Bas_Action:	; Routine 2
 		jsr	.index(pc,d1.w)
 		lea	Ani_Bas(pc),a1
 		bsr.w	AnimateSprite
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite
 ; ===========================================================================
 .index:		dc.w .dropcheck-.index
 		dc.w .dropfly-.index

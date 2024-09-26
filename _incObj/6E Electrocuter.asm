@@ -46,4 +46,8 @@ Elec_Shock:	; Routine 2
 		move.b	#$A4,obColType(a0) ; if yes, make object hurt Sonic
 
 .display:
-		bra.w	RememberState
+		out_of_range.s	.delete
+		jmp	(DisplaySprite).l
+
+.delete:
+		jmp	(DeleteObject_Respawn).l

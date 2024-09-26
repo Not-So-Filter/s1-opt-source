@@ -49,7 +49,8 @@ WFall_Animate:	; Routine 2
 		jsr	(AnimateSprite).l
 
 WFall_ChkDel:	; Routine 4
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite
 ; ===========================================================================
 
 WFall_OnWater:	; Routine 6

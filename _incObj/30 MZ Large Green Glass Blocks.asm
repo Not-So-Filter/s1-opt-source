@@ -7,12 +7,8 @@ GlassBlock:
 		move.b	obRoutine(a0),d0
 		move.w	Glass_Index(pc,d0.w),d1
 		jsr	Glass_Index(pc,d1.w)
-		out_of_range.s	Glass_Delete
+		out_of_range.w	DeleteObject_Respawn
 		bra.w	DisplaySprite
-; ===========================================================================
-
-Glass_Delete:
-		bra.w	DeleteObject
 ; ===========================================================================
 Glass_Index:	dc.w Glass_Main-Glass_Index
 		dc.w Glass_Block012-Glass_Index

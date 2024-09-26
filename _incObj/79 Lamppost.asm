@@ -7,7 +7,11 @@ Lamppost:
 		move.b	obRoutine(a0),d0
 		move.w	Lamp_Index(pc,d0.w),d1
 		jsr	Lamp_Index(pc,d1.w)
-		jmp	(RememberState).l
+		out_of_range.s	.delete
+		jmp	(DisplaySprite).l
+		
+.delete:
+		jmp	(DeleteObject_Respawn).l
 ; ===========================================================================
 Lamp_Index:	dc.w Lamp_Main-Lamp_Index
 		dc.w Lamp_Blue-Lamp_Index

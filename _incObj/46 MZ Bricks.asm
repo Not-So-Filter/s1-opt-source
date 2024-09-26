@@ -42,7 +42,7 @@ Brick_Action:	; Routine 2
 		bsr.w	SolidObject
 
 .chkdel:
-		out_of_range.w	DeleteObject
+		out_of_range.w	DeleteObject_Respawn
 		bra.w	DisplaySprite
 ; ===========================================================================
 Brick_TypeIndex:dc.w Brick_Type00-Brick_TypeIndex

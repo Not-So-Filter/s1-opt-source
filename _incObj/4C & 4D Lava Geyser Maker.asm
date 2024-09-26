@@ -44,7 +44,7 @@ GMake_Wait:	; Routine 2
 		addq.b	#2,obRoutine(a0) ; if Sonic is within range, goto GMake_ChkType
 
 .cancel:
-		out_of_range.w	DeleteObject
+		out_of_range.w	DeleteObject_Respawn
 		rts
 ; ===========================================================================
 
@@ -77,7 +77,7 @@ GMake_ChkType:	; Routine 4
 		tst.b	obSubtype(a0)	; is object type 00 (geyser) ?
 		beq.s	GMake_Display	; if yes, branch
 		addq.b	#2,obRoutine(a0)
-		out_of_range.w	DeleteObject
+		out_of_range.w	DeleteObject_Respawn
 		rts
 ; ===========================================================================
 
@@ -93,7 +93,7 @@ GMake_Delete:	; Routine $A
 		move.b	#2,obRoutine(a0)
 		tst.b	obSubtype(a0)
 		beq.w	DeleteObject
-		out_of_range.w	DeleteObject
+		out_of_range.w	DeleteObject_Respawn
 		rts
 
 
@@ -193,7 +193,7 @@ Geyser_Action:	; Routine 2
 		bsr.w	AnimateSprite
 
 Geyser_ChkDel:
-		out_of_range.w	DeleteObject
+		out_of_range.w	DeleteObject_Respawn
 		bra.w	DisplaySprite
 ; ===========================================================================
 Geyser_Types:	dc.w Geyser_Type00-Geyser_Types

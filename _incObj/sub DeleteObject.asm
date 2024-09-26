@@ -5,13 +5,20 @@
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
 
-DeleteObject:
+DeleteObject_Respawn:
 		move.w	obRespawnNo(a0),d0
-		beq.s	.deletemain
+		beq.s	DeleteObject
 		movea.w	d0,a2
 		bclr	#7,(a2)
-		
-.deletemain:
+
+; ---------------------------------------------------------------------------
+; Subroutine to	delete an object
+; ---------------------------------------------------------------------------
+
+; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
+
+
+DeleteObject:
 		movea.l	a0,a1		; move object RAM address to (a1)
 
 DeleteChild:				; child objects are already in (a1)

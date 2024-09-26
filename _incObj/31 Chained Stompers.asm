@@ -150,7 +150,7 @@ loc_B7FE:	; Routine 4
 
 CStom_Display2:	; Routine 6
 CStom_ChkDel:
-		out_of_range.w	DeleteObject
+		out_of_range.w	DeleteObject_Respawn
 		bra.w	DisplaySprite
 ; ===========================================================================
 

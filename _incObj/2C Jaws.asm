@@ -46,4 +46,5 @@ Jaws_Turn:	; Routine 2
 		lea	Ani_Jaws(pc),a1
 		bsr.w	AnimateSprite
 		bsr.w	SpeedToPos
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite

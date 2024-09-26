@@ -120,7 +120,7 @@ Orb_ChkDel:
 		move.w	obRespawnNo(a0),d0
 		beq.s	loc_11E34
 		movea.w	d0,a2
-		bclr	#7,2(a2)
+		bclr	#7,(a2)
 
 loc_11E34:
 		lea	objoff_37(a0),a2

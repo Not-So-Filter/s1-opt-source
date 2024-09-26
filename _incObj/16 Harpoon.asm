@@ -31,7 +31,8 @@ Harp_Move:	; Routine 2
 		moveq	#0,d0
 		move.b	obFrame(a0),d0	; get frame number
 		move.b	.types(pc,d0.w),obColType(a0) ; get collision type
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite
 
 .types:
 		dc.b $9B, $9C, $9D, $9E, $9F, $A0
@@ -45,4 +46,5 @@ Harp_Wait:	; Routine 4
 		bchg	#0,obAnim(a0)	; reverse animation
 
 .chkdel:
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite

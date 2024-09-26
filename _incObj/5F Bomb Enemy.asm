@@ -42,7 +42,8 @@ Bom_Action:	; Routine 2
 		jsr	.index(pc,d1.w)
 		lea	Ani_Bomb(pc),a1
 		bsr.w	AnimateSprite
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite
 ; ===========================================================================
 .index:		dc.w .walk-.index
 		dc.w .wait-.index
@@ -140,7 +141,8 @@ Bom_Display:	; Routine 4
 		bsr.s	loc_11B70
 		lea	Ani_Bomb(pc),a1
 		bsr.w	AnimateSprite
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite
 ; ===========================================================================
 
 loc_11B70:

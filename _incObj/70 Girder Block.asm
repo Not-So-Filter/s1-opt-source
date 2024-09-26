@@ -61,7 +61,7 @@ Gird_Action:	; Routine 2
 		jmp	(DisplaySprite).l
 
 .delete:
-		jmp	(DeleteObject).l
+		jmp	(DeleteObject_Respawn).l
 ; ===========================================================================
 
 Gird_ChgMove:

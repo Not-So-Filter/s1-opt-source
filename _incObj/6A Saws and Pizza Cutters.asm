@@ -40,7 +40,7 @@ Saw_Action:	; Routine 2
 		jmp	(DisplaySprite).l
 
 .delete:
-		jmp	(DeleteObject).l
+		jmp	(DeleteObject_Respawn).l
 ; ===========================================================================
 .index:		dc.w .type00-.index, .type01-.index, .type02-.index ; pizza cutters
 		dc.w .type03-.index, .type04-.index ; ground saws

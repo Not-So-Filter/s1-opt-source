@@ -32,7 +32,7 @@ Scen_Main:	; Routine 0
 		clr.b	obColType(a0)
 
 Scen_ChkDel:	; Routine 2
-		out_of_range.w	DeleteObject
+		out_of_range.w	DeleteObject_Respawn
 		bra.w	DisplaySprite
 ; ===========================================================================
 ; ---------------------------------------------------------------------------

@@ -78,12 +78,8 @@ loc_BDDE:
 		bchg	#1,obFrame(a0)
 
 But_Display:
-		out_of_range.s	But_Delete
+		out_of_range.w	DeleteObject_Respawn
 		bra.w	DisplaySprite
-; ===========================================================================
-
-But_Delete:
-		bra.w	DeleteObject
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 

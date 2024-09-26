@@ -54,7 +54,8 @@ Crab_Action:	; Routine 2
 		jsr	.index(pc,d1.w)
 		lea	Ani_Crab(pc),a1
 		bsr.w	AnimateSprite
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite
 ; ===========================================================================
 .index:		dc.w .waittofire-.index
 		dc.w .walkonfloor-.index

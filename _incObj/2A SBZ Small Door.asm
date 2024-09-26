@@ -58,4 +58,5 @@ ADoor_Animate:
 		bsr.w	SolidObject
 
 .remember:
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite

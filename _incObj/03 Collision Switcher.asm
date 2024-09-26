@@ -9,20 +9,15 @@ PathSwapper:
 		jsr	PSwapper_Index(pc,d1.w)
 	if DebuggingMode
 		tst.w	(f_debugcheat).w
-		bne.w	RememberState
+		bne.s	.remember
 	endif
 		; like RememberState, but doesn't display (Sonic 2's MarkObjGone3)
-		out_of_range.s	.offscreen
+		out_of_range.w	DeleteObject_Respawn
 		rts
-
-	.offscreen:
-		move.w	obRespawnNo(a0),d0
-		beq.s	.delete
-		movea.w	d0,a2
-		bclr	#7,(a2)
-
-	.delete:
-		bra.w	DeleteObject
+		
+.remember:
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite
 ; ===========================================================================
 ; off_1FCF0:
 PSwapper_Index:

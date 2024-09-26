@@ -138,7 +138,7 @@ Mon_Animate:	; Routine 6
 		bsr.w	AnimateSprite
 
 Mon_Display:	; Routine 8
-		out_of_range.w	DeleteObject
+		out_of_range.w	DeleteObject_Respawn
 		bra.w	DisplaySprite
 ; ===========================================================================
 

@@ -24,7 +24,7 @@ Flash_Main:	; Routine 0
 
 Flash_ChkDel:	; Routine 2
 		bsr.s	Flash_Collect
-		out_of_range.s	Flash_Delete
+		out_of_range.w	DeleteObject_Respawn
 		bra.w	DisplaySprite
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||

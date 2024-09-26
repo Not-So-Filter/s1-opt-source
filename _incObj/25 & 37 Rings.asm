@@ -33,7 +33,7 @@ Ring_Main:	; Routine 0
 
 Ring_Animate:	; Routine 2
 		move.b	(v_ani1_frame).w,obFrame(a0) ; set frame
-		out_of_range.s	Ring_Delete,objoff_32(a0)
+		out_of_range.w	DeleteObject_Respawn,objoff_32(a0)
 		move.w	#2*$80,d0
 		bra.w	DisplaySprite2
 ; ===========================================================================

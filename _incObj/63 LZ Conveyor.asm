@@ -163,7 +163,8 @@ loc_124F2:
 
 loc_124FC:
 		addq.l	#4,sp
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 

@@ -47,4 +47,5 @@ Chop_ChgSpeed:	; Routine 2
 		move.b	#2,obAnim(a0)	; use stationary animation
 
 .nochg:
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite

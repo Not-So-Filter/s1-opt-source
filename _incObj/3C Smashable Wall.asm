@@ -7,7 +7,8 @@ SmashWall:
 		move.b	obRoutine(a0),d0
 		move.w	Smash_Index(pc,d0.w),d1
 		jsr	Smash_Index(pc,d1.w)
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite
 ; ===========================================================================
 Smash_Index:	dc.w Smash_Main-Smash_Index
 		dc.w Smash_Solid-Smash_Index

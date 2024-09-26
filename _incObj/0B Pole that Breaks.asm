@@ -97,4 +97,5 @@ Pole_Action:	; Routine 2
 		move.b	#1,pole_grabbed(a0) ; begin countdown to breakage
 
 Pole_Display:	; Routine 4
-		bra.w	RememberState
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite

@@ -64,7 +64,7 @@ LBall_Action:	; Routine 2
 		bsr.w	AnimateSprite
 
 LBall_ChkDel:
-		out_of_range.w	DeleteObject
+		out_of_range.w	DeleteObject_Respawn
 		bra.w	DisplaySprite
 ; ===========================================================================
 LBall_TypeIndex:dc.w LBall_Type00-LBall_TypeIndex, LBall_Type00-LBall_TypeIndex
