@@ -6,6 +6,12 @@
 
 
 DeleteObject:
+		move.w	obRespawnNo(a0),d0
+		beq.s	.deletemain
+		movea.w	d0,a2
+		bclr	#7,(a2)
+		
+.deletemain:
 		movea.l	a0,a1		; move object RAM address to (a1)
 
 DeleteChild:				; child objects are already in (a1)
