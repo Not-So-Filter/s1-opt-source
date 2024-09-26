@@ -6270,6 +6270,7 @@ SoundD0:	include	"sound/sfx/SndD0 - Waterfall.asm"
 ; -------------------------------------------------------------------------------
 ; loc_F1E8C:
 Snd_Sega:	binclude	"sound/dac/sega.pcm"
+		even
 Snd_Sega_End:
 
 	if Snd_Sega_End - Snd_Sega > $8000
