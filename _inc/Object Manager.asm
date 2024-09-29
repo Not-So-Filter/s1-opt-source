@@ -16,7 +16,6 @@ OPL_Index:	bra.w	OPL_Main
 ; ===========================================================================
 
 OPL_Main:
-		move.l	#Obj_Index,(Object_index_addr).w
 		addq.w	#4,(v_opl_routine).w
 		lea	(Object_respawn_table).w,a0
 		moveq	#0,d0
@@ -77,15 +76,15 @@ loc_1B7D8:
 		move.w	d0,(Camera_Y_pos_coarse).w
 
 OPL_Next:
-		move.w	(v_screenposy).w,d1
+		moveq	#-$80,d1
+		and.w	(v_screenposy).w,d1
 		subi.w	#$80,d1
-		andi.w	#-$80,d1
 		move.w	d1,(Camera_Y_pos_coarse_back).w
-		move.w	(v_screenposx).w,d1
+		moveq	#-$80,d1
+		and.w	(v_screenposx).w,d1
 		subi.w	#$80,d1
-		andi.w	#-$80,d1
 		move.w	d1,(Camera_X_pos_coarse_back).w
-		movea.l	(Object_index_addr).w,a4
+		lea	(Obj_Index).l,a4
 		tst.w	(v_limittop2).w
 		bpl.s	loc_1B84A
 		lea	loc_1BA40(pc),a6

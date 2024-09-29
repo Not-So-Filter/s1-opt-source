@@ -243,11 +243,10 @@ Object_load_addr_back:	ds.l	1		; the address inside the object placement data of
 Object_respawn_index_front:	ds.w	1	; the object respawn table index for the object at Obj_load_addr_front
 Object_respawn_index_back:	ds.w	1	; the object respawn table index for the object at Obj_load_addr_back
 Camera_Y_pos_coarse_back:	ds.w	1	; Camera_Y_pos_coarse - $80
-Object_index_addr:	ds.l	1		; unused
 Rings_manager_routine:	ds.w	1
 Camera_X_pos_coarse_back:	ds.w	1
 Screen_Y_wrap_value:	ds.w	1		; either $7FF or $FFF
-			ds.b	6		; unused
+			ds.b	$A		; unused
 v_btnpushtime1:		ds.w	1		; button push duration - in level
 v_btnpushtime2:		ds.w	1		; button push duration - in demo
 v_palchgspeed:		ds.w	1		; palette fade/transition speed (0 is fastest)
