@@ -139,8 +139,8 @@ PlayLevel:
 		move.l	d0,(v_time).w
 		move.l	d0,(v_score).w
 		move.l	#5000,(v_scorelife).w
-		moveq	#bgm_Fade,d0
-		bra.w	PlayMusic
+		playsound bgm_Fade,music
+		rts
 ; ===========================================================================
 
 ;loc_944C:
@@ -241,7 +241,9 @@ LevSelControls_CheckLR:
 		andi.w	#btnB|btnC,d1
 		beq.s	+	; rts
 		move.w	(v_levselsound).w,d0
-		bra.w	PlayMusic
+		stopZ80
+		move.b	d0,(z80_ram+zAbsVar.Queue0).l
+		startZ80
 +
 		rts
 ; ===========================================================================

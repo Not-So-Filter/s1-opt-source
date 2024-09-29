@@ -14,7 +14,7 @@ Sonic_Jump:
 		addi.b	#$80,d0
 		bsr.w	sub_14D48
 		cmpi.w	#6,d1
-		blt.s	locret_1348E
+		blt.s	Sonic_ChkRoll.ismoving
 		move.w	#$680,d2
 		btst	#6,obStatus(a0)
 		beq.s	loc_1341C
@@ -36,8 +36,7 @@ loc_1341C:
 		addq.l	#4,sp
 		st.b	jumpflag(a0)
 		clr.b	stick_to_convex(a0)
-		moveq	#sfx_Jump,d0
-		jsr	(PlaySound).w	; play jumping sound
+		playsound sfx_Jump,sfx
 		move.b	#$13,obHeight(a0)
 		move.b	#9,obWidth(a0)
 		btst	#2,obStatus(a0)

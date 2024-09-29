@@ -98,8 +98,7 @@ loc_17F48:
 		tst.b	objoff_3E(a0)
 		bne.s	loc_17F70
 		move.b	#$20,objoff_3E(a0)
-		moveq	#sfx_HitBoss,d0
-		jsr	(PlaySound).w
+		playsound sfx_HitBoss,sfx
 
 loc_17F70:
 		lea	(v_palette+$22).w,a1
@@ -272,8 +271,7 @@ loc_180F6:
 		move.b	#$32,objoff_3C(a0)
 
 loc_18112:
-		moveq	#bgm_LZ,d0
-		jsr	(PlayMusic).w		; play LZ music
+		playsound bgm_LZ,music
 		clr.b	(f_lockscreen).w
 		bset	#0,obStatus(a0)
 		addq.b	#2,ob2ndRout(a0)

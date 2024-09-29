@@ -28,7 +28,9 @@ Sonic_Display:
 		lsr.w	#6,d0
 		lea	(MusicList).w,a1
 		move.b	(a1,d0.w),d0
-		jsr	(PlayMusic).w	; play normal music
+		stopZ80
+		move.b	d0,(z80_ram+zAbsVar.Queue0).l
+		startZ80
 
 .removeinvincible:
 		clr.b	(v_invinc).w ; cancel invincibility
@@ -44,8 +46,7 @@ Sonic_Display:
 		move.w	#$C,(v_sonspeedacc).w ; restore Sonic's acceleration
 		move.w	#$80,(v_sonspeeddec).w ; restore Sonic's deceleration
 		clr.b	(v_shoes).w	; cancel speed shoes
-		moveq	#bgm_Slowdown,d0
-		jmp	(PlayMusic).w	; run music at normal speed
+		playsound bgm_Slowdown,music
 
 .exit:
 		rts

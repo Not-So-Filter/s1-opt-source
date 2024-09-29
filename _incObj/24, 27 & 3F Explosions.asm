@@ -33,8 +33,7 @@ ExItem_Main:	; Routine 2
 		move.b	#$C,obActWid(a0)
 		move.b	#7,obTimeFrame(a0) ; set frame duration to 7 frames
 		move.b	d0,obFrame(a0)
-		moveq	#sfx_BreakItem,d0
-		jsr	(PlaySound).w	; play breaking enemy sound
+		playsound sfx_BreakItem,sfx
 
 ExItem_Animate:	; Routine 4 (2 for ExplosionBomb)
 		subq.b	#1,obTimeFrame(a0) ; subtract 1 from frame duration
@@ -72,5 +71,5 @@ ExBom_Main:	; Routine 0
 		move.b	#$C,obActWid(a0)
 		move.b	#7,obTimeFrame(a0)
 		move.b	d0,obFrame(a0)
-		moveq	#sfx_Bomb,d0
-		jmp	(PlaySound).w	; play exploding bomb sound
+		playsound sfx_Bomb,sfx
+		rts

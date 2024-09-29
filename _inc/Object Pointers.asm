@@ -1,23 +1,23 @@
 ; ---------------------------------------------------------------------------
 ; Object pointers
 ; ---------------------------------------------------------------------------
-ptr_Obj00:		dc.l NullObject
+ptr_Obj00:		dc.l DeleteObject
 ptr_SonicPlayer:	dc.l SonicPlayer	; $01
-ptr_Obj02:		dc.l NullObject
+ptr_Obj02:		dc.l DeleteObject
 ptr_Obj03:		dc.l PathSwapper
-ptr_Obj04:		dc.l NullObject
-ptr_Obj05:		dc.l NullObject
-ptr_Obj06:		dc.l NullObject
-ptr_Obj07:		dc.l NullObject
+ptr_Obj04:		dc.l DeleteObject
+ptr_Obj05:		dc.l DeleteObject
+ptr_Obj06:		dc.l DeleteObject
+ptr_Obj07:		dc.l DeleteObject
 ptr_Splash:		dc.l Splash		; $08
-ptr_SonicSpecial:	dc.l NullObject
+ptr_SonicSpecial:	dc.l DeleteObject
 ptr_DrownCount:		dc.l DrownCount
 ptr_Pole:		dc.l Pole
 ptr_FlapDoor:		dc.l FlapDoor
 ptr_Signpost:		dc.l Signpost
 ptr_TitleSonic:		dc.l TitleSonic
 ptr_PSBTM:		dc.l PSBTM
-ptr_Obj10:		dc.l NullObject		; $10
+ptr_Obj10:		dc.l DeleteObject		; $10
 ptr_Bridge:		dc.l Bridge
 ptr_SpinningLight:	dc.l SpinningLight
 ptr_LavaMaker:		dc.l LavaMaker
@@ -26,18 +26,18 @@ ptr_SwingingPlatform:	dc.l SwingingPlatform
 ptr_Harpoon:		dc.l Harpoon
 ptr_Helix:		dc.l Helix
 ptr_BasicPlatform:	dc.l BasicPlatform	; $18
-ptr_Obj19:		dc.l NullObject
+ptr_Obj19:		dc.l DeleteObject
 ptr_CollapseLedge:	dc.l CollapseLedge
 ptr_WaterSurface:	dc.l WaterSurface
 ptr_Scenery:		dc.l Scenery
-ptr_MagicSwitch:	dc.l NullObject
+ptr_MagicSwitch:	dc.l DeleteObject
 ptr_BallHog:		dc.l BallHog
 ptr_Crabmeat:		dc.l Crabmeat
 ptr_Cannonball:		dc.l Cannonball		; $20
-ptr_HUD:		dc.l NullObject
+ptr_HUD:		dc.l DeleteObject
 ptr_BuzzBomber:		dc.l BuzzBomber
 ptr_Missile:		dc.l Missile
-ptr_MissileDissolve:	dc.l NullObject
+ptr_MissileDissolve:	dc.l DeleteObject
 ptr_Rings:		dc.l Rings
 ptr_Monitor:		dc.l Monitor
 ptr_ExplosionItem:	dc.l ExplosionItem
@@ -70,17 +70,17 @@ ptr_Springs:		dc.l Springs
 ptr_Newtron:		dc.l Newtron
 ptr_Roller:		dc.l Roller
 ptr_EdgeWalls:		dc.l EdgeWalls
-ptr_SideStomp:		dc.l NullObject
+ptr_SideStomp:		dc.l DeleteObject
 ptr_MarbleBrick:	dc.l MarbleBrick
 ptr_Bumper:		dc.l Bumper
 ptr_BossBall:		dc.l BossBall		; $48
 ptr_WaterSound:		dc.l WaterSound
-ptr_VanishSonic:	dc.l NullObject
+ptr_VanishSonic:	dc.l DeleteObject
 ptr_GiantRing:		dc.l GiantRing
 ptr_GeyserMaker:	dc.l GeyserMaker
 ptr_LavaGeyser:		dc.l LavaGeyser
 ptr_LavaWall:		dc.l LavaWall
-ptr_Obj4F:		dc.l NullObject
+ptr_Obj4F:		dc.l DeleteObject
 ptr_Yadrin:		dc.l Yadrin		; $50
 ptr_SmashBlock:		dc.l SmashBlock
 ptr_MovingBlock:	dc.l MovingBlock
@@ -127,24 +127,21 @@ ptr_BossStarLight:	dc.l BossStarLight
 ptr_BossSpikeball:	dc.l BossSpikeball
 ptr_RingFlash:		dc.l RingFlash
 ptr_HiddenBonus:	dc.l HiddenBonus
-ptr_SSResult:		dc.l NullObject
-ptr_SSRChaos:		dc.l NullObject
-ptr_ContScrItem:	dc.l NullObject	; $80
-ptr_ContSonic:		dc.l NullObject
+ptr_SSResult:		dc.l DeleteObject
+ptr_SSRChaos:		dc.l DeleteObject
+ptr_ContScrItem:	dc.l DeleteObject	; $80
+ptr_ContSonic:		dc.l DeleteObject
 ptr_ScrapEggman:	dc.l ScrapEggman
 ptr_FalseFloor:		dc.l FalseFloor
 ptr_EggmanCylinder:	dc.l EggmanCylinder
 ptr_BossFinal:		dc.l BossFinal
 ptr_BossPlasma:		dc.l BossPlasma
-ptr_EndSonic:		dc.l NullObject
-ptr_EndChaos:		dc.l NullObject		; $88
-ptr_EndSTH:		dc.l NullObject
+ptr_EndSonic:		dc.l DeleteObject
+ptr_EndChaos:		dc.l DeleteObject		; $88
+ptr_EndSTH:		dc.l DeleteObject
 ptr_CreditsText:	dc.l CreditsText
-ptr_EndEggman:		dc.l NullObject
-ptr_TryChaos:		dc.l NullObject
-
-NullObject:
-		bra.w	DeleteObject	; It would be safer to have this instruction here, but instead it just falls through to ObjectFall
+ptr_EndEggman:		dc.l DeleteObject
+ptr_TryChaos:		dc.l DeleteObject
 
 id_SonicPlayer:		equ ((ptr_SonicPlayer-Obj_Index)/4)+1		; $01
 id_Obj02:		equ ((ptr_Obj02-Obj_Index)/4)+1

@@ -33,8 +33,7 @@ Flap_OpenClose:	; Routine 2
 		bchg	#0,obAnim(a0)	; open/close door
 		tst.b	obRender(a0)
 		bpl.s	.nosound
-		moveq	#sfx_Door,d0
-		jsr	(PlaySound).w	; play door sound
+		playsound sfx_Door,sfx
 
 .wait:
 .nosound:

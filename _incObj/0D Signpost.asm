@@ -37,8 +37,7 @@ Sign_Touch:	; Routine 2
 		bcs.s	.notouch
 		cmpi.w	#$20,d0		; is Sonic within $20 pixels of	the signpost?
 		bhs.s	.notouch	; if not, branch
-		moveq	#sfx_Signpost,d0
-		jsr	(PlaySound).w	; play signpost sound
+		playsound sfx_Signpost,sfx
 		clr.b	(f_timecount).w	; stop time counter
 		move.w	(v_limitright2).w,(v_limitleft2).w ; lock screen position
 		addq.b	#2,obRoutine(a0)
@@ -111,7 +110,7 @@ Sign_SonicRun:	; Routine 6
 		move.w	(v_limitright2).w,d1
 		addi.w	#$128,d1
 		cmp.w	d1,d0
-		blo.s	locret_ECEE
+		blo.w	locret_ECEE
 
 loc_EC86:
 		addq.b	#2,obRoutine(a0)
@@ -126,7 +125,7 @@ loc_EC86:
 
 GotThroughAct:
 		tst.b	(v_endcard).w
-		bne.s	locret_ECEE
+		bne.w	locret_ECEE
 		move.w	(v_limitright2).w,(v_limitleft2).w
 		moveq	#0,d0
 		move.b	d0,(v_invinc).w	; disable invincibility
@@ -159,8 +158,7 @@ GotThroughAct:
 		add.w	d1,d0
 		add.w	d0,d0
 		move.w	d0,(v_ringbonus).w ; set ring bonus
-		moveq	#bgm_GotThrough,d0
-		jmp	(PlayMusic).w	; play "Sonic got through" music
+		playsound bgm_GotThrough,music
 
 Sign_Exit:	; Routine 8
 locret_ECEE:

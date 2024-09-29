@@ -137,8 +137,8 @@ loc_197AA:
 		dbf	d1,BossBlock_LoopFrag ; repeat sequence 3 more times
 
 loc_197D4:
-		moveq	#sfx_WallSmash,d0
-		jmp	(PlaySound).w	; play smashing sound
+		playsound sfx_WallSmash,sfx
+		rts
 ; End of function BossBlock_Break
 
 ; ===========================================================================

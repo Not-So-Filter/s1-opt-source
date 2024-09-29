@@ -141,8 +141,8 @@ Spik_Wait:
 		bne.s	locret_CFE6
 		tst.b	obRender(a0)
 		bpl.s	locret_CFE6
-		moveq	#sfx_SpikesMove,d0
-		jmp	(PlaySound).w	; play "spikes moving" sound
+		playsound sfx_SpikesMove,sfx
+		rts
 ; ===========================================================================
 
 loc_CFA4:

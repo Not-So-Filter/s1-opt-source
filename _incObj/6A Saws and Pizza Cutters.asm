@@ -74,8 +74,7 @@ Saw_Action:	; Routine 2
 		moveq	#$F,d0
 		and.w	(v_framecount).w,d0
 		bne.s	.nosound01
-		moveq	#sfx_Saw,d0
-		jmp	(PlaySound).w		; play saw sound
+		playsound sfx_Saw,sfx
 
 .nosound01:
 		rts
@@ -104,8 +103,7 @@ Saw_Action:	; Routine 2
 		move.b	(v_oscillate+6).w,d0
 		cmpi.b	#$18,d0
 		bne.s	.nosound02
-		moveq	#sfx_Saw,d0
-		jmp	(PlaySound).w		; play saw sound
+		playsound sfx_Saw,sfx
 
 .nosound02:
 		rts
@@ -131,8 +129,7 @@ Saw_Action:	; Routine 2
 		move.w	#$600,obVelX(a0) ; move object to the right
 		move.b	#$A2,obColType(a0)
 		move.b	#2,obFrame(a0)
-		moveq	#sfx_Saw,d0
-		jsr	(PlaySound).w		; play saw sound
+		playsound sfx_Saw,sfx
 
 .nosaw03x:
 		addq.l	#4,sp
@@ -171,8 +168,7 @@ Saw_Action:	; Routine 2
 		move.w	#-$600,obVelX(a0) ; move object to the left
 		move.b	#$A2,obColType(a0)
 		move.b	#2,obFrame(a0)
-		moveq	#sfx_Saw,d0
-		jsr	(PlaySound).w		; play saw sound
+		playsound sfx_Saw,sfx
 
 .nosaw04x:
 		addq.l	#4,sp

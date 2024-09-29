@@ -33,7 +33,7 @@ Sonic_HurtStop:
 .skip:
 		addi.w	#224,d0
 		cmp.w	obY(a0),d0
-		blo.w	KillSonic
+		blo.s	j_KillSonic
 		bsr.w	Sonic_Floor
 		btst	#1,obStatus(a0)
 		bne.s	locret_13860
@@ -48,6 +48,10 @@ Sonic_HurtStop:
 locret_13860:
 		rts
 ; End of function Sonic_HurtStop
+
+j_KillSonic:
+		jmp	(KillSonic).l
+
 ; ---------------------------------------------------------------------------
 ; Sonic	when he	dies
 ; ---------------------------------------------------------------------------
@@ -68,7 +72,7 @@ GameOver:
 		move.w	(v_limitbtm2).w,d0
 		addi.w	#$100,d0
 		cmp.w	obY(a0),d0
-		bge.s	locret_13900
+		bge.w	locret_13900
 		move.w	#-$38,obVelY(a0)
 		addq.b	#2,obRoutine(a0)
 		addq.b	#1,(f_lifecount).w ; update lives counter
@@ -83,8 +87,7 @@ GameOver:
 		move.b	d0,(f_timeover).w
 
 loc_138C2:
-		moveq	#bgm_GameOver,d0
-		jsr	(PlaySound).w	; play game over music
+		playsound bgm_GameOver,music
 		moveq	#plcid_GameOver,d0
 		jmp	(AddPLC).w	; load game over patterns
 ; ===========================================================================

@@ -93,8 +93,7 @@ Bas_Action:	; Routine 2
 		moveq	#$F,d0
 		and.b	(v_vbla_byte).w,d0
 		bne.s	.nosound
-		moveq	#sfx_Basaran,d0
-		jsr	(PlaySound).w	; play flapping sound every 16th frame
+		playsound sfx_Basaran,sfx
 
 .nosound:
 		bsr.w	SpeedToPos

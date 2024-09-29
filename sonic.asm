@@ -61,9 +61,9 @@ Vectors:	dc.l 0				; Initial stack pointer value
 		dc.l ErrorTrap			; IRQ level 1
 		dc.l ErrorTrap			; IRQ level 2
 		dc.l ErrorTrap			; IRQ level 3 (28)
-		dc.l HBlank				; IRQ level 4 (horizontal retrace interrupt)
+		dc.l HInt				; IRQ level 4 (horizontal retrace interrupt)
 		dc.l ErrorTrap			; IRQ level 5
-		dc.l VBlank				; IRQ level 6 (vertical retrace interrupt)
+		dc.l VInt				; IRQ level 6 (vertical retrace interrupt)
 		dc.l ErrorTrap			; IRQ level 7 (32)
 		dc.l ErrorTrap			; TRAP #00 exception
 		dc.l ErrorTrap			; TRAP #01 exception
@@ -223,7 +223,7 @@ SetupValues:	dc.w $8000		; VDP register start number
 		dc.b 0			; VDP $87 - background colour
 		dc.b 0			; VDP $88 - unused
 		dc.b 0			; VDP $89 - unused
-		dc.b 255		; VDP $8A - HBlank register
+		dc.b 255		; VDP $8A - HInt register
 		dc.b 0			; VDP $8B - full screen scroll
 		dc.b $81		; VDP $8C - 40 cell display
 		dc.b ($DC00>>10)	; VDP $8D - hscroll table address
@@ -383,7 +383,7 @@ Art_Text_End:	even
 ; Vertical interrupt
 ; ---------------------------------------------------------------------------
 
-VBlank:
+VInt:
 		movem.l	d0-a6,-(sp)
 		tst.w	(v_vbla_routine).w
 		beq.s	VBla_00
@@ -420,7 +420,7 @@ VBla_00:
 .islevel:
 		tst.b	(f_water).w ; is level LZ ?
 		beq.s	VBla_Exit	; if not, branch
-		st.b	(f_hbla_pal).w ; set HBlank flag
+		st.b	(f_hbla_pal).w ; set HInt flag
 		tst.b	(f_wtr_state).w	; is water above top of screen?
 		bne.s	.waterabove 	; if yes, branch
 
@@ -465,7 +465,24 @@ VBla_04:
 ; ===========================================================================
 
 VBla_06:
-		bsr.w	ReadJoypads
+		lea	(v_jpadhold).w,a0	; address where joypad states are written
+		lea	(z80_port_1_data).l,a1	; first	joypad port
+		clr.b	(a1)
+		nop
+		nop
+		move.b	(a1),d0
+		asl.b	#2,d0
+		move.b	#$40,(a1)
+		andi.w	#$C0,d0
+		move.b	(a1),d1
+		andi.w	#$3F,d1
+		or.b	d1,d0
+		not.b	d0
+		move.b	(a0),d1
+		eor.b	d0,d1
+		move.b	d0,(a0)+
+		and.b	d0,d1
+		move.b	d1,(a0)+
 		tst.b	(f_wtr_state).w
 		bne.s	.waterabove
 
@@ -510,7 +527,24 @@ Demo_Time:
 ; ===========================================================================
 
 VBla_08:
-		bsr.w	ReadJoypads
+		lea	(v_jpadhold).w,a0	; address where joypad states are written
+		lea	(z80_port_1_data).l,a1	; first	joypad port
+		clr.b	(a1)
+		nop
+		nop
+		move.b	(a1),d0
+		asl.b	#2,d0
+		move.b	#$40,(a1)
+		andi.w	#$C0,d0
+		move.b	(a1),d1
+		andi.w	#$3F,d1
+		or.b	d1,d0
+		not.b	d0
+		move.b	(a0),d1
+		eor.b	d0,d1
+		move.b	d0,(a0)+
+		and.b	d0,d1
+		move.b	d1,(a0)+
 		tst.b	(f_wtr_state).w
 		bne.s	.waterabove
 
@@ -540,7 +574,24 @@ VBla_0A:
 ; ===========================================================================
 
 Vint_Menu:
-		bsr.w	ReadJoypads
+		lea	(v_jpadhold).w,a0	; address where joypad states are written
+		lea	(z80_port_1_data).l,a1	; first	joypad port
+		clr.b	(a1)
+		nop
+		nop
+		move.b	(a1),d0
+		asl.b	#2,d0
+		move.b	#$40,(a1)
+		andi.w	#$C0,d0
+		move.b	(a1),d1
+		andi.w	#$3F,d1
+		or.b	d1,d0
+		not.b	d0
+		move.b	(a0),d1
+		eor.b	d0,d1
+		move.b	d0,(a0)+
+		and.b	d0,d1
+		move.b	d1,(a0)+
 
 		writeCRAM	v_palette,0
 		writeVRAMsrcdefined	v_spritetablebuffer,vram_sprites
@@ -556,7 +607,24 @@ Vint_Menu:
 
 
 sub_106E:
-		bsr.w	ReadJoypads
+		lea	(v_jpadhold).w,a0	; address where joypad states are written
+		lea	(z80_port_1_data).l,a1	; first	joypad port
+		clr.b	(a1)
+		nop
+		nop
+		move.b	(a1),d0
+		asl.b	#2,d0
+		move.b	#$40,(a1)
+		andi.w	#$C0,d0
+		move.b	(a1),d1
+		andi.w	#$3F,d1
+		or.b	d1,d0
+		not.b	d0
+		move.b	(a0),d1
+		eor.b	d0,d1
+		move.b	d0,(a0)+
+		and.b	d0,d1
+		move.b	d1,(a0)+
 		tst.b	(f_wtr_state).w ; is water above top of screen?
 		bne.s	.waterabove	; if yes, branch
 		writeCRAM	v_palette,0
@@ -578,7 +646,7 @@ sub_106E:
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
 
-HBlank:
+HInt:
 		disable_ints
 		tst.b	(f_hbla_pal).w	; is palette set to change?
 		beq.s	HInt2_Done	; if not, branch
@@ -607,36 +675,7 @@ HInt2_Do_Updates:
 		bsr.w	Demo_Time
 		movem.l	(sp)+,d0-a6
 		rte
-; End of function HBlank
-
-; ---------------------------------------------------------------------------
-; Subroutine to	read joypad input, and send it to the RAM
-; ---------------------------------------------------------------------------
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
-
-ReadJoypads:
-		lea	(v_jpadhold).w,a0	; address where joypad states are written
-		lea	(z80_port_1_data).l,a1	; first	joypad port
-		clr.b	(a1)
-		nop
-		nop
-		move.b	(a1),d0
-		asl.b	#2,d0
-		move.b	#$40,(a1)
-		andi.w	#$C0,d0
-		move.b	(a1),d1
-		andi.w	#$3F,d1
-		or.b	d1,d0
-		not.b	d0
-		move.b	(a0),d1
-		eor.b	d0,d1
-		move.b	d0,(a0)+
-		and.b	d0,d1
-		move.b	d1,(a0)+
-		rts
-; End of function ReadJoypads
-
+; End of function HInt
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
@@ -724,7 +763,6 @@ ClearScreen:
 		rts
 ; End of function ClearScreen
 
-		include	"_incObj/sub PlaySound.asm"
 		include	"_inc/PauseGame.asm"
 
 ; ---------------------------------------------------------------------------
@@ -1438,7 +1476,7 @@ Pal_LZSonWater:	bincludePalette	"palette/Sonic - LZ Underwater.bin"
 Pal_SBZ3SonWat:	bincludePalette	"palette/Sonic - SBZ3 Underwater.bin"
 
 ; ---------------------------------------------------------------------------
-; Subroutine to	wait for VBlank routines to complete
+; Subroutine to	wait for VInt routines to complete
 ; ---------------------------------------------------------------------------
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
@@ -1448,7 +1486,7 @@ WaitForVBla:
 		enable_ints
 
 .wait:
-		tst.w	(v_vbla_routine).w ; has VBlank routine finished?
+		tst.w	(v_vbla_routine).w ; has VInt routine finished?
 		bne.s	.wait		; if not, branch
 		rts
 ; End of function WaitForVBla
@@ -1462,8 +1500,7 @@ WaitForVBla:
 ; ---------------------------------------------------------------------------
 
 GM_Sega:
-		moveq	#bgm_Stop,d0
-		bsr.w	PlayMusic ; stop music
+		playsound bgm_Stop,music
 		bsr.w	PaletteFadeOut
 		lea	(vdp_control_port).l,a6
 		move.w	#$8004,(a6)	; use 8-colour mode
@@ -1517,8 +1554,7 @@ Sega_WaitPal:
 		bsr.w	PalCycle_Sega
 		bne.s	Sega_WaitPal
 
-		moveq	#sfx_Sega,d0	; play sega sound
-		bsr.w	PlayMusic
+		playsound sfx_Sega,music
 		move.w	#id_VB_0C,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		move.w	#30,(v_demolength).w ; wait 30 frames (0.5 seconds)
@@ -1541,8 +1577,7 @@ Sega_GotoTitle:
 ; ---------------------------------------------------------------------------
 
 GM_Title:
-		moveq	#bgm_Stop,d0
-		bsr.w	PlayMusic ; stop music
+		playsound bgm_Stop,music
 		bsr.w	PaletteFadeOut
 		disable_ints
 		lea	(vdp_control_port).l,a6
@@ -1660,8 +1695,7 @@ Tit_LoadText:
 		bsr.w	QueueDMATransfer
 		moveq	#palid_Title,d0	; load title screen palette
 		bsr.w	PalLoad_Fade
-		moveq	#bgm_Title,d0
-		bsr.w	PlayMusic	; play title screen music
+		playsound bgm_Title,music
 		tst.b	(f_palmode).w
 		beq.s	.NTSC
 		move.w	#313,(v_demolength).w ; run title screen for 313 frames (5.26 seconds for PAL)
@@ -1749,8 +1783,7 @@ Tit_EnterCheat:
 
 Tit_PlayRing:
 		move.b	#1,(a0,d1.w)	; activate cheat
-		moveq	#sfx_Ring,d0
-		bsr.w	PlaySound	; play ring sound when code is entered
+		playsound sfx_Ring,sfx
 		bra.s	Tit_CountC
 ; ===========================================================================
 
@@ -1814,8 +1847,7 @@ loc_33E4:
 		bmi.w	Tit_ChkLevSel	; if yes, branch
 		tst.w	(v_demolength).w
 		bne.s	loc_33B6
-		moveq	#bgm_Fade,d0
-		bsr.w	PlayMusic ; fade out music
+		playsound bgm_Fade,music
 		move.w	(v_demonum).w,d0 ; load	demo number
 		andi.w	#7,d0
 		add.w	d0,d0
@@ -1881,8 +1913,7 @@ MusicList:
 
 GM_Level:
 		bset	#7,(v_gamemode).w ; add $80 to screen mode (for pre level sequence)
-		moveq	#bgm_Fade,d0
-		bsr.w	PlayMusic ; fade out music
+		playsound bgm_Fade,music
 		clearRAM Kos_decomp_stored_registers, Kos_module_end
 		bsr.w	PaletteFadeOut
 		lea	(KosPM_TitleCard).l,a1 ; load title card patterns
@@ -1959,7 +1990,9 @@ Level_GetBgm:
 		lsr.w	#6,d0
 		lea	MusicList(pc),a1 ; load	music playlist
 		move.b	(a1,d0.w),d0
-		bsr.w	PlayMusic	; play music
+		stopZ80
+		move.b	d0,(z80_ram+zAbsVar.Queue0).l
+		startZ80
 		move.l	#TitleCard,(v_titlecard).w ; load title card object
 
 Level_TtlCardLoop:
@@ -3387,8 +3420,8 @@ loc_84EE:
 
 loc_84F2:
 		bsr.w	DisplaySprite
-		moveq	#sfx_Collapse,d0
-		jmp	(PlaySound).w	; play collapsing sound
+		playsound sfx_Collapse,sfx
+		rts
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Disintegration data for collapsing ledges (MZ, SLZ, SBZ)
@@ -4700,11 +4733,13 @@ ResumeMusic:
 		beq.s	.playselected ; if not, branch
 		moveq	#bgm_Boss,d0
 .playselected:
-		jsr	(PlayMusic).w
+		stopZ80
+		move.b	d0,(z80_ram+zAbsVar.Queue0).l
+		startZ80
 
 .over12:
 		move.w	#30,(v_air).w	; reset air to 30 seconds
-		clr.b	(v_sonicbubbles+$32).w
+		clr.b	(v_sonicbubbles+objoff_32).w
 		rts
 ; End of function ResumeMusic
 
@@ -5314,8 +5349,7 @@ AddPoints:
 		bmi.s   .noextralife ; branch if Mega Drive is Japanese
 		addq.b  #1,(v_lives).w ; give extra life
 		addq.b  #1,(f_lifecount).w
-		moveq	#bgm_ExtraLife,d0
-		jmp	(PlaySound).w
+		playsound bgm_ExtraLife,music
 
 .noextralife:
 		rts

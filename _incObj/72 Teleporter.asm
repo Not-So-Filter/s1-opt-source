@@ -41,7 +41,7 @@ loc_166C8:	; Routine 2
 
 loc_166E0:
 		cmpi.w	#$10,d0
-		bhs.s	locret_1675C
+		bhs.w	locret_1675C
 		move.w	obY(a1),d1
 		sub.w	obY(a0),d1
 		addi.w	#$20,d1
@@ -67,8 +67,7 @@ loc_1670E:
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
 		clr.b	objoff_32(a0)
-		moveq	#sfx_Roll,d0
-		jmp	(PlaySound).w	; play Sonic rolling sound
+		playsound sfx_Roll,sfx
 
 locret_1675C:
 		rts
@@ -87,8 +86,7 @@ loc_1675E:	; Routine 4
 		bne.s	locret_16796
 		bsr.w	sub_1681C
 		addq.b	#2,obRoutine(a0)
-		moveq	#sfx_Teleport,d0
-		jmp	(PlaySound).w	; play teleport sound
+		playsound sfx_Teleport,sfx
 
 locret_16796:
 		rts

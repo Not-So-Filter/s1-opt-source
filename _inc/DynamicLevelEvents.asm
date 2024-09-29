@@ -161,8 +161,7 @@ loc_6EB0:
 		move.w	#boss_ghz_y-$80,obY(a1)
 
 loc_6ED0:
-		moveq	#bgm_Boss,d0
-		bsr.w	PlayMusic	; play boss music
+		playsound bgm_Boss,music
 		move.b	#1,(f_lockscreen).w ; lock screen
 		addq.w	#2,(v_dle_routine).w
 		moveq	#plcid_Boss,d0
@@ -185,8 +184,7 @@ DLE_LZ3:
 ;		cmpi.l	#Level_LZ3NoWall,(v_lvllayoutfg).w	; MJ: is current layout already set to wall version?
 ;		beq.s	loc_6F28				; MJ: if so, branch to skip
 ;		move.l	#Level_LZ3NoWall,(v_lvllayoutfg).w	; MJ: Set wall version of act 3's layout to be read
-		moveq	#sfx_Rumbling,d0
-		bsr.w	PlaySound ; play rumbling sound
+		playsound sfx_Rumbling,sfx
 
 loc_6F28:
 		tst.w	(v_dle_routine).w
@@ -200,8 +198,7 @@ loc_6F28:
 		move.l	#BossLabyrinth,obID(a1) ; load LZ boss object
 
 loc_6F4A:
-		moveq	#bgm_Boss,d0
-		bsr.w	PlayMusic	; play boss music
+		playsound bgm_Boss,music
 		move.b	#1,(f_lockscreen).w ; lock screen
 		addq.w	#2,(v_dle_routine).w
 		moveq	#plcid_Boss,d0
@@ -355,8 +352,7 @@ DLE_MZ3boss:
 		move.w	#boss_mz_y+$1C,obY(a1)
 
 loc_70D0:
-		moveq	#bgm_Boss,d0
-		bsr.w	PlayMusic	; play boss music
+		playsound bgm_Boss,music
 		move.b	#1,(f_lockscreen).w ; lock screen
 		addq.w	#2,(v_dle_routine).w
 		moveq	#plcid_Boss,d0
@@ -400,8 +396,7 @@ DLE_SLZ3boss:
 		move.l	#BossStarLight,obID(a1) ; load SLZ boss object
 
 loc_7144:
-		moveq	#bgm_Boss,d0
-		bsr.w	PlayMusic	; play boss music
+		playsound bgm_Boss,music
 		move.b	#1,(f_lockscreen).w ; lock screen
 		addq.w	#2,(v_dle_routine).w
 		moveq	#plcid_Boss,d0
@@ -462,8 +457,7 @@ DLE_SYZ3boss:
 		addq.w	#2,(v_dle_routine).w
 
 loc_71EC:
-		moveq	#bgm_Boss,d0
-		bsr.w	PlayMusic	; play boss music
+		playsound bgm_Boss,music
 		move.b	#1,(f_lockscreen).w ; lock screen
 		moveq	#plcid_Boss,d0
 		bra.w	AddPLC		; load boss patterns

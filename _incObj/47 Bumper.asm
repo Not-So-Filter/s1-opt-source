@@ -43,8 +43,7 @@ Bump_Hit:	; Routine 2
 		bclr	#5,obStatus(a1)
 		clr.b	jumpflag(a1)
 		move.b	#1,obAnim(a0)	; use "hit" animation
-		moveq	#sfx_Bumper,d0
-		jsr	(PlaySound).w	; play bumper sound
+		playsound sfx_Bumper,sfx
 		move.w	obRespawnNo(a0),d0
 		beq.s	.addscore
 		movea.w	d0,a2

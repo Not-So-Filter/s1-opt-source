@@ -19,25 +19,22 @@ Plat_Main:	; Routine 0
 		addq.b	#2,obRoutine(a0)
 		move.w	#make_art_tile(ArtTile_Level,2,0),obGfx(a0)
 		move.l	#Map_Plat_GHZ,obMap(a0)
-		move.b	#$20,obActWid(a0)
 		cmpi.b	#id_SYZ,(v_zone).w ; check if level is SYZ
 		bne.s	.notSYZ
 
 		move.l	#Map_Plat_SYZ,obMap(a0) ; SYZ specific code
-		move.b	#$20,obActWid(a0)
 
 .notSYZ:
 		cmpi.b	#id_SLZ,(v_zone).w ; check if level is SLZ
 		bne.s	.notSLZ
 		move.l	#Map_Plat_SLZ,obMap(a0) ; SLZ specific code
-		move.b	#$20,obActWid(a0)
 		move.w	#make_art_tile(ArtTile_Level,2,0),obGfx(a0)
 		move.b	#3,obSubtype(a0)
 
 .notSLZ:
 		move.b	#4,obRender(a0)
 		move.w	#4*$80,obPriority(a0)
-		move.w	obY(a0),objoff_2C(a0)
+		move.w	obY(a0),objoff_2E(a0)
 		move.w	obY(a0),objoff_34(a0)
 		move.w	obX(a0),objoff_32(a0)
 		move.w	#$80,obAngle(a0)
@@ -96,7 +93,7 @@ Plat_Nudge:
 		move.w	#$400,d1
 		muls.w	d1,d0
 		swap	d0
-		add.w	objoff_2C(a0),d0
+		add.w	objoff_2E(a0),d0
 		move.w	d0,obY(a0)
 		rts
 ; End of function Plat_Nudge
@@ -109,9 +106,8 @@ Plat_Nudge:
 
 
 Plat_Move:
-		moveq	#0,d0
-		move.b	obSubtype(a0),d0
-		andi.w	#$F,d0
+		moveq	#$F,d0
+		and.b	obSubtype(a0),d0
 		add.w	d0,d0
 		move.w	.index(pc,d0.w),d1
 		jmp	.index(pc,d1.w)
@@ -182,7 +178,7 @@ Plat_Move:
 .type02_move:
 		ext.w	d1
 		add.w	d1,d0
-		move.w	d0,objoff_2C(a0)	; change position on y-axis
+		move.w	d0,objoff_2E(a0)	; change position on y-axis
 		bra.w	.chgmotion
 ; ===========================================================================
 
@@ -225,11 +221,11 @@ Plat_Move:
 		move.w	obVelY(a0),d0
 		ext.l	d0
 		lsl.l	#8,d0
-		add.l	d0,objoff_2C(a0)
+		add.l	d0,objoff_2E(a0)
 		addi.w	#$38,obVelY(a0)
 		move.w	(v_limitbtm2).w,d0
 		addi.w	#$E0,d0
-		cmp.w	objoff_2C(a0),d0
+		cmp.w	objoff_2E(a0),d0
 		bhs.s	.locret_8074
 		move.b	#6,obRoutine(a0)
 
@@ -259,10 +255,10 @@ Plat_Move:
 ; ===========================================================================
 
 .type08:
-		subq.w	#2,objoff_2C(a0)	; move platform	up
+		subq.w	#2,objoff_2E(a0)	; move platform	up
 		move.w	objoff_34(a0),d0
 		subi.w	#$200,d0
-		cmp.w	objoff_2C(a0),d0	; has platform moved $200 pixels?
+		cmp.w	objoff_2E(a0),d0	; has platform moved $200 pixels?
 		bne.s	.type08_nostop	; if not, branch
 		clr.b	obSubtype(a0)	; change to type 00 (stop moving)
 
@@ -277,7 +273,7 @@ Plat_Move:
 		ext.w	d1
 		asr.w	#1,d1
 		add.w	d1,d0
-		move.w	d0,objoff_2C(a0)	; change position on y-axis
+		move.w	d0,objoff_2E(a0)	; change position on y-axis
 
 .chgmotion:
 		move.b	(v_oscillate+$1A).w,objoff_26(a0) ; update platform-movement variable

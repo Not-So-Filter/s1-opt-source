@@ -13,15 +13,7 @@ Seesaw:
 		move.b	obRoutine(a0),d0
 		move.w	See_Index(pc,d0.w),d1
 		jsr	See_Index(pc,d1.w)
-		move.w	see_origX(a0),d0
-		andi.w	#$FF80,d0
-		move.w	(v_screenposx).w,d1
-		subi.w	#$80,d1
-		andi.w	#$FF80,d1
-		sub.w	d1,d0
-		bmi.w	DeleteObject
-		cmpi.w	#$280,d0
-		bhi.w	DeleteObject
+		out_of_range.w	DeleteObject_Respawn,see_origX(a0)
 		bra.w	DisplaySprite
 ; ===========================================================================
 See_Index:	dc.w See_Main-See_Index
@@ -229,7 +221,7 @@ loc_118BA:
 		move.w	see_origY(a0),d1
 		add.w	(a2,d0.w),d1
 		cmp.w	obY(a0),d1
-		bgt.s	locret_11938
+		bgt.w	locret_11938
 		movea.l	see_parent(a0),a1
 		moveq	#2,d1
 		tst.w	obVelX(a0)
@@ -253,8 +245,7 @@ See_Spring:
 		clr.b	jumpflag(a2)
 		move.b	#id_Spring,obAnim(a2) ; change Sonic's animation to "spring" ($10)
 		move.b	#2,obRoutine(a2)
-		moveq	#sfx_Spring,d0
-		jsr	(PlaySound).w	; play spring sound
+		playsound sfx_Spring,sfx
 
 loc_1192C:
 		clr.w	obVelX(a0)

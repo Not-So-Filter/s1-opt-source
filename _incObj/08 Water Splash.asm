@@ -22,8 +22,7 @@ Spla_Main:	; Routine 0
 		move.w	#make_art_tile(ArtTile_LZ_Splash,2,0),obGfx(a0)
 		move.w	(v_player+obX).w,obX(a0) ; copy x-position from Sonic
 		move.w	(v_waterpos1).w,obY(a0) ; copy y-position from water height
-		moveq	#sfx_Splash,d0
-		jsr	(PlaySound).w
+		playsound sfx_Splash,sfx
 
 Spla_Display:	; Routine 2
 		lea	Ani_Splash(pc),a1

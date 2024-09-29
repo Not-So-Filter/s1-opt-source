@@ -83,7 +83,11 @@ PSwapper_MainX:
 		tst.b	(a2)+
 		bne.w	PSwapper_MainX_Alt
 		cmp.w	obX(a1),d1
+	if DebuggingMode
+		bhi.w	.locret
+	else
 		bhi.s	.locret
+	endif
 		move.b	#1,-1(a2)
 		move.w	obY(a0),d2
 		move.w	d2,d3
@@ -117,8 +121,7 @@ PSwapper_MainX:
 	if DebuggingMode
 		tst.b	(f_debugcheat).w
 		beq.s	.locret
-		moveq	#sfx_Lamppost,d0
-		jmp	(PlaySound).w
+		playsound sfx_Lamppost,sfx
 	endif
 .locret:
 		rts
@@ -126,7 +129,7 @@ PSwapper_MainX:
 ; loc_1FE38:
 PSwapper_MainX_Alt:
 		cmp.w	obX(a1),d1
-		bls.s	.locret
+		bls.s	PSwapper_MainX.locret
 		move.b	#0,-1(a2)
 		move.w	obY(a0),d2
 		move.w	d2,d3
@@ -160,8 +163,7 @@ PSwapper_MainX_Alt:
 	if DebuggingMode
 		tst.b	(f_debugcheat).w
 		beq.s	.locret
-		moveq	#sfx_Lamppost,d0
-		jmp	(PlaySound).w
+		playsound sfx_Lamppost,sfx
 	endif
 .locret:
 		rts
@@ -176,9 +178,13 @@ PSwapper_MainY:
 		lea	$34(a0),a2
 		lea	(v_player).w,a1 ; a1=character
 		tst.b	(a2)+
+	if DebuggingMode
+		bne.w	PSwapper_MainY_Alt
+	else
 		bne.s	PSwapper_MainY_Alt
+	endif
 		cmp.w	obY(a1),d1
-		bhi.s	.locret
+		bhi.s	PSwapper_MainX_Alt.locret
 		move.b	#1,-1(a2)
 		move.w	obX(a0),d2
 		move.w	d2,d3
@@ -212,8 +218,7 @@ PSwapper_MainY:
 	if DebuggingMode
 		tst.b	(f_debugcheat).w
 		beq.s	.locret
-		moveq	#sfx_Lamppost,d0
-		jmp	(PlaySound).w
+		playsound sfx_Lamppost,sfx
 	endif
 .locret:
 		rts
@@ -221,7 +226,7 @@ PSwapper_MainY:
 ; loc_1FF42:
 PSwapper_MainY_Alt:
 		cmp.w	obY(a1),d1
-		bls.s	.locret
+		bls.s	PSwapper_MainY.locret
 		move.b	#0,-1(a2)
 		move.w	obX(a0),d2
 		move.w	d2,d3
@@ -255,8 +260,7 @@ PSwapper_MainY_Alt:
 	if DebuggingMode
 		tst.b	(f_debugcheat).w
 		beq.s	.locret
-		moveq	#sfx_Lamppost,d0
-		jmp	(PlaySound).w
+		playsound sfx_Lamppost,sfx
 	endif
 .locret:
 		rts

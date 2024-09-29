@@ -130,8 +130,7 @@ loc_189FE:
 		tst.b	objoff_3E(a0)
 		bne.s	loc_18A28
 		move.b	#$20,objoff_3E(a0)
-		moveq	#sfx_HitBoss,d0
-		jsr	(PlaySound).w	; play boss damage sound
+		playsound sfx_HitBoss,sfx
 
 loc_18A28:
 		lea	(v_palette+$22).w,a1
@@ -307,8 +306,7 @@ loc_18BAE:
 
 loc_18BB4:
 		clr.w	obVelY(a0)
-		moveq	#bgm_SLZ,d0
-		jsr	(PlayMusic).w		; play SLZ music
+		playsound bgm_SLZ,music
 
 loc_18BC2:
 		bra.w	loc_189EE

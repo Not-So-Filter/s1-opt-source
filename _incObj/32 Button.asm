@@ -30,7 +30,7 @@ But_IsMZ:
 
 But_Pressed:	; Routine 2
 		tst.b	obRender(a0)
-		bpl.s	But_Display
+		bpl.w	But_Display
 		moveq	#$1B,d1
 		moveq	#5,d2
 		moveq	#5,d3
@@ -62,8 +62,7 @@ loc_BDBE:
 loc_BDC8:
 		tst.b	(a3)
 		bne.s	loc_BDD6
-		moveq	#sfx_Switch,d0
-		jsr	(PlaySound).w	; play switch sound
+		playsound sfx_Switch,sfx
 
 loc_BDD6:
 		bset	d3,(a3)

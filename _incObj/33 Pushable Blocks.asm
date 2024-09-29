@@ -316,7 +316,7 @@ loc_C230:
 
 loc_C268:
 		btst	#0,obStatus(a1)
-		beq.s	locret_C2E4
+		beq.w	locret_C2E4
 		move.w	d0,-(sp)
 		moveq	#0,d3
 		move.b	obActWid(a0),d3
@@ -335,8 +335,7 @@ loc_C294:
 		move.w	d1,obInertia(a1)
 		move.w	#0,obVelX(a1)
 		move.w	d0,-(sp)
-		moveq	#sfx_Push,d0
-		jsr	(PlaySound).w	 ; play pushing sound
+		playsound sfx_Push,sfx
 		move.w	(sp)+,d0
 		tst.b	obSubtype(a0)
 		bmi.s	locret_C2E4

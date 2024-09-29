@@ -41,8 +41,7 @@ Bonus_Main:	; Routine 0
 		move.b	#$10,obActWid(a0)
 		move.b	obSubtype(a0),obFrame(a0)
 		move.w	#119,bonus_timelen(a0) ; set display time to 2 seconds
-		moveq	#sfx_Bonus,d0
-		jsr	(PlaySound).w	; play bonus sound
+		playsound sfx_Bonus,sfx
 		moveq	#0,d0
 		move.b	obSubtype(a0),d0
 		add.w	d0,d0

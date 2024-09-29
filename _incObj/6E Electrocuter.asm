@@ -34,8 +34,7 @@ Elec_Shock:	; Routine 2
 		move.b	#1,obAnim(a0)	; run "zap" animation
 		tst.b	obRender(a0)
 		bpl.s	.animate
-		moveq	#sfx_Electric,d0
-		jsr	(PlaySound).w	; play electricity sound
+		playsound sfx_Electric,sfx
 
 .animate:
 		lea	Ani_Elec(pc),a1

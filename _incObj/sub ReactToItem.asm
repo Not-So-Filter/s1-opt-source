@@ -273,7 +273,7 @@ HurtSonic:
 .hasshield:
 		clr.b	(v_shield).w	; remove shield
 		move.b	#4,obRoutine(a0)
-		bsr.w	Sonic_ResetOnFloor
+		jsr	(Sonic_ResetOnFloor).l
 		bset	#1,obStatus(a0)
 		move.w	#-$400,obVelY(a0) ; make Sonic bounce away from the object
 		move.w	#-$200,obVelX(a0)
@@ -301,7 +301,9 @@ HurtSonic:
 		moveq	#sfx_Death,d0
 
 .sound:
-		jsr	(PlaySound).w
+		stopZ80
+		move.b	d0,(z80_ram+zAbsVar.Queue1).l
+		startZ80
 		moveq	#-1,d0
 		rts
 ; ===========================================================================
@@ -338,7 +340,9 @@ KillSonic:
 		moveq	#sfx_Death,d0	; play normal death sound
 
 .sound:
-		jsr	(PlaySound).w
+		stopZ80
+		move.b	d0,(z80_ram+zAbsVar.Queue1).l
+		startZ80
 
 .dontdie:
 		moveq	#-1,d0

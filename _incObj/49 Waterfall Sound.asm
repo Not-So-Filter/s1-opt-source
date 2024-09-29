@@ -20,8 +20,7 @@ WSnd_PlaySnd:	; Routine 2
 		moveq	#$3F,d0
 		and.b	(v_vbla_byte).w,d0 ; get low byte of VBlank counter
 		bne.s	WSnd_ChkDel
-		moveq	#sfx_Waterfall,d0
-		jsr	(PlaySound).w	; play waterfall sound
+		playsound sfx_Waterfall,sfx
 
 WSnd_ChkDel:
 		out_of_range.w	DeleteObject_Respawn

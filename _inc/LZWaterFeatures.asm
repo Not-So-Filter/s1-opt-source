@@ -169,8 +169,7 @@ DynWater_LZ3:
 		move.w	#$4C8,d1	; set new water height
 ;		move.l	#Level_LZ3,(v_lvllayoutfg).w ; MJ: Set normal version of act 3's layout to be read
 		move.b	#1,(v_wtr_routine).w ; use second routine next
-		moveq	#sfx_Rumbling,d0
-		bsr.w	PlaySound ; play sound $B7 (rumbling)
+		playsound sfx_Rumbling,sfx
 
 .setwaterlz3:
 		move.w	d1,(v_waterpos3).w
@@ -299,15 +298,14 @@ LZWindTunnels:
 		bhs.w	.chknext
 		move.w	obY(a1),d2
 		cmp.w	2(a2),d2
-		blo.s	.chknext
+		blo.w	.chknext
 		cmp.w	6(a2),d2
-		bhs.s	.chknext	; branch if Sonic is outside a range
+		bhs.w	.chknext	; branch if Sonic is outside a range
 		move.w	d0,d1
 		moveq	#$3F,d0		; does VInt counter fall on 0, $40, $80 or $C0?
 		and.b	(v_vbla_byte).w,d0
 		bne.s	.skipsound	; if not, branch
-		moveq	#sfx_Waterfall,d0
-		bsr.w	PlaySound	; play rushing water sound (only every $40 frames)
+		playsound sfx_Waterfall,sfx
 
 .skipsound:
 		tst.b	(f_wtunnelallow).w ; are wind tunnels disabled?
@@ -429,8 +427,7 @@ loc_3F9A:
 		move.b	(v_vbla_byte).w,d0
 		andi.b	#$1F,d0
 		bne.s	locret_3FBE
-		moveq	#sfx_Waterfall,d0
-		bra.w	PlaySound	; play water sound
+		playsound sfx_Waterfall,sfx
 
 locret_3FBE:
 		rts

@@ -293,8 +293,7 @@ loc_18FDC:
 		jsr	(Sonic_ChkRoll).l
 		movea.l	(sp)+,a0
 		move.b	#2,obRoutine(a2)
-		moveq	#sfx_Spring,d0
-		jsr	(PlaySound).w	; play "spring" sound
+		playsound sfx_Spring,sfx
 
 loc_19008:
 		clr.w	obVelX(a0)

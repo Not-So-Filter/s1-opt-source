@@ -393,6 +393,21 @@ out_of_range:	macro exit,specpos
 		cmpi.w	#128+320+192,d0
 		bhi.ATTRIBUTE	exit
 		endm
+		
+; ---------------------------------------------------------------------------
+; plays a sound
+; ---------------------------------------------------------------------------
+
+playsound:	macro id,type
+		stopZ80
+		if ("type"=="music")
+		move.b	#id,(z80_ram+zAbsVar.Queue0).l
+		endif
+		if ("type"=="sfx")
+		move.b	#id,(z80_ram+zAbsVar.Queue1).l
+		endif
+		startZ80
+		endm
 
 ; ---------------------------------------------------------------------------
 ; bankswitch between SRAM and ROM
