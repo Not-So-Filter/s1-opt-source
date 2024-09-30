@@ -3132,7 +3132,7 @@ LevelDataLoad:
 
 LevelLayoutLoad:
 		move.w	(v_zone).w,d0
-		lsl.b	#6,d0
+		ror.b	#2,d0
 		lsr.w	#4,d0
 		lea	(Level_Index).l,a0
 		movea.l	(a0,d0.w),a0
@@ -3419,9 +3419,8 @@ loc_84EE:
 		dbf	d1,loc_84AA
 
 loc_84F2:
-		bsr.w	DisplaySprite
 		playsound sfx_Collapse,sfx
-		rts
+		bra.w	DisplaySprite
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Disintegration data for collapsing ledges (MZ, SLZ, SBZ)

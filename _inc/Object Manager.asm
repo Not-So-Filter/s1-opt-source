@@ -17,17 +17,11 @@ OPL_Index:	bra.w	OPL_Main
 
 OPL_Main:
 		addq.w	#4,(v_opl_routine).w
-		lea	(Object_respawn_table).w,a0
-		moveq	#0,d0
-		move.w	#bytesToLcnt(Object_respawn_table_End-Object_respawn_table),d1
 
-loc_1B6E2:
-		move.l	d0,(a0)+
-		dbf	d1,loc_1B6E2
+		clearRAM Object_respawn_table, Object_respawn_table_End
 
-loc_1B6E8:
 		move.w	(v_zone).w,d0
-		lsl.b	#6,d0
+		ror.b	#2,d0
 		lsr.w	#4,d0
 		lea	(ObjPos_Index).l,a0
 		movea.l	(a0,d0.w),a0
@@ -84,7 +78,7 @@ OPL_Next:
 		and.w	(v_screenposx).w,d1
 		subi.w	#$80,d1
 		move.w	d1,(Camera_X_pos_coarse_back).w
-		lea	(Obj_Index).l,a4
+		lea	Obj_Index(pc),a4
 		tst.w	(v_limittop2).w
 		bpl.s	loc_1B84A
 		lea	loc_1BA40(pc),a6

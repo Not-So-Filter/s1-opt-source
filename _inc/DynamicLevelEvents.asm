@@ -7,7 +7,7 @@
 
 DynamicLevelEvents:
 		move.w	(v_zone).w,d0
-		lsl.b	#6,d0
+		ror.b	#2,d0
 		lsr.w	#5,d0
 		move.w	DLE_Index(pc,d0.w),d0
 		jsr	DLE_Index(pc,d0.w) ; run level-specific events

@@ -28,7 +28,7 @@ RingsManager_Init:
 		dbf	d1,-
 
 		move.w	(v_zone).w,d0	; get the current zone and act
-		lsl.b	#6,d0
+		ror.b	#2,d0
 		lsr.w	#4,d0
 		lea	(RingPos_Index).l,a1	; get the rings for the act
 		movea.l	(a1,d0.w),a1

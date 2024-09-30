@@ -9,7 +9,7 @@ LevelSizeLoad:
 		moveq	#0,d0
 		move.b	d0,(v_dle_routine).w
 		move.w	(v_zone).w,d0
-		lsl.b	#6,d0
+		ror.b	#2,d0
 		lsr.w	#3,d0
 		lea	LevelSizeArray(pc,d0.w),a0 ; load level	boundaries
 		move.l	(a0)+,d0
@@ -75,7 +75,7 @@ LevSz_ChkLamp:
 
 LevSz_StartLoc:
 		move.w	(v_zone).w,d0
-		lsl.b	#6,d0
+		ror.b	#2,d0
 		lsr.w	#4,d0
 		lea	StartLocArray(pc,d0.w),a1 ; load Sonic's start location
 
