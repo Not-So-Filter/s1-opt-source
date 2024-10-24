@@ -125,85 +125,8 @@ EndOfHeader:
 ErrorTrap:
 		bra.s	ErrorTrap
 ; ===========================================================================
-
-EntryPoint:
-		lea	(v_systemstack).w,sp
-		tst.l	(z80_port_1_control-1).l ; test port A & B control registers
-		bne.s	PortA_Ok
-		tst.w	(z80_expansion_control).l ; test port C control register
-
-PortA_Ok:
-		bne.w	GameProgram ; Skip the VDP and Z80 setup code if port A, B or C is ok...?
-		lea	SetupValues(pc),a5	; Load setup values array address.
-		movem.w	(a5)+,d5-d7
-		movem.l	(a5)+,a0-a4
-		moveq	#$F,d0
-		and.b	-$10FF(a1),d0	; get hardware version (from $A10001)
-		beq.s	SkipSecurity	; If the console has no TMSS, skip the security stuff.
-		move.l	#'SEGA',$2F00(a1) ; move "SEGA" to TMSS register ($A14000)
-
-SkipSecurity:
-		move.w	(a4),d0	; clear write-pending flag in VDP to prevent issues if the 68k has been reset in the middle of writing a command long word to the VDP.
-		moveq	#0,d0	; clear d0
-		movea.l	d0,a6	; clear a6
-		move.l	a6,usp	; set usp to $0
-
-		moveq	#$17,d1
-VDPInitLoop:
-		move.b	(a5)+,d5	; add $8000 to value
-		move.w	d5,(a4)		; move value to	VDP register
-		add.w	d7,d5		; next register
-		dbf	d1,VDPInitLoop
-
-		move.l	(a5)+,(a4)
-		move.w	d0,(a3)		; clear	the VRAM
-		move.w	d7,(a1)		; stop the Z80
-		move.w	d7,(a2)		; reset	the Z80
-
-WaitForZ80:
-		btst	d0,(a1)		; has the Z80 stopped?
-		bne.s	WaitForZ80	; if not, branch
-
-		moveq	#$25,d2
-Z80InitLoop:
-		move.b	(a5)+,(a0)+
-		dbf	d2,Z80InitLoop
-
-		move.w	d0,(a2)
-		move.w	d0,(a1)		; start	the Z80
-		move.w	d7,(a2)		; reset	the Z80
-
-ClrRAMLoop:
-		move.l	d0,-(a6)	; clear 4 bytes of RAM
-		dbf	d6,ClrRAMLoop	; repeat until the entire RAM is clear
-		move.l	(a5)+,(a4)	; set VDP display mode and increment mode
-		move.l	(a5)+,(a4)	; set VDP to CRAM write
-
-		moveq	#$1F,d3	; set repeat times
-ClrCRAMLoop:
-		move.l	d0,(a3)	; clear 2 palettes
-		dbf	d3,ClrCRAMLoop	; repeat until the entire CRAM is clear
-		move.l	(a5)+,(a4)	; set VDP to VSRAM write
-
-		moveq	#$13,d4
-ClrVSRAMLoop:
-		move.l	d0,(a3)	; clear 4 bytes of VSRAM.
-		dbf	d4,ClrVSRAMLoop	; repeat until the entire VSRAM is clear
-		moveq	#3,d5
-
-PSGInitLoop:
-		move.b	(a5)+,$11(a3)	; reset	the PSG
-		dbf	d5,PSGInitLoop	; repeat for other channels
-		move.w	d0,(a2)
-		movem.l	(a6),d0-a6	; clear all registers
-		disable_ints
-
-SkipSetup:
-		bra.s	GameProgram	; begin game
-
-; ===========================================================================
 SetupValues:	dc.w $8000		; VDP register start number
-		dc.w $3FFF		; size of RAM/4
+		dc.w ((v_ram_end-1)-v_ram_start)/4	; size of RAM/4
 		dc.w $100		; VDP register diff
 
 		dc.l z80_ram		; start	of Z80 RAM
@@ -283,6 +206,78 @@ zStartupCodeEndLoc:
 		dc.b $9F, $BF, $DF, $FF	; values for PSG channel volumes
 ; ===========================================================================
 
+EntryPoint:
+		lea	(v_systemstack).w,sp
+		tst.l	(z80_port_1_control-1).l ; test port A & B control registers
+		bne.s	PortA_Ok
+		tst.w	(z80_expansion_control).l ; test port C control register
+
+PortA_Ok:
+		bne.s	GameProgram ; Skip the VDP and Z80 setup code if port A, B or C is ok...?
+		lea	SetupValues(pc),a5	; Load setup values array address.
+		movem.w	(a5)+,d5-d7
+		movem.l	(a5)+,a0-a4
+		moveq	#$F,d0
+		and.b	-$10FF(a1),d0	; get hardware version (from $A10001)
+		beq.s	SkipSecurity	; If the console has no TMSS, skip the security stuff.
+		move.l	#'SEGA',$2F00(a1) ; move "SEGA" to TMSS register ($A14000)
+
+SkipSecurity:
+		move.w	(a4),d0	; clear write-pending flag in VDP to prevent issues if the 68k has been reset in the middle of writing a command long word to the VDP.
+		moveq	#0,d0	; clear d0
+		movea.l	d0,a6	; clear a6
+		move.l	a6,usp	; set usp to $0
+
+		moveq	#$18-1,d1
+VDPInitLoop:
+		move.b	(a5)+,d5	; add $8000 to value
+		move.w	d5,(a4)		; move value to	VDP register
+		add.w	d7,d5		; next register
+		dbf	d1,VDPInitLoop
+
+		move.l	(a5)+,(a4)
+		move.w	d0,(a3)		; clear	the VRAM
+		move.w	d7,(a1)		; stop the Z80
+		move.w	d7,(a2)		; reset	the Z80
+
+WaitForZ80:
+		btst	d0,(a1)		; has the Z80 stopped?
+		bne.s	WaitForZ80	; if not, branch
+
+		moveq	#$26-1,d2
+Z80InitLoop:
+		move.b	(a5)+,(a0)+
+		dbf	d2,Z80InitLoop
+
+		move.w	d0,(a2)
+		move.w	d0,(a1)		; start	the Z80
+		move.w	d7,(a2)		; reset	the Z80
+
+ClrRAMLoop:
+		move.l	d0,-(a6)	; clear 4 bytes of RAM
+		dbf	d6,ClrRAMLoop	; repeat until the entire RAM is clear
+		move.l	(a5)+,(a4)	; set VDP display mode and increment mode
+		move.l	(a5)+,(a4)	; set VDP to CRAM write
+
+		moveq	#$20-1,d3	; set repeat times
+ClrCRAMLoop:
+		move.l	d0,(a3)	; clear 2 palettes
+		dbf	d3,ClrCRAMLoop	; repeat until the entire CRAM is clear
+		move.l	(a5)+,(a4)	; set VDP to VSRAM write
+
+		moveq	#$14-1,d4
+ClrVSRAMLoop:
+		move.l	d0,(a3)	; clear 4 bytes of VSRAM.
+		dbf	d4,ClrVSRAMLoop	; repeat until the entire VSRAM is clear
+		moveq	#4-1,d5
+
+PSGInitLoop:
+		move.b	(a5)+,$11(a3)	; reset	the PSG
+		dbf	d5,PSGInitLoop	; repeat for other channels
+		move.w	d0,(a2)
+		movem.l	(a6),d0-a6	; clear all registers
+		disable_ints
+
 GameProgram:
 		tst.w	(vdp_control_port).l
 		btst	#6,(z80_expansion_control+1).l
@@ -302,7 +297,7 @@ CheckSumCheck:
 		bhs.s	.loop
 		movea.w	#Checksum,a1	; read the checksum
 		cmp.w	(a1),d1		; compare checksum in header to ROM
-		bne.w	CheckSumError	; if they don't match, branch
+		bne.s	CheckSumError	; if they don't match, branch
 
 CheckSumOk:
 		lea	(v_crossresetram).w,a6
