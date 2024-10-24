@@ -600,7 +600,7 @@ VDPSetupGame:
 		move.w	#$8A00+224-1,(v_hbla_hreg).w	; H-INT every 224th scanline
 		moveq	#0,d0
 		move.l	#$C0000000,(vdp_control_port).l ; set VDP to CRAM write
-	rept (v_palette_end-v_palette)
+	rept (v_palette_end-v_palette)/4
 		move.l	d0,(a1)
 	endr
 
