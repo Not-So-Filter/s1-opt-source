@@ -286,20 +286,6 @@ GameProgram:
 		bne.s	GameInit	; if yes, branch
 
 CheckSumCheck:
-		movea.w	#EndOfHeader,a0	; start	checking bytes after the header	($200)
-		movea.l	#RomEndLoc,a1	; stop at end of ROM
-		move.l	(a1),d0
-		moveq	#0,d1
-
-.loop:
-		add.w	(a0)+,d1
-		cmp.l	a0,d0
-		bhs.s	.loop
-		movea.w	#Checksum,a1	; read the checksum
-		cmp.w	(a1),d1		; compare checksum in header to ROM
-		bne.s	CheckSumError	; if they don't match, branch
-
-CheckSumOk:
 		lea	(v_crossresetram).w,a6
 		moveq	#0,d7
 		moveq	#bytesToLcnt(v_ram_end-v_crossresetram),d6
@@ -336,19 +322,6 @@ MainGameLoop:
 		movea.w	(v_gamemode).w,a0 ; load Game Mode
 		jsr	(a0) ; jump to apt location in ROM
 		bra.s	MainGameLoop	; loop indefinitely
-; ===========================================================================
-
-CheckSumError:
-		bsr.w	VDPSetupGame
-		lea	(vdp_data_port).l,a0
-		move.l	#$C0000000,vdp_control_port-vdp_data_port(a0) ; set VDP to CRAM write
-		move.l	#$000E000E,d0
-	rept (v_palette_end-v_palette)/4
-		move.l	d0,(a0) ; fill palette with red
-	endr
-
-.endlessloop:
-		bra.s	.endlessloop
 ; ===========================================================================
 
 Art_Text:	binclude	"artunc/menutext.bin" ; text used in level select and debug mode
