@@ -11,7 +11,7 @@ PauseGame:
 		tst.b	(f_pause).w	; is game already paused?
 		bne.s	Pause_StopGame	; if yes, branch
 		tst.b	(v_jpadpress).w ; is Start button pressed?
-		bpl.w	Pause_DoNothing	; if not, branch
+		bpl.s	Pause_DoNothing	; if not, branch
 
 Pause_StopGame:
 		st.b	(f_pause).w	; freeze time
@@ -20,14 +20,20 @@ Pause_StopGame:
 		startZ80
 
 Pause_Loop:
-		move.w	#id_VB_08,(v_vbla_routine).w
+		move.w	#VBla_08,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		tst.b	(f_slomocheat).w ; is slow-motion cheat on?
 		beq.s	Pause_ChkStart	; if not, branch
 		btst	#bitA,(v_jpadpress).w ; is button A pressed?
 		beq.s	Pause_ChkBC	; if not, branch
-		move.w	#id_Title,(v_gamemode).w ; set game mode to 4 (title screen)
-		bra.s	Pause_EndMusic
+		move.w	#GM_Title,(v_gamemode).w ; set game mode to 4 (title screen)
+		stopZ80
+		move.b	#MusID_Unpause,(z80_ram+zAbsVar.StopMusic).l	; unpause the music
+		startZ80
+		clr.b	(f_pause).w	; unpause the game
+
+Pause_DoNothing:
+		rts
 ; ===========================================================================
 
 Pause_ChkBC:
@@ -47,8 +53,6 @@ Pause_EndMusic:
 
 Unpause:
 		clr.b	(f_pause).w	; unpause the game
-
-Pause_DoNothing:
 		rts
 ; ===========================================================================
 

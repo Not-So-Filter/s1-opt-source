@@ -5,7 +5,7 @@
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
 HUD_Update:
-		tst.w	(f_debugmode).w	; is debug mode	on?
+		tst.b	(f_debugmode).w	; is debug mode	on?
 		bne.w	HudDebug	; if yes, branch
 		tst.b	(f_scorecount).w ; does the score need updating?
 		beq.s	.chkrings	; if not, branch
@@ -31,7 +31,7 @@ HUD_Update:
 .chktime:
 		tst.b	(f_timecount).w	; does the time	need updating?
 		beq.s	.chklives	; if not, branch
-		tst.w	(f_pause).w	; is the game paused?
+		tst.b	(f_pause).w	; is the game paused?
 		bne.s	.chklives	; if yes, branch
 		lea	(v_time).w,a1
 		cmpi.l	#(9*$10000)+(59*$100)+59,(a1)+ ; is the time 9:59:59?
@@ -163,16 +163,15 @@ loc_1C83E:
 		lea	Art_Hud(pc),a1
 
 loc_1C842:
-		moveq	#$F,d1
 		move.b	(a2)+,d0
 		bmi.s	loc_1C85E
 		ext.w	d0
 		lsl.w	#5,d0
 		lea	(a1,d0.w),a3
 
-loc_1C852:
+	rept $10
 		move.l	(a3)+,(a6)
-		dbf	d1,loc_1C852
+	endr
 
 loc_1C858:
 		dbf	d2,loc_1C842
@@ -181,9 +180,9 @@ loc_1C858:
 ; ===========================================================================
 
 loc_1C85E:
+	rept $10
 		move.l	#0,(a6)
-		dbf	d1,loc_1C85E
-
+	endr
 		bra.s	loc_1C858
 ; End of function Hud_Base
 
@@ -251,7 +250,14 @@ loc_1C8B2:
 Hud_Rings:
 		lea	Hud_100(pc),a2
 		moveq	#2,d6
-		bra.s	Hud_LoadArt
+		moveq	#0,d4
+		lea	Art_Hud(pc),a1
+		moveq	#0,d2
+		move.l	(a2)+,d3
+		sub.l	d3,d1
+		bcs.s	loc_1C8F4
+		addq.w	#1,d2
+		bra.s	loc_1C8EC
 ; End of function Hud_Rings
 
 ; ---------------------------------------------------------------------------

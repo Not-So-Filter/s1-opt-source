@@ -84,7 +84,7 @@ Bom_Action:	; Routine 2
 .explode:
 		subq.w	#1,bom_time(a0)	; subtract 1 from time delay
 		bpl.s	.noexplode	; if time remains, branch
-		move.b	#id_ExplosionBomb,obID(a0) ; change bomb into an explosion
+		move.l	#ExplosionBomb,obID(a0) ; change bomb into an explosion
 		clr.b	obRoutine(a0)
 
 .noexplode:

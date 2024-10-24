@@ -109,7 +109,7 @@ Pri_Switched:	; Routine 4
 
 Pri_Explosion:	; Routine 6, 8, $A
 		moveq	#7,d0
-		and.b	(v_vbla_byte).w,d0
+		and.b	(v_framebyte).w,d0
 		bne.s	.noexplosion
 		jsr	(FindFreeObj).l
 		bne.s	.noexplosion
@@ -160,7 +160,7 @@ Pri_Explosion:	; Routine 6, 8, $A
 
 Pri_Animals:	; Routine $C
 		moveq	#7,d0
-		and.b	(v_vbla_byte).w,d0
+		and.b	(v_framebyte).w,d0
 		bne.s	.noanimal
 		jsr	(FindFreeObj).l
 		bne.s	.noanimal

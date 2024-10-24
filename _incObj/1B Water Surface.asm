@@ -25,7 +25,7 @@ Surf_Main:	; Routine 0
 
 Surf_Action:	; Routine 2
 		move.w	(v_screenposx).w,d1
-		andi.w	#$FFE0,d1
+		andi.w	#-$20,d1
 		add.w	surf_origX(a0),d1
 		btst	#bitStart,(v_jpadpress).w ; is Start button pressed?
 		bne.s	.even	; if yes, branch
@@ -42,23 +42,21 @@ Surf_Action:	; Routine 2
 		beq.s	.animate	; if not, branch
 		addq.b	#3,obFrame(a0)	; use different	frames
 		move.b	#1,surf_freeze(a0) ; stop animation
-		bra.s	.display
+		bra.w	DisplaySprite
 ; ===========================================================================
 
 .stopped:
-		tst.w	(f_pause).w	; is the game paused?
-		bne.s	.display	; if yes, branch
+		tst.b	(f_pause).w	; is the game paused?
+		bne.w	DisplaySprite	; if yes, branch
 		clr.b	surf_freeze(a0) ; resume animation
 		subq.b	#3,obFrame(a0)	; use normal frames
 
 .animate:
 		subq.b	#1,obTimeFrame(a0)
-		bpl.s	.display
+		bpl.w	DisplaySprite
 		move.b	#7,obTimeFrame(a0)
 		addq.b	#1,obFrame(a0)
 		cmpi.b	#3,obFrame(a0)
-		blo.s	.display
+		blo.w	DisplaySprite
 		clr.b	obFrame(a0)
-
-.display:
 		bra.w	DisplaySprite

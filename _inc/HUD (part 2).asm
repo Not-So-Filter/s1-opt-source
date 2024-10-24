@@ -18,7 +18,14 @@ Hud_1:		dc.l 1
 Hud_Mins:
 		lea	Hud_1(pc),a2
 		moveq	#0,d6
-		bra.s	loc_1C9BA
+		moveq	#0,d4
+		lea	Art_Hud(pc),a1
+		moveq	#0,d2
+		move.l	(a2)+,d3
+		sub.l	d3,d1
+		bcs.s	loc_1C9CC
+		addq.w	#1,d2
+		bra.s	loc_1C9C4
 ; End of function Hud_Mins
 
 

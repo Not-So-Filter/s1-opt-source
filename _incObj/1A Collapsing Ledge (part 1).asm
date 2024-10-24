@@ -97,7 +97,7 @@ locret_8308:
 Ledge_TimeZero:
 		bsr.w	ObjectFall
 		tst.b	obRender(a0)
-		bpl.s	Ledge_Delete
+		bpl.w	DeleteObject
 		bra.w	DisplaySprite
 ; ===========================================================================
 

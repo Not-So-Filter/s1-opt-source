@@ -23,13 +23,8 @@ Sonic_Display:
 		bne.s	.removeinvincible
 		cmpi.w	#$C,(v_air).w
 		blo.s	.removeinvincible
-		move.w	(v_zone).w,d0
-		ror.b	#2,d0
-		lsr.w	#6,d0
-		lea	(MusicList).w,a1
-		move.b	(a1,d0.w),d0
 		stopZ80
-		move.b	d0,(z80_ram+zAbsVar.Queue0).l
+		move.b	(v_saved_music).w,(z80_ram+zAbsVar.Queue0).l
 		startZ80
 
 .removeinvincible:

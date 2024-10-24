@@ -9,7 +9,7 @@ Lamppost:
 		jsr	Lamp_Index(pc,d1.w)
 		out_of_range.s	.delete
 		jmp	(DisplaySprite).l
-		
+
 .delete:
 		jmp	(DeleteObject_Respawn).l
 ; ===========================================================================
@@ -35,10 +35,10 @@ Lamp_Main:	; Routine 0
 		bclr	#7,(a2)
 		btst	#0,(a2)
 		bne.s	.red
-		move.b	(v_lastlamp).w,d1
-		andi.b	#$7F,d1
-		move.b	obSubtype(a0),d2 ; get lamppost number
-		andi.b	#$7F,d2
+		moveq	#$7F,d1
+		and.b	(v_lastlamp).w,d1
+		moveq	#$7F,d2
+		and.b	obSubtype(a0),d2 ; get lamppost number
 		cmp.b	d2,d1		; is this a "new" lamppost?
 		blo.s	Lamp_Blue	; if yes, branch
 
@@ -54,10 +54,10 @@ Lamp_Blue:	; Routine 2
 		bne.s	.exit	; if yes, branch
 		tst.b	(f_playerctrl).w
 		bmi.s	.exit
-		move.b	(v_lastlamp).w,d1
-		andi.b	#$7F,d1
-		move.b	obSubtype(a0),d2
-		andi.b	#$7F,d2
+		moveq	#$7F,d1
+		and.b	(v_lastlamp).w,d1
+		moveq	#$7F,d2
+		and.b	obSubtype(a0),d2
 		cmp.b	d2,d1		; is this a "new" lamppost?
 		blo.s	.chkhit		; if yes, branch
 		move.w	obRespawnNo(a0),d0

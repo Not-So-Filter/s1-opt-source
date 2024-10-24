@@ -88,7 +88,7 @@ GM_MenuScreen:
 ;		moveq	#MusID_Options,d0
 ;		bsr.w	PlayMusic
 
-		move.w	#(30*60)-1,(v_demolength).w	; 30 seconds
+		move.w	#60*30,(v_demolength).w	; 30 seconds
 		moveq	#0,d0
 		move.l	d0,(v_screenposx).w
 		move.l	d0,(v_screenposy).w
@@ -99,7 +99,7 @@ GM_MenuScreen:
 
 ;loc_93AC:
 LevelSelect_Main:	; routine running during level select
-		move.w	#VintID_Menu,(v_vbla_routine).w
+		move.w	#Vint_Menu,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 
 		disable_ints
@@ -113,14 +113,12 @@ LevelSelect_Main:	; routine running during level select
 		bsr.w	LevelSelect_DrawIcon
 
 		enable_ints
-		
+
 		lea	Anim_SonicMilesBG(pc),a2
 		jsr	(Dynamic_Normal).l
 
 		tst.b	(v_jpadpress).w	; start pressed?
-		bmi.s	LevelSelect_PressStart	; yes
-		bra.s	LevelSelect_Main	; no
-; ===========================================================================
+		bpl.s	LevelSelect_Main	; no
 
 ;loc_93F0:
 LevelSelect_PressStart:
@@ -132,9 +130,10 @@ LevelSelect_PressStart:
 PlayLevel:
 		andi.w	#$3FFF,d0
 		move.w	d0,(v_zone).w
-		move.w	#id_Level,(v_gamemode).w ; => Level (Zone play mode)
+		move.w	#GM_Level,(v_gamemode).w ; => Level (Zone play mode)
 		move.b	#3,(v_lives).w
 		moveq	#0,d0
+		move.b	d0,(v_gmdemo).w
 		move.w	d0,(v_rings).w
 		move.l	d0,(v_time).w
 		move.l	d0,(v_score).w
@@ -145,7 +144,7 @@ PlayLevel:
 
 ;loc_944C:
 LevelSelect_Return:
-		clr.w	(v_gamemode).w ; => SegaScreen
+		move.w	#GM_Sega,(v_gamemode).w ; => SegaScreen
 		rts
 ; ===========================================================================
 ; -----------------------------------------------------------------------------
@@ -344,9 +343,7 @@ LevelSelect_MarkFields:
 
 +
 		cmpi.w	#$13,(v_levselitem).w
-		bne.s	+	; rts
-		bra.s	LevelSelect_DrawSoundNumber
-+
+		beq.s	LevelSelect_DrawSoundNumber
 		rts
 ; ===========================================================================
 ;loc_965A:

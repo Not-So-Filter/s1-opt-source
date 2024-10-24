@@ -24,7 +24,8 @@ Edge_Main:	; Routine 0
 		bclr	#4,obFrame(a0)	; clear	4th bit	(deduct	$10)
 		beq.s	Edge_Solid	; make object solid if 4th bit = 0
 		addq.b	#2,obRoutine(a0)
-		bra.s	Edge_Display	; don't make it solid if 4th bit = 1
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite
 ; ===========================================================================
 
 Edge_Solid:	; Routine 2

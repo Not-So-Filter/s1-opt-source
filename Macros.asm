@@ -93,6 +93,26 @@ displayOff:	macro
 displayOn:	macro
 		move.w	#$8134+$40,(vdp_control_port).l
 		endm
+		
+readjoypads:	macro
+		lea	(v_jpadhold).w,a0	; address where joypad states are written
+		lea	(z80_port_1_data).l,a1	; first	joypad port
+		clr.b	(a1)
+		or.l	d0,d0
+		move.b	(a1),d0
+		asl.b	#2,d0
+		move.b	#$40,(a1)
+		andi.w	#$C0,d0
+		move.b	(a1),d1
+		andi.w	#$3F,d1
+		or.b	d1,d0
+		not.b	d0
+		move.b	(a0),d1
+		eor.b	d0,d1
+		move.b	d0,(a0)+
+		and.b	d0,d1
+		move.b	d1,(a0)+
+		endm
 
 ; ---------------------------------------------------------------------------
 ; Set a VRAM address via the VDP control port.
@@ -253,8 +273,7 @@ copyTilemap:	macro source,destination,width,height
 
 stopZ80:	macro
 		move.w	#$100,(z80_bus_request).l
-.wait:		tst.w	(z80_bus_request).l
-		beq.s	.wait
+.wait:		beq.s	.wait
 		endm
 
 ; ---------------------------------------------------------------------------

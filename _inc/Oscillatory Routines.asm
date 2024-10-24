@@ -9,11 +9,10 @@
 OscillateNumInit:
 		lea	(v_oscillate).w,a1
 		lea	.baselines(pc),a2
-		moveq	#bytesToWcnt(.baselines_end-.baselines),d1
-
-.loop:
 		move.w	(a2)+,(a1)+	; copy baseline values to RAM
-		dbf	d1,.loop
+	rept $20
+		move.l	(a2)+,(a1)+	; copy baseline values to RAM
+	endr
 		rts
 
 

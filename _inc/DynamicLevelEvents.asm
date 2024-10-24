@@ -22,7 +22,7 @@ DynamicLevelEvents:
 		cmp.w	(v_limitbtm1).w,d0
 		bls.s	loc_6DA0
 		move.w	d0,(v_limitbtm2).w
-		andi.w	#$FFFE,(v_limitbtm2).w
+		andi.w	#-2,(v_limitbtm2).w
 
 loc_6DA0:
 		add.w	d1,(v_limitbtm2).w
@@ -532,7 +532,8 @@ DLE_SBZ2boss2:
 
 loc_72B0:
 		move.b	#1,(f_lockscreen).w ; lock screen
-		bra.s	loc_72C2
+		move.w	(v_screenposx).w,(v_limitleft2).w
+		rts
 ; ===========================================================================
 
 DLE_SBZ2end:
@@ -564,7 +565,8 @@ DLE_FZmain:
 		addq.w	#2,(v_dle_routine).w
 		moveq	#plcid_FZBoss,d0
 		bsr.w	AddPLC		; load FZ boss patterns
-		bra.s	loc_72C2
+		move.w	(v_screenposx).w,(v_limitleft2).w
+		rts
 ; ===========================================================================
 
 DLE_FZboss:
@@ -572,14 +574,16 @@ DLE_FZboss:
 		blo.s	loc_72C2
 		bsr.w	FindFreeObj
 		bne.s	loc_72C2
-		move.b	#id_BossFinal,obID(a1) ; load FZ boss object
+		move.l	#BossFinal,obID(a1) ; load FZ boss object
 		addq.w	#2,(v_dle_routine).w
 		move.b	#1,(f_lockscreen).w ; lock screen
-		bra.s	loc_72C2
+		move.w	(v_screenposx).w,(v_limitleft2).w
+		rts
 ; ===========================================================================
 
 DLE_FZend:
 		cmpi.w	#boss_fz_x,(v_screenposx).w
 		blo.s	loc_72C2
 		addq.w	#2,(v_dle_routine).w
-		bra.s	loc_72C2
+		move.w	(v_screenposx).w,(v_limitleft2).w
+		rts

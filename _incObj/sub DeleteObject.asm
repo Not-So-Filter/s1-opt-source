@@ -22,14 +22,14 @@ DeleteObject:
 		movea.l	a0,a1		; move object RAM address to (a1)
 
 DeleteChild:				; child objects are already in (a1)
-		moveq	#bytesToLcnt(object_size-2),d0
-		moveq	#0,d1
+		moveq	#0,d0
 
 DelObj_Loop:
-		move.l	d1,(a1)+	; clear	the object RAM
-		dbf	d0,DelObj_Loop	; repeat for length of object RAM
+	rept $11
+		move.l	d0,(a1)+	; clear	the object RAM
+	endr
 
-		move.w	d1,(a1)+
+		move.w	d0,(a1)+
 		rts
 
 ; End of function DeleteObject

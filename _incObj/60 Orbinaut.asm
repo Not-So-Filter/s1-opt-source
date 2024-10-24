@@ -46,7 +46,11 @@ Orb_Main:	; Routine 0
 		addq.b	#1,(a3)
 		move.w	a1,d5
 		subi.w	#v_objspace,d5
+	if object_size=$40
 		lsr.w	#object_size_bits,d5
+	else
+		divu.w	#object_size,d5
+	endif
 		andi.w	#$7F,d5
 		move.b	d5,(a2)+
 		move.l	#Orbinaut,obID(a1)	; load spiked orb object
@@ -106,7 +110,8 @@ Orb_ChkSonic:	; Routine 2
 .animate:
 		lea	Ani_Orb(pc),a1
 		jsr	(AnimateSprite).l
-		bra.s	Orb_ChkDel
+		out_of_range.s	Orb_ChkDel.chkgone
+		bra.w	DisplaySprite
 ; ===========================================================================
 
 Orb_Display:	; Routine 4
@@ -127,7 +132,7 @@ loc_11E34:
 		moveq	#0,d2
 		move.b	(a2)+,d2
 		subq.w	#1,d2
-		bcs.s	Orb_Delete
+		bcs.w	DeleteObject
 
 loc_11E40:
 		moveq	#0,d0
@@ -141,8 +146,6 @@ loc_11E40:
 		movea.l	d0,a1
 		bsr.w	DeleteChild
 		dbf	d2,loc_11E40
-
-Orb_Delete:
 		bra.w	DeleteObject
 ; ===========================================================================
 
@@ -162,10 +165,8 @@ Orb_MoveOrb:	; Routine 6
 .fire:
 		move.w	#-$200,obVelX(a0) ; move orb to the left (quickly)
 		btst	#0,obStatus(a1)
-		beq.s	.noflip
+		beq.w	DisplaySprite
 		neg.w	obVelX(a0)
-
-.noflip:
 		bra.w	DisplaySprite
 ; ===========================================================================
 

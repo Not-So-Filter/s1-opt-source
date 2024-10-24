@@ -49,7 +49,15 @@ RingsManager_Init:
 		subq.w	#8,d4
 		bhi.s	loc_16FB6
 		moveq	#1,d4	; no negative values allowed
-		bra.s	loc_16FB6
+		cmp.w	(a1),d4	; is the X pos of the ring < camera X pos?
+		bhi.s	loc_16FB2		; if it is, check next ring
+		move.l	a1,(Ring_start_addr_ROM).w	; set start addresses in both ROM and RAM
+		move.w	a2,(Ring_start_addr_RAM).w
+		addi.w	#320+16,d4	; advance by a screen
+		cmp.w	(a1),d4		; is the X pos of the ring < camera X + 336?
+		bhi.s	loc_16FCA	; if it is, check next ring
+		move.l	a1,(Ring_end_addr_ROM).w	; set end addresses
+		rts
 loc_16FB2:
 		addq.w	#4,a1	; load next ring
 		addq.w	#2,a2
@@ -59,7 +67,10 @@ loc_16FB6:
 		move.l	a1,(Ring_start_addr_ROM).w	; set start addresses in both ROM and RAM
 		move.w	a2,(Ring_start_addr_RAM).w
 		addi.w	#320+16,d4	; advance by a screen
-		bra.s	loc_16FCE
+		cmp.w	(a1),d4		; is the X pos of the ring < camera X + 336?
+		bhi.s	loc_16FCA	; if it is, check next ring
+		move.l	a1,(Ring_end_addr_ROM).w	; set end addresses
+		rts
 loc_16FCA:
 		addq.w	#4,a1	; load next ring
 loc_16FCE:
@@ -99,7 +110,20 @@ loc_17014:
 		subq.w	#8,d4
 		bhi.s	loc_17028
 		moveq	#1,d4
-		bra.s	loc_17028
+		cmp.w	(a1),d4
+		bhi.s	loc_17024
+		cmp.w	-4(a1),d4
+		bls.s	loc_17030
+		move.l	a1,(Ring_start_addr_ROM).w
+		move.w	a2,(Ring_start_addr_RAM).w
+		movea.l	(Ring_end_addr_ROM).w,a2
+		addi.w	#$150,d4
+		cmp.w	(a2),d4
+		bhi.s	loc_17046
+		cmp.w	-4(a2),d4
+		bls.s	loc_17052
+		move.l	a2,(Ring_end_addr_ROM).w
+		rts
 ; ===========================================================================
 
 loc_17024:
@@ -109,7 +133,18 @@ loc_17024:
 loc_17028:
 		cmp.w	(a1),d4
 		bhi.s	loc_17024
-		bra.s	loc_17032
+		cmp.w	-4(a1),d4
+		bls.s	loc_17030
+		move.l	a1,(Ring_start_addr_ROM).w
+		move.w	a2,(Ring_start_addr_RAM).w
+		movea.l	(Ring_end_addr_ROM).w,a2
+		addi.w	#$150,d4
+		cmp.w	(a2),d4
+		bhi.s	loc_17046
+		cmp.w	-4(a2),d4
+		bls.s	loc_17052
+		move.l	a2,(Ring_end_addr_ROM).w
+		rts
 ; ===========================================================================
 
 loc_17030:
@@ -123,7 +158,12 @@ loc_17032:
 		move.w	a2,(Ring_start_addr_RAM).w
 		movea.l	(Ring_end_addr_ROM).w,a2
 		addi.w	#$150,d4
-		bra.s	loc_1704A
+		cmp.w	(a2),d4
+		bhi.s	loc_17046
+		cmp.w	-4(a2),d4
+		bls.s	loc_17052
+		move.l	a2,(Ring_end_addr_ROM).w
+		rts
 ; ===========================================================================
 
 loc_17046:
@@ -132,7 +172,10 @@ loc_17046:
 loc_1704A:
 		cmp.w	(a2),d4
 		bhi.s	loc_17046
-		bra.s	loc_17054
+		cmp.w	-4(a2),d4
+		bls.s	loc_17052
+		move.l	a2,(Ring_end_addr_ROM).w
+		rts
 ; ===========================================================================
 
 loc_17052:
@@ -188,7 +231,11 @@ Touch_Rings_Loop:
 		bcc.s	loc_1712A	; if character's to the left of the ring, branch
 		add.w	d6,d0		; add ring diameter
 		bcs.s	loc_17130	; if character's colliding, branch
-		bra.s	Touch_NextRing	; otherwise, test next ring
+		addq.w	#4,a1
+		addq.w	#2,a4
+		cmpa.l	a1,a2		; are we at the last ring for this area?
+		bne.s	Touch_Rings_Loop	; if not, branch
+		rts
 loc_1712A:
 		cmp.w	d4,d0		; has character crossed the ring?
 		bhi.s	Touch_NextRing	; if they have, branch
@@ -199,13 +246,18 @@ loc_17130:
 		bcc.s	loc_17142	; if character's above the ring, branch
 		add.w	d6,d0		; add ring diameter
 		bcs.s	loc_17148	; if character's colliding, branch
-		bra.s	Touch_NextRing	; otherwise, test next ring
+		addq.w	#4,a1
+		addq.w	#2,a4
+		cmpa.l	a1,a2		; are we at the last ring for this area?
+		bne.s	Touch_Rings_Loop	; if not, branch
+		rts
 loc_17142:
 		cmp.w	d5,d0		; has character crossed the ring?
 		bhi.s	Touch_NextRing	; if they have, branch
 loc_17148:
 		move.w	#$604,(a4)		; set frame and destruction timer
-		bsr.s	Touch_ConsumeRing
+		subq.w	#1,(Perfect_rings_left).w
+		bsr.w	CollectRing
 		lea	(Ring_consumption_table+2).w,a3
 
 loc_17152:
@@ -220,11 +272,6 @@ Touch_NextRing:
 		cmpa.l	a1,a2		; are we at the last ring for this area?
 		bne.s	Touch_Rings_Loop	; if not, branch
 		rts
-; ===========================================================================
-; loc_17168:
-Touch_ConsumeRing:
-		subq.w	#1,(Perfect_rings_left).w
-		bra.w	CollectRing
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to draw on-screen rings

@@ -265,24 +265,6 @@ __LABEL__ label $
 	endif
     endm
 
-; function to decide whether an offset's full range won't fit in one byte
-offsetover1byte function from,maxsize, ((from&0FFh)>(100h-maxsize))
-
-; macro to make sure that ($ & 0FF00h) == (($+maxsize) & 0FF00h)
-ensure1byteoffset macro maxsize
-	if offsetover1byte($,maxsize)
-startpad := $
-		align 100h
-	    if MOMPASS=1
-endpad := $
-		if endpad-startpad>=1h
-			; warn because otherwise you'd have no clue why you're running out of space so fast
-			warning "had to insert \{endpad-startpad}h   bytes of padding before improperly located data at 0\{startpad}h in Z80 code"
-		endif
-	    endif
-	endif
-    endm
-
 ; Function to turn a 68k address into a word the Z80 can use to access it,
 ; assuming the correct bank has been switched to first
 zmake68kPtr function addr,zROMWindow+(addr&7FFFh)
@@ -294,7 +276,7 @@ pcmLoopCounter function sampleRate,baseCycles, 1+(53693175/15/(sampleRate)-(base
 ; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ; Z80 'ROM' start:
 ; zEntryPoint:
-	di	; Disable interrupts
+	di		; disable interrupts
 	ld	sp,zStack
 	jp	zStartDAC
 ; ---------------------------------------------------------------------------
@@ -650,14 +632,12 @@ zDACDecodeTbl:
 	; these tables by their channel assignment, where between Channel 3
 	; and Channel 4 there is a gap numerically.
 
-	ensure1byteoffset 10h
 ; zbyte_1C3
 zMusicTrackOffs:
 	; These are offsets to different music tracks starting with FM3
 	dw	zSongFM3,      0000h,  zSongFM4,  zSongFM5	; FM3, 0, FM4, FM5
 	dw	zSongPSG1, zSongPSG2, zSongPSG3, zSongPSG3	; PSG1, PSG2, PSG3, PSG3 (noise alternate)
 
-	ensure1byteoffset 10h
 ; zbyte_1D3
 zSFXTrackOffs:
 	; These are offsets to different sound effect tracks starting with FM3
@@ -928,7 +908,6 @@ zDoModulation:
 ; This the note -> frequency setting lookup
 ; the same array is found at $729CE in Sonic 1, and at $C9C44 in Ristar
 ; zword_359:
-	ensure1byteoffset 8Ch
 zPSGFrequencies:
 	dw 3FFh,3FFh,3FFh,3FFh,3FFh,3FFh,3FFh,3FFh,3FFh,3F7h,3BEh,388h
 	dw 356h,326h,2F9h,2CEh,2A5h,280h,25Ch,23Ah,21Ah,1FBh,1DFh,1C4h
@@ -969,7 +948,19 @@ zFMUpdateFreq:
 	pop	af
 	ld	c,l				; lower part of frequency
 	sub	4				; A0h+ register
-	jp	zWriteFMIorII			; Write it!
+	bit	2,(ix+zTrack.VoiceControl)
+	jr	z,.writefmi2
+	; Write reg/data pair to part II; 'a' is register, 'c' is data
+	ld	(zYM2612_A1),a
+	ld	a,c
+	ld	(zYM2612_D1),a
+	ret
+	
+.writefmi2:
+	ld	(zYM2612_A0),a
+	ld	a,c
+	ld	(zYM2612_D0),a
+	ret
 
 ; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
 
@@ -1212,7 +1203,6 @@ zPSGNoteOff:
 
 ; ---------------------------------------------------------------------------
 ; lookup table of FM note frequencies for instruments and sound effects
-	ensure1byteoffset 0C0h
 ; zbyte_534
 zFrequencies:
 	dw 025Eh,0284h,02ABh,02D3h,02FEh,032Dh,035Ch,038Fh,03C5h,03FFh,043Ch,047Ch
@@ -1395,6 +1385,8 @@ zPlaySegaSound:
 
 	ld	hl,zmake68kPtr(Snd_Sega) ; was: 9E8Ch
 	ld	de,Snd_Sega_End-Snd_Sega	; was: 30BAh
+	ld	a,2Ah			; DAC port
+	ld	(zYM2612_A0),a		; Set DAC port register
 
 .loop:
 	ld	a,(hl)				; 7	; Get next PCM byte
@@ -1737,7 +1729,7 @@ zPlaySound_CheckRing:
 	jp	nz,zKillSFXPrio			; If either is set, SFX cannot be played!!
 	ld	a,c				; Sound index -> 'a'
 	cp	sfx_Ring			; is this the ring sound?
-	jr	nz,zPlaySound	; if not, jump
+	jr	nz,.pushingflag	; if not, jump
 	; This is the ring sound...
 	ld	a,(zRingSpeaker)		; 0 plays left, FFh plays right
 	or	a				; Test it
@@ -1747,6 +1739,17 @@ zPlaySound_CheckRing:
 .ringchange:
 	cpl					; If it was 0, it's now FFh, or vice versa
 	ld	(zRingSpeaker),a		; Store new ring speaker value (other side)
+	jp	zPlaySound
+
+.pushingflag:
+	ld	a,c
+	cp	sfx_Push
+	jr	nz,zPlaySound
+	ld	a,(zPushingFlag)
+	or	a
+	ret	nz		; Pushing sound	not yet	finished - prevent from	playing	again
+	ld	a,80h
+	ld	(zPushingFlag),a	; set Pushing Flag
 
 ; zloc_975:
 zPlaySound:
@@ -2634,7 +2637,6 @@ cfSetTempoMod:
 ; "To make a note softer, only change the TL of the slots (the output operators).
 ; Changing the other operators will affect the flavor of the note."
 ; zloc_DF1
-	ensure1byteoffset 8
 zVolTLMaskTbl:
 	db	  8,  8,  8,  8
 	db	0Ch,0Eh,0Eh,0Fh
@@ -3205,7 +3207,6 @@ zSpedUpTempoTable:
 	db	0D5h,0F0h, 80h
 
 	; DAC sample pointers and lengths
-	ensure1byteoffset 1Ch
 
 ; zDACPtr_Index zbyte_1233
 zDACPtrTbl:
@@ -3224,7 +3225,6 @@ zDACPtr_Timpani:	dw	zmake68kPtr(SndDAC_Timpani)
 	; First byte selects one of the DAC samples. The number that
 	; follows it is a wait time between each nibble written to the DAC
 	; (thus higher = slower)
-	ensure1byteoffset 22h
 ; zbyte_124F
 zDACMasterPlaylist:
 
@@ -3257,5 +3257,6 @@ zCurSong:	db 0 ; zbyte_1300 ; currently playing song index
 zDoSFXFlag:	db 0 ; zbyte_1301 ; flag to indicate we're updating SFX (and thus use custom voice table); set to anything but 0 while doing SFX, 0 when not.
 zRingSpeaker:	db 0 ; zbyte_1302 ; stereo alternation flag. 0 = next one plays on left, -1 = next one plays on right
 zPaused:	db 0 ; zbyte_1307 ; 0 = normal, -1 = pause all sound and music
+zPushingFlag:	db 0
 
 ; end of Z80 'ROM'

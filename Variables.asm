@@ -37,6 +37,7 @@ v_128x128_end:
 Level_layout_header:	ds.b	8		; first word = chunks per FG row, second word = chunks per BG row, third word = FG rows, fourth word = BG rows
 Level_layout_main:	ds.b	$FF8		; $40 word-sized line pointers followed by actual layout data
 Level_layout_main_end:
+Level_layout_bg:	= Level_layout_main+2
 
 Kos_decomp_buffer:	ds.b	$1000		; each module in a KosM archive is decompressed here and then DMAed to VRAM
 Kos_decomp_buffer_end:
@@ -71,12 +72,11 @@ Perfect_rings_left:	ds.w	1
 Ring_consumption_table:	ds.b	$80
 Ring_consumption_table_End:
 
-			ds.b	$100		; unused
 v_bgscroll_buffer:	ds.b	$200		; background scroll buffer
-Object_respawn_table:	ds.b	1*768		; 1 byte per object, every object in the level gets an entry
-Object_respawn_table_End:
+Object_respawn_table:	ds.b	1024		; 1 byte per object, every object in the level gets an entry (normally 768)
+Object_respawn_table_end:
 
-v_spritequeue:		SpriteQueue		; sprite display queue, in order of priority (in this case, there is only 0 up to 7, so multiply by 7+1)
+v_spritequeue:		SpriteQueue		; sprite display queue, in order of priority
 v_spritequeue_end:
 v_16x16:		ds.b	16*384		; 16x16 tile mappings
 
@@ -140,11 +140,15 @@ v_credits	= v_objspace+object_size*2	; object variable space for the credits tex
 			ds.b	$100		; unused
 
 v_gamemode:		ds.w	1		; game mode (00=Sega; 04=Title; 08=Demo; 0C=Level; 10=SS; 14=Cont; 18=End; 1C=Credit; +8C=PreLevel)
+			ds.b	2		; unused
 v_jpadhold_stored:	ds.b	1		; joypad input - held (storage)
 v_jpadpress_stored:	ds.b	1		; joypad input - pressed (storage)
 v_jpadhold:		ds.b	1		; joypad input - held
 v_jpadpress:		ds.b	1		; joypad input - pressed
-			ds.b	6		; unused
+v_gmdemo:		ds.b	1		; demo game mode flag
+			ds.b	1		; unused
+v_prelevel:		ds.b	1		; pre-level flag
+			ds.b	1		; unused
 v_vdp_buffer1:		ds.w	1		; VDP instruction buffer
 			ds.b	6		; unused
 v_demolength:		ds.w	1		; the length of a demo in frames
@@ -161,10 +165,12 @@ v_pfade_start:		ds.b	1		; palette fading - start position in bytes
 v_pfade_size:		ds.b	1		; palette fading - number of colours
 
 v_misc_variables:
+v_vbla_routine:		ds.w	1		; VBlank - routine
 			ds.b	2		; unused
-v_vbla_routine:		ds.w	1		; VBlank - routine counter
 v_spritecount:		ds.b	1		; number of sprites on-screen
-			ds.b	5		; unused
+			ds.b	1		; unused
+v_vbla_counter:		ds.b	1		; VBlank - counter
+			ds.b	3		; unused
 v_pcyc_num:		ds.w	1		; palette cycling - current reference number
 v_pcyc_time:		ds.w	1		; palette cycling - time until the next change
 v_random:		ds.l	1		; pseudo random number buffer
@@ -182,8 +188,6 @@ f_wtr_state:		ds.b	1		; water palette state when water is above/below the screen
 f_doupdatesinhblank:	ds.b	1		; defers performing various tasks to the Horizontal Interrupt (H-Blank)
 v_pal_buffer:		ds.b	$30		; palette data buffer (used for palette cycling)
 v_misc_variables_end:
-
-			ds.b	$80		; unused
 
 v_levelvariables:				; variables that are reset between levels
 v_screenposx:		ds.l	1		; screen position x
@@ -283,9 +287,10 @@ v_scroll_block_1_size:	ds.w	1
 Anim_Counters:		ds.b	$10
 v_levelvariables_end:
 
-v_spritetablebuffer:	ds.b	$280		; sprite table (last $80 bytes are overwritten by v_palette_water_fading)
+v_spritetablebuffer:	ds.b	$280		; sprite table
 v_spritetablebuffer_end:
-v_palette_water_fading = v_spritetablebuffer_end-$80	; duplicate underwater palette, used for transitions ($80 bytes)
+v_palette_water_fading:	ds.b	$80		; duplicate underwater palette, used for transitions
+v_palette_water_fading_end:
 v_palette_water:	ds.b	$80		; main underwater palette
 v_palette_water_end:
 v_palette:		ds.b	$80		; main palette
@@ -308,9 +313,8 @@ v_debugitem:		ds.b	1		; debug item currently selected (NOT the object number of 
 v_debuguse:		ds.w	1		; debug mode use & routine counter (when Sonic is a ring/item)
 v_debugxspeed:		ds.b	1		; debug mode - horizontal speed
 v_debugyspeed:		ds.b	1		; debug mode - vertical speed
-v_vbla_count:		ds.l	1		; vertical interrupt counter (adds 1 every VBlank)
-v_vbla_word = v_vbla_count+2 			; low word for vertical interrupt counter (2 bytes)
-v_vbla_byte = v_vbla_word+1			; low byte for vertical interrupt counter
+v_saved_music:		ds.b	1		; saved music
+			ds.b	3		; unused
 v_zone:			ds.b	1		; current zone number
 v_act:			ds.b	1		; current act number
 v_lives:		ds.b	1		; number of lives

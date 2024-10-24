@@ -102,8 +102,7 @@ Vectors:	dc.l 0				; Initial stack pointer value
 		dc.b "SONIC THE               HEDGEHOG                " ; Domestic name
 		dc.b "SONIC THE               HEDGEHOG                " ; International name
 		dc.b "GM 00004049-01" ; Serial/version number
-Checksum:
-		dc.w 0
+Checksum:	dc.w 0
 		dc.b "J               " ; I/O support
 		dc.l StartOfRom		; Start address of ROM
 RomEndLoc:	dc.l EndOfRom-1		; End address of ROM
@@ -134,7 +133,7 @@ EntryPoint:
 		tst.w	(z80_expansion_control).l ; test port C control register
 
 PortA_Ok:
-		bne.s	SkipSetup ; Skip the VDP and Z80 setup code if port A, B or C is ok...?
+		bne.w	GameProgram ; Skip the VDP and Z80 setup code if port A, B or C is ok...?
 		lea	SetupValues(pc),a5	; Load setup values array address.
 		movem.w	(a5)+,d5-d7
 		movem.l	(a5)+,a0-a4
@@ -308,7 +307,7 @@ CheckSumCheck:
 CheckSumOk:
 		lea	(v_crossresetram).w,a6
 		moveq	#0,d7
-		moveq	#(v_ram_end-v_crossresetram)/4-1,d6
+		moveq	#bytesToLcnt(v_ram_end-v_crossresetram),d6
 .clearRAM:
 		move.l	d7,(a6)+
 		dbf	d6,.clearRAM	; clear RAM ($FE00-$FFFF)
@@ -321,7 +320,7 @@ CheckSumOk:
 GameInit:
 		lea	(v_ram_start).l,a6
 		moveq	#0,d7
-		move.w	#(v_crossresetram-v_ram_start)/4-1,d6
+		move.w	#bytesToLcnt(v_crossresetram-v_ram_start),d6
 .clearRAM:
 		move.l	d7,(a6)+
 		dbf	d6,.clearRAM	; clear RAM ($0000-$FDFF)
@@ -336,40 +335,22 @@ GameInit:
 		move.b	d0,(a0)	; init port 1 (joypad 1)
 		move.b	d0,2(a0)	; init port 2 (joypad 2)
 		move.b	d0,4(a0)	; init port 3 (expansion/extra)
-		move.w	#id_Sega,(v_gamemode).w ; set Game Mode to Sega Screen
+		move.w	#GM_Sega,(v_gamemode).w ; set Game Mode to Sega Screen
 
 MainGameLoop:
-		move.w	(v_gamemode).w,d0 ; load Game Mode
-		jsr	GameModeArray(pc,d0.w) ; jump to apt location in ROM
+		movea.w	(v_gamemode).w,a0 ; load Game Mode
+		jsr	(a0) ; jump to apt location in ROM
 		bra.s	MainGameLoop	; loop indefinitely
-; ===========================================================================
-; ---------------------------------------------------------------------------
-; Main game mode array
-; ---------------------------------------------------------------------------
-
-GameModeArray:
-
-ptr_GM_Sega:	bra.w	GM_Sega		; Sega Screen ($00)
-
-ptr_GM_Title:	bra.w	GM_Title	; Title	Screen ($04)
-
-ptr_GM_Demo:	bra.w	GM_Level	; Demo Mode ($08)
-
-ptr_GM_Level:	bra.w	GM_Level	; Normal Level ($0C)
-
-ptr_GM_Menu:	bra.w	GM_MenuScreen	; Level Select ($10)
-
 ; ===========================================================================
 
 CheckSumError:
 		bsr.w	VDPSetupGame
-		move.l	#$C0000000,(vdp_control_port).l ; set VDP to CRAM write
-		move.l	#$00E00E,d0
-		moveq	#bytesToLcnt($80),d7
-
-.fillred:
-		move.l	d0,(vdp_data_port).l ; fill palette with red
-		dbf	d7,.fillred	; repeat $3F more times
+		lea	(vdp_data_port).l,a0
+		move.l	#$C0000000,vdp_control_port-vdp_data_port(a0) ; set VDP to CRAM write
+		move.l	#$000E000E,d0
+	rept (v_palette_end-v_palette)/4
+		move.l	d0,(a0) ; fill palette with red
+	endr
 
 .endlessloop:
 		bra.s	.endlessloop
@@ -385,36 +366,25 @@ Art_Text_End:	even
 
 VInt:
 		movem.l	d0-a6,-(sp)
-		tst.w	(v_vbla_routine).w
+		tst.b	(v_vbla_counter).w
 		beq.s	VBla_00
 		move.l	#$40000010,(vdp_control_port).l
 		move.l	(v_scrposy_vdp).w,(vdp_data_port).l ; send screen y-axis pos. to VSRAM
-		move.w	(v_vbla_routine).w,d0
-		clr.w	(v_vbla_routine).w
-		st.b	(f_hbla_pal).w
-		movea.w	VBla_Index(pc,d0.w),a0
+		moveq	#-1,d0
+		move.b	d0,(f_hbla_pal).w
+		move.b	d0,(v_vbla_counter).w
+		movea.w	(v_vbla_routine).w,a0
 		jsr	(a0)
 
-		addq.l	#1,(v_vbla_count).w
 VBla_Exit:
 		movem.l	(sp)+,d0-a6
 		rte
 ; ===========================================================================
-VBla_Index:
-ptr_VB_00:	dc.w VBla_00
-ptr_VB_02:	dc.w VBla_02
-ptr_VB_04:	dc.w VBla_04
-ptr_VB_06:	dc.w VBla_06
-ptr_VB_08:	dc.w VBla_08
-ptr_VB_0A:	dc.w VBla_0A
-ptr_VB_0C:	dc.w VBla_0C
-ptr_VB_0E:	dc.w Vint_Menu
-; ===========================================================================
 
 VBla_00:
-		cmpi.w	#$80+id_Level,(v_gamemode).w
+		tst.b	(v_prelevel).w
 		beq.s	.islevel
-		cmpi.w	#id_Level,(v_gamemode).w ; is game on a level?
+		cmpi.w	#GM_Level,(v_gamemode).w ; is game on a level?
 		bne.s	VBla_Exit	; if not, branch
 
 .islevel:
@@ -442,7 +412,19 @@ VBla_02:
 		subq.w	#1,(v_demolength).w
 
 .end:
-		bra.w	sub_106E
+		readjoypads
+		tst.b	(f_wtr_state).w ; is water above top of screen?
+		bne.s	.waterabove	; if yes, branch
+		writeCRAM	v_palette,0
+		writeVRAMsrcdefined	v_spritetablebuffer,vram_sprites
+		writeVRAMsrcdefined	v_hscrolltablebuffer,vram_hscroll
+		rts
+
+.waterabove:
+		writeCRAM	v_palette_water,0
+		writeVRAMsrcdefined	v_spritetablebuffer,vram_sprites
+		writeVRAMsrcdefined	v_hscrolltablebuffer,vram_hscroll
+		rts
 ; ===========================================================================
 
 VBla_0C:
@@ -455,34 +437,29 @@ VBla_0C:
 ; ===========================================================================
 
 VBla_04:
-		bsr.w	sub_106E
+		readjoypads
+		tst.b	(f_wtr_state).w ; is water above top of screen?
+		bne.s	.waterabove	; if yes, branch
+		writeCRAM	v_palette,0
+		writeVRAMsrcdefined	v_spritetablebuffer,vram_sprites
+		writeVRAMsrcdefined	v_hscrolltablebuffer,vram_hscroll
 		tst.w	(v_demolength).w
-		beq.s	.end
+		beq.w	LoadTilesAsYouMove_BGOnly
 		subq.w	#1,(v_demolength).w
+		bra.w	LoadTilesAsYouMove_BGOnly
 
-.end:
+.waterabove:
+		writeCRAM	v_palette_water,0
+		writeVRAMsrcdefined	v_spritetablebuffer,vram_sprites
+		writeVRAMsrcdefined	v_hscrolltablebuffer,vram_hscroll
+		tst.w	(v_demolength).w
+		beq.w	LoadTilesAsYouMove_BGOnly
+		subq.w	#1,(v_demolength).w
 		bra.w	LoadTilesAsYouMove_BGOnly
 ; ===========================================================================
 
 VBla_06:
-		lea	(v_jpadhold).w,a0	; address where joypad states are written
-		lea	(z80_port_1_data).l,a1	; first	joypad port
-		clr.b	(a1)
-		nop
-		nop
-		move.b	(a1),d0
-		asl.b	#2,d0
-		move.b	#$40,(a1)
-		andi.w	#$C0,d0
-		move.b	(a1),d1
-		andi.w	#$3F,d1
-		or.b	d1,d0
-		not.b	d0
-		move.b	(a0),d1
-		eor.b	d0,d1
-		move.b	d0,(a0)+
-		and.b	d0,d1
-		move.b	d1,(a0)+
+		readjoypads
 		tst.b	(f_wtr_state).w
 		bne.s	.waterabove
 
@@ -527,24 +504,7 @@ Demo_Time:
 ; ===========================================================================
 
 VBla_08:
-		lea	(v_jpadhold).w,a0	; address where joypad states are written
-		lea	(z80_port_1_data).l,a1	; first	joypad port
-		clr.b	(a1)
-		nop
-		nop
-		move.b	(a1),d0
-		asl.b	#2,d0
-		move.b	#$40,(a1)
-		andi.w	#$C0,d0
-		move.b	(a1),d1
-		andi.w	#$3F,d1
-		or.b	d1,d0
-		not.b	d0
-		move.b	(a0),d1
-		eor.b	d0,d1
-		move.b	d0,(a0)+
-		and.b	d0,d1
-		move.b	d1,(a0)+
+		readjoypads
 		tst.b	(f_wtr_state).w
 		bne.s	.waterabove
 
@@ -568,76 +528,32 @@ VBla_08:
 ; ===========================================================================
 
 VBla_0A:
-		bsr.w	sub_106E
-		move.w	(v_hbla_hreg).w,(a5)
-		rts
-; ===========================================================================
-
-Vint_Menu:
-		lea	(v_jpadhold).w,a0	; address where joypad states are written
-		lea	(z80_port_1_data).l,a1	; first	joypad port
-		clr.b	(a1)
-		nop
-		nop
-		move.b	(a1),d0
-		asl.b	#2,d0
-		move.b	#$40,(a1)
-		andi.w	#$C0,d0
-		move.b	(a1),d1
-		andi.w	#$3F,d1
-		or.b	d1,d0
-		not.b	d0
-		move.b	(a0),d1
-		eor.b	d0,d1
-		move.b	d0,(a0)+
-		and.b	d0,d1
-		move.b	d1,(a0)+
-
-		writeCRAM	v_palette,0
-		writeVRAMsrcdefined	v_spritetablebuffer,vram_sprites
-		writeVRAMsrcdefined	v_hscrolltablebuffer,vram_hscroll
-
-		tst.w	(v_demolength).w
-		beq.s	+	; rts
-		subq.w	#1,(v_demolength).w
-+
-		bra.w	ProcessDMAQueue
-
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
-
-sub_106E:
-		lea	(v_jpadhold).w,a0	; address where joypad states are written
-		lea	(z80_port_1_data).l,a1	; first	joypad port
-		clr.b	(a1)
-		nop
-		nop
-		move.b	(a1),d0
-		asl.b	#2,d0
-		move.b	#$40,(a1)
-		andi.w	#$C0,d0
-		move.b	(a1),d1
-		andi.w	#$3F,d1
-		or.b	d1,d0
-		not.b	d0
-		move.b	(a0),d1
-		eor.b	d0,d1
-		move.b	d0,(a0)+
-		and.b	d0,d1
-		move.b	d1,(a0)+
+		readjoypads
 		tst.b	(f_wtr_state).w ; is water above top of screen?
 		bne.s	.waterabove	; if yes, branch
 		writeCRAM	v_palette,0
 		writeVRAMsrcdefined	v_spritetablebuffer,vram_sprites
 		writeVRAMsrcdefined	v_hscrolltablebuffer,vram_hscroll
+		move.w	(v_hbla_hreg).w,(a5)
 		rts
 
 .waterabove:
 		writeCRAM	v_palette_water,0
 		writeVRAMsrcdefined	v_spritetablebuffer,vram_sprites
 		writeVRAMsrcdefined	v_hscrolltablebuffer,vram_hscroll
+		move.w	(v_hbla_hreg).w,(a5)
 		rts
-; End of function sub_106E
+; ===========================================================================
+
+Vint_Menu:
+		readjoypads
+		writeCRAM	v_palette,0
+		writeVRAMsrcdefined	v_spritetablebuffer,vram_sprites
+		writeVRAMsrcdefined	v_hscrolltablebuffer,vram_hscroll
+		tst.w	(v_demolength).w
+		beq.w	ProcessDMAQueue
+		subq.w	#1,(v_demolength).w
+		bra.w	ProcessDMAQueue
 
 ; ---------------------------------------------------------------------------
 ; Horizontal interrupt
@@ -654,7 +570,7 @@ HInt:
 		movem.l	a0-a1,-(sp)
 
 		lea	(vdp_data_port).l,a1
-		move.w	#$8A00+223,vdp_control_port-vdp_data_port(a1)	; Reset HInt timing
+		move.w	#$8A00+224-1,vdp_control_port-vdp_data_port(a1)	; Reset HInt timing
 		lea	(v_palette_water).w,a0
 		move.l	#$C0000000,vdp_control_port-vdp_data_port(a1)
 	rept (v_palette_water_end-v_palette_water)/4
@@ -677,36 +593,6 @@ HInt2_Do_Updates:
 		rte
 ; End of function HInt
 
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
-
-VDPSetupGame:
-		lea	(vdp_data_port).l,a1
-		lea	vdp_control_port-vdp_data_port(a1),a0
-		lea	VDPSetupArray(pc),a2
-		moveq	#bytesToWcnt(VDPSetupArray_End-VDPSetupArray),d7
-
-.setreg:
-		move.w	(a2)+,(a0)
-		dbf	d7,.setreg	; set the VDP registers
-
-		move.w	VDPSetupArray+2(pc),(v_vdp_buffer1).w
-		move.w	#$8A00+224-1,(v_hbla_hreg).w	; H-INT every 224th scanline
-		moveq	#0,d0
-		move.l	#$C0000000,(vdp_control_port).l ; set VDP to CRAM write
-		moveq	#bytesToLcnt(v_palette_end-v_palette),d7
-
-.clrCRAM:
-		move.l	d0,(a1)
-		dbf	d7,.clrCRAM	; clear	the CRAM
-
-		clr.l	(v_scrposy_vdp).w
-		move.w	d1,-(sp)
-		fillVRAM	0,0,$10000	; clear the entirety of VRAM
-		move.w	(sp)+,d1
-		rts
-; End of function VDPSetupGame
-
 ; ===========================================================================
 VDPSetupArray:	dc.w $8004		; 8-colour mode
 		dc.w $8134		; enable V.interrupts, enable DMA
@@ -728,6 +614,34 @@ VDPSetupArray:	dc.w $8004		; 8-colour mode
 		dc.w $9100		; window horizontal position
 		dc.w $9200		; window vertical position
 VDPSetupArray_End:
+
+; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
+
+
+VDPSetupGame:
+		lea	(vdp_data_port).l,a1
+		lea	vdp_control_port-vdp_data_port(a1),a0
+		lea	VDPSetupArray(pc),a2
+	rept (VDPSetupArray_End-VDPSetupArray)/4
+		move.l	(a2)+,(a0)
+	endr
+	; ensure last 2 bytes are not discarded.
+		move.w	(a2)+,(a0)
+
+		move.w	VDPSetupArray+2(pc),(v_vdp_buffer1).w
+		move.w	#$8A00+224-1,(v_hbla_hreg).w	; H-INT every 224th scanline
+		moveq	#0,d0
+		move.l	#$C0000000,(vdp_control_port).l ; set VDP to CRAM write
+	rept (v_palette_end-v_palette)
+		move.l	d0,(a1)
+	endr
+
+		clr.l	(v_scrposy_vdp).w
+		move.w	d1,-(sp)
+		fillVRAM	0,0,$10000	; clear the entirety of VRAM
+		move.w	(sp)+,d1
+		rts
+; End of function VDPSetupGame
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to	clear the screen
@@ -908,7 +822,7 @@ PalFadeIn_Alt:				; start position and size are already set
 		moveq	#$15,d4
 
 .mainloop:
-		move.w	#id_VB_0A,(v_vbla_routine).w
+		move.w	#VBla_0A,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		bsr.s	FadeIn_FromBlack
 		dbf	d4,.mainloop
@@ -1002,7 +916,7 @@ PaletteFadeOut:
 		moveq	#$15,d4
 
 .mainloop:
-		move.w	#id_VB_0A,(v_vbla_routine).w
+		move.w	#VBla_0A,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		bsr.s	FadeOut_ToBlack
 		dbf	d4,.mainloop
@@ -1095,7 +1009,7 @@ PaletteWhiteIn:
 		moveq	#$15,d4
 
 .mainloop:
-		move.w	#id_VB_0A,(v_vbla_routine).w
+		move.w	#VBla_0A,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		bsr.s	WhiteIn_FromWhite
 		dbf	d4,.mainloop
@@ -1188,7 +1102,7 @@ PaletteWhiteOut:
 		moveq	#$15,d4
 
 .mainloop:
-		move.w	#id_VB_0A,(v_vbla_routine).w
+		move.w	#VBla_0A,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		bsr.s	WhiteOut_ToWhite
 		dbf	d4,.mainloop
@@ -1334,7 +1248,7 @@ loc_206A:
 loc_2088:
 		move.w	d0,(v_pcyc_num).w
 		lea	Pal_Sega2(pc,d0.w),a0
-		lea	(v_palette+$04).w,a1
+		lea	(v_palette+4).w,a1
 		move.l	(a0)+,(a1)+
 		move.l	(a0)+,(a1)+
 		move.w	(a0)+,(a1)
@@ -1483,11 +1397,14 @@ Pal_SBZ3SonWat:	bincludePalette	"palette/Sonic - SBZ3 Underwater.bin"
 
 
 WaitForVBla:
+		lea	(v_vbla_counter).w,a0
+		move.b	#1,(a0)
 		enable_ints
 
 .wait:
-		tst.w	(v_vbla_routine).w ; has VInt routine finished?
-		bne.s	.wait		; if not, branch
+		tst.b	(a0) ; has VInt routine finished?
+		bpl.s	.wait		; if not, branch
+		clr.b	(a0)
 		rts
 ; End of function WaitForVBla
 
@@ -1514,11 +1431,11 @@ GM_Sega:
 		displayOff
 		bsr.w	ClearScreen
 		lea	(KosP_SegaLogo).l,a0 ; load Sega	logo patterns
-		lea	(v_128x128).l,a1
+		lea	(v_128x128_end).w,a1
 		bsr.w	KosPlusDec
 		move.w	a1,d3
 		lsr.w	#1,d3
-		move.l	#dmaSource(v_128x128),d1
+		move.l	#dmaSource(v_128x128_end),d1
 		moveq	#tiles_to_bytes(ArtTile_Level),d2
 		bsr.w	QueueDMATransfer
 		bsr.w	ProcessDMAQueue
@@ -1537,11 +1454,9 @@ GM_Sega:
 .loadpal:
 		lea	(v_palette).w,a0
 		move.l	#$0EEE0EEE,d0
-		moveq	#bytesToLcnt(v_palette_end-v_palette),d1
-
-.loop:
+	rept (v_palette_end-v_palette)/4
 		move.l	d0,(a0)+	; move data to RAM
-		dbf	d1,.loop
+	endr
 		move.w	#-$A,(v_pcyc_num).w
 		moveq	#0,d0
 		move.w	d0,(v_pcyc_time).w
@@ -1549,18 +1464,18 @@ GM_Sega:
 		displayOn
 
 Sega_WaitPal:
-		move.w	#id_VB_02,(v_vbla_routine).w
+		move.w	#VBla_02,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		bsr.w	PalCycle_Sega
 		bne.s	Sega_WaitPal
 
 		playsound sfx_Sega,music
-		move.w	#id_VB_0C,(v_vbla_routine).w
+		move.w	#VBla_0C,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		move.w	#30,(v_demolength).w ; wait 30 frames (0.5 seconds)
 
 Sega_WaitEnd:
-		move.w	#id_VB_02,(v_vbla_routine).w
+		move.w	#VBla_02,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		tst.w	(v_demolength).w ; has demo length reached 0?
 		beq.s	Sega_GotoTitle	; if so, go to the title screen
@@ -1568,7 +1483,7 @@ Sega_WaitEnd:
 		bpl.s	Sega_WaitEnd	; if not, branch
 
 Sega_GotoTitle:
-		move.w	#id_Title,(v_gamemode).w ; go to title screen
+		move.w	#GM_Title,(v_gamemode).w ; go to title screen
 		rts
 ; ===========================================================================
 
@@ -1640,15 +1555,6 @@ GM_Title:
 		tst.w	(Kos_modules_left).w ; are there any items in the pattern load cue?
 		bne.s	.waitplc2 ; if yes, branch
 
-		lea	(vdp_data_port).l,a6
-		locVRAM	ArtTile_Level_Select_Font*tile_size,vdp_control_port-vdp_data_port(a6)
-		lea	Art_Text(pc),a5	; load level select font
-		move.w	#bytesToLcnt(Art_Text_End-Art_Text),d1
-
-Tit_LoadText:
-		move.l	(a5)+,(a6)
-		dbf	d1,Tit_LoadText	; load level select font
-
 		moveq	#0,d0
 		move.b	d0,(v_lastlamp).w ; clear lamppost counter
 	if DebuggingMode
@@ -1665,7 +1571,7 @@ Tit_LoadText:
 		lea	(v_16x16).w,a1
 		moveq	#make_art_tile(ArtTile_Level,0,FALSE),d0
 		bsr.w	EniDec
-		lea	(Blk256_GHZ).l,a0 ; load GHZ 256x256 mappings
+		lea	(Blk128_GHZ).l,a0 ; load GHZ 128x128 mappings
 		lea	(v_128x128).l,a1
 		bsr.w	KosPlusDec
 		bsr.w	LevelLayoutLoad
@@ -1675,7 +1581,7 @@ Tit_LoadText:
 		lea	(vdp_data_port).l,a6
 		lea	vdp_control_port-vdp_data_port(a6),a5
 		lea	(v_bgscreenposx).w,a3
-		lea	(Level_layout_main+2).w,a4
+		lea	(Level_layout_bg).w,a4
 		move.w	#$6000,d2
 		bsr.w	DrawChunks
 		lea	(Eni_Title).l,a0 ; load	title screen mappings
@@ -1711,8 +1617,8 @@ Tit_LoadText:
 		move.l	#PSBTM,(v_pressstart).w ; load "PRESS START BUTTON" object
 		;clr.b	(v_pressstart+obRoutine).w ; The 'Mega Games 10' version of Sonic 1 added this line, to fix the 'PRESS START BUTTON' object not appearing
 
-		tst.b   (v_megadrive).w	; is console Japanese?
-		bpl.s   .isjap		; if yes, branch
+		tst.b	(v_megadrive).w	; is console Japanese?
+		bpl.s	.isjap		; if yes, branch
 		move.l	#PSBTM,(v_titletm).w ; load "TM" object
 		move.b	#3,(v_titletm+obFrame).w
 .isjap:
@@ -1724,17 +1630,17 @@ Tit_LoadText:
 		moveq	#plcid_Main,d0
 		bsr.w	NewPLC
 
-.waitplc:
+.waitplc3:
 		bsr.w	Process_Kos_Queue
 		bsr.w	ProcessDMAQueue
 		bsr.w	Process_Kos_Module_Queue
 		tst.w	(Kos_modules_left).w ; are there any items in the pattern load cue?
-		bne.s	.waitplc ; if yes, branch
+		bne.s	.waitplc3 ; if yes, branch
 		clr.l	(v_title_dcount).w
 		bsr.w	PaletteFadeIn
 
 Tit_MainLoop:
-		move.w	#id_VB_04,(v_vbla_routine).w
+		move.w	#VBla_04,(v_vbla_routine).w
 		bsr.w	Process_Kos_Queue
 		bsr.w	WaitForVBla
 		bsr.w	ProcessDMAQueue
@@ -1747,7 +1653,7 @@ Tit_MainLoop:
 		cmpi.w	#$1C00,(v_player+obX).w	; has Sonic object passed $1C00 on x-axis?
 		blo.s	Tit_ChkRegion	; if not, branch
 
-		move.w	#id_Sega,(v_gamemode).w ; go to Sega screen
+		move.w	#GM_Sega,(v_gamemode).w ; go to Sega screen
 		rts
 ; ===========================================================================
 
@@ -1811,7 +1717,7 @@ Tit_ChkLevSel:
 		beq.w	PlayLevel	; if not, play level
 		btst	#bitA,(v_jpadhold).w ; check if A is pressed
 		beq.w	PlayLevel	; if not, play level
-		move.w	#id_Menu,(v_gamemode).w ; go to title screen
+		move.w	#GM_MenuScreen,(v_gamemode).w ; go to title screen
 		rts
 ; ---------------------------------------------------------------------------
 ; Level	select codes
@@ -1828,31 +1734,30 @@ LevSelCode_US:	dc.b btnUp,btnDn,btnL,btnR,0,$FF
 ; ---------------------------------------------------------------------------
 
 GotoDemo:
-		move.w	#30,(v_demolength).w
+		move.w	#60/2,(v_demolength).w ; wait half a second
 
 loc_33B6:
-		move.w	#id_VB_04,(v_vbla_routine).w
+		move.w	#VBla_04,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		bsr.w	DeformLayers
 		bsr.w	PaletteCycle
 		addq.w	#2,(v_player+obX).w
 		cmpi.w	#$1C00,(v_player+obX).w
 		blo.s	loc_33E4
-		move.w	#id_Sega,(v_gamemode).w
+		move.w	#GM_Sega,(v_gamemode).w
 		rts
 ; ===========================================================================
 
 loc_33E4:
 		tst.b	(v_jpadpress).w ; is Start button pressed?
-		bmi.w	Tit_ChkLevSel	; if yes, branch
+		bmi.s	Tit_ChkLevSel	; if yes, branch
 		tst.w	(v_demolength).w
 		bne.s	loc_33B6
 		playsound bgm_Fade,music
-		move.w	(v_demonum).w,d0 ; load	demo number
-		andi.w	#7,d0
+		moveq	#7,d0
+		and.w	(v_demonum).w,d0 ; load	demo number
 		add.w	d0,d0
-		move.w	Demo_Levels(pc,d0.w),d0	; load level number for	demo
-		move.w	d0,(v_zone).w
+		move.w	Demo_Levels(pc,d0.w),(v_zone).w	; load level number for	demo
 		addq.w	#1,(v_demonum).w ; add 1 to demo number
 		cmpi.w	#4,(v_demonum).w ; is demo number less than 4?
 		blo.s	loc_3422	; if yes, branch
@@ -1860,7 +1765,8 @@ loc_33E4:
 
 loc_3422:
 		move.w	#1,(f_demo).w	; turn demo mode on
-		move.w	#id_Demo,(v_gamemode).w ; set screen mode to 08 (demo)
+		st.b	(v_gmdemo).w ; set screen mode to 08 (demo)
+		move.w	#GM_Level,(v_gamemode).w ; set screen mode to 08 (demo)
 		move.b	#3,(v_lives).w	; set lives to 3
 		moveq	#0,d0
 		move.w	d0,(v_rings).w	; clear rings
@@ -1876,34 +1782,32 @@ Demo_Levels:	binclude	"misc/Demo Level Order - Intro.bin"
 		even
 
 		include	"_inc/Menus.asm"
-; ---------------------------------------------------------------------------
-; Music	playlist
-; ---------------------------------------------------------------------------
+
 MusicList:
-		dc.b bgm_GHZ	; GHZ1
-		dc.b bgm_GHZ	; GHZ2
-		dc.b bgm_GHZ	; GHZ3
-		dc.b bgm_GHZ	; GHZ4
-		dc.b bgm_LZ	; LZ1
-		dc.b bgm_LZ	; LZ2
-		dc.b bgm_LZ	; LZ3
-		dc.b bgm_SBZ	; SBZ3
-		dc.b bgm_MZ	; MZ1
-		dc.b bgm_MZ	; MZ2
-		dc.b bgm_MZ	; MZ3
-		dc.b bgm_MZ	; MZ4
-		dc.b bgm_SLZ	; SLZ1
-		dc.b bgm_SLZ	; SLZ2
-		dc.b bgm_SLZ	; SLZ3
-		dc.b bgm_SLZ	; SLZ4
-		dc.b bgm_SYZ	; SYZ1
-		dc.b bgm_SYZ	; SYZ2
-		dc.b bgm_SYZ	; SYZ3
-		dc.b bgm_SYZ	; SYZ4
-		dc.b bgm_SBZ	; SBZ1
-		dc.b bgm_SBZ	; SBZ2
-		dc.b bgm_FZ	; FZ
-		dc.b bgm_SBZ	; SBZ4
+		dc.b	bgm_GHZ	; Green Hill Zone Act 1
+		dc.b	bgm_GHZ	; Green Hill Zone Act 2
+		dc.b	bgm_GHZ	; Green Hill Zone Act 3
+		dc.b	bgm_GHZ	; Green Hill Zone Act 4
+		dc.b	bgm_LZ	; Labyrinth Zone Act 1
+		dc.b	bgm_LZ	; Labyrinth Zone Act 2
+		dc.b	bgm_LZ	; Labyrinth Zone Act 3
+		dc.b	bgm_SBZ	; Scrap Brain Zone Act 3
+		dc.b	bgm_MZ	; Marble Zone Act 1
+		dc.b	bgm_MZ	; Marble Zone Act 2
+		dc.b	bgm_MZ	; Marble Zone Act 3
+		dc.b	bgm_MZ	; Marble Zone Act 4
+		dc.b	bgm_SLZ	; Star Light Zone Act 1
+		dc.b	bgm_SLZ	; Star Light Zone Act 2
+		dc.b	bgm_SLZ	; Star Light Zone Act 3
+		dc.b	bgm_SLZ	; Star Light Zone Act 4
+		dc.b	bgm_SYZ	; Spring Yard Zone Act 1
+		dc.b	bgm_SYZ	; Spring Yard Zone Act 2
+		dc.b	bgm_SYZ	; Spring Yard Zone Act 3
+		dc.b	bgm_SYZ	; Spring Yard Zone Act 4
+		dc.b	bgm_SBZ	; Scrap Brain Zone Act 1
+		dc.b	bgm_SBZ	; Scrap Brain Zone Act 2
+		dc.b	bgm_FZ	; Final Zone
+		dc.b	bgm_SBZ	; Scrap Brain Zone Act 4
 		even
 ; ===========================================================================
 
@@ -1912,16 +1816,16 @@ MusicList:
 ; ---------------------------------------------------------------------------
 
 GM_Level:
-		bset	#7,(v_gamemode).w ; add $80 to screen mode (for pre level sequence)
+		st.b	(v_prelevel).w ; enable pre level sequence flag
 		playsound bgm_Fade,music
 		clearRAM Kos_decomp_stored_registers, Kos_module_end
 		bsr.w	PaletteFadeOut
 		lea	(KosPM_TitleCard).l,a1 ; load title card patterns
 		move.w	#tiles_to_bytes(ArtTile_Title_Card),d2
 		bsr.w	Queue_Kos_Module
-		moveq	#0,d0
-		move.b	(v_zone).w,d0
-		lsl.w	#4,d0
+		move.w	(v_zone).w,d0
+		ror.b	#2,d0
+		lsr.w	#2,d0
 		lea	(LevelHeaders).l,a2
 		lea	(a2,d0.w),a2
 		moveq	#0,d0
@@ -1946,7 +1850,7 @@ Level_ClrRam:
 		move.w	#$9001,(a6)		; 64-cell hscroll size
 		move.w	#$8004,(a6)		; 8-colour mode
 		move.w	#$8720,(a6)		; set background colour (line 3; colour 0)
-		move.w	#$8A00+223,(v_hbla_hreg).w ; set palette change position (for water)
+		move.w	#$8A00+224-1,(v_hbla_hreg).w ; set palette change position (for water)
 		move.w	(v_hbla_hreg).w,(a6)
 		cmpi.b	#id_LZ,(v_zone).w ; is level LZ?
 		bne.s	Level_LoadPal	; if not, branch
@@ -1988,15 +1892,15 @@ Level_GetBgm:
 		move.w	(v_zone).w,d0
 		ror.b	#2,d0
 		lsr.w	#6,d0
-		lea	MusicList(pc),a1 ; load	music playlist
-		move.b	(a1,d0.w),d0
+		lea	MusicList(pc),a0
+		move.b	(a0,d0.w),(v_saved_music).w
 		stopZ80
-		move.b	d0,(z80_ram+zAbsVar.Queue0).l
+		move.b	(v_saved_music).w,(z80_ram+zAbsVar.Queue0).l
 		startZ80
 		move.l	#TitleCard,(v_titlecard).w ; load title card object
 
 Level_TtlCardLoop:
-		move.w	#id_VB_08,(v_vbla_routine).w
+		move.w	#VBla_08,(v_vbla_routine).w
 		bsr.w	Process_Kos_Queue
 		bsr.w	WaitForVBla
 		bsr.w	Process_Kos_Module_Queue
@@ -2013,7 +1917,6 @@ Level_TtlCardLoop:
 		bsr.w	LevelSizeLoad
 		bsr.w	DeformLayers
 		bset	#2,(v_fg_scroll_flags).w
-		bsr.w	LevelLoadTiles
 		bsr.w	LevelDataLoad ; load block mappings and palettes
 		bsr.w	LoadTilesFromStart
 		bsr.w	ColIndexLoad
@@ -2028,8 +1931,7 @@ Level_ChkDebug:
 		tst.b	(f_debugcheat).w ; has debug cheat been entered?
 		beq.s	Level_ChkWater	; if not, branch
 		btst	#bitA,(v_jpadhold).w ; is A button held?
-		beq.s	Level_ChkWater	; if not, branch
-		move.b	#1,(f_debugmode).w ; enable debug mode
+		sne.b	(f_debugmode).w ; if so, enable debug mode
 	endif
 
 Level_ChkWater:
@@ -2077,7 +1979,7 @@ Level_SkipClr:
 		movea.w	(a1,d0.w),a1
 		move.b	1(a1),(v_btnpushtime2).w ; load key press duration
 		subq.b	#1,(v_btnpushtime2).w ; subtract 1 from duration
-		move.w	#1800,(v_demolength).w
+		move.w	#60*30,(v_demolength).w ; wait 30 seconds
 
 Level_ChkWaterPal:
 		cmpi.b	#id_LZ,(v_zone).w ; is level LZ/SBZ3?
@@ -2091,12 +1993,8 @@ Level_WtrNotSbz:
 		bsr.w	PalLoad_Water
 
 Level_Delay:
-		moveq	#3,d1
-
-Level_DelayLoop:
-		move.w	#id_VB_06,(v_vbla_routine).w
+		move.w	#VBla_06,(v_vbla_routine).w
 		bsr.w	WaitForVBla
-		dbf	d1,Level_DelayLoop
 
 		move.w	#$202F,(v_pfade_start).w ; fade in 2nd, 3rd & 4th palette lines
 		bsr.w	PalFadeIn_Alt
@@ -2105,7 +2003,7 @@ Level_DelayLoop:
 		move.b	d0,(v_ttlcardzone+obRoutine).w
 		move.b	d0,(v_ttlcardact+obRoutine).w
 		move.b	d0,(v_ttlcardoval+obRoutine).w
-		bclr	#7,(v_gamemode).w ; subtract $80 from mode to end pre-level stuff
+		clr.b	(v_prelevel).w ; end pre-level stuff
 
 ; ---------------------------------------------------------------------------
 ; Main level loop (when	all title card and loading sequences are finished)
@@ -2113,7 +2011,7 @@ Level_DelayLoop:
 
 Level_MainLoop:
 		bsr.w	PauseGame
-		move.w	#id_VB_06,(v_vbla_routine).w
+		move.w	#VBla_06,(v_vbla_routine).w
 		bsr.w	Process_Kos_Queue
 		bsr.w	WaitForVBla
 		bsr.w	Process_Kos_Module_Queue
@@ -2143,9 +2041,9 @@ Level_SkipScroll:
 		bsr.w	SynchroAnimate
 		bsr.w	SignpostArtLoad
 
-		cmpi.w	#id_Demo,(v_gamemode).w
-		beq.s	Level_ChkDemo	; if mode is 8 (demo), branch
-		cmpi.w	#id_Level,(v_gamemode).w
+		tst.b	(v_gmdemo).w
+		bne.s	Level_ChkDemo	; if mode is 8 (demo), branch
+		cmpi.w	#GM_Level,(v_gamemode).w
 		beq.s	Level_MainLoop	; if mode is $C (level), branch
 		rts
 ; ===========================================================================
@@ -2155,24 +2053,24 @@ Level_ChkDemo:
 		bne.s	Level_EndDemo	; if yes, branch
 		tst.w	(v_demolength).w ; is there time left on the demo?
 		beq.s	Level_EndDemo	; if not, branch
-		cmpi.w	#id_Demo,(v_gamemode).w
-		beq.w	Level_MainLoop	; if mode is 8 (demo), branch
-		move.w	#id_Sega,(v_gamemode).w ; go to Sega screen
+		tst.b	(v_gmdemo).w
+		bne.w	Level_MainLoop	; if mode is 8 (demo), branch
+		move.w	#GM_Sega,(v_gamemode).w ; go to Sega screen
 		rts
 ; ===========================================================================
 
 Level_EndDemo:
-		cmpi.w	#id_Demo,(v_gamemode).w
+		tst.b	(v_gmdemo).w
 		bne.s	Level_FadeDemo	; if mode is 8 (demo), branch
-		move.w	#id_Sega,(v_gamemode).w ; go to Sega screen
+		move.w	#GM_Sega,(v_gamemode).w ; go to Sega screen
 
 Level_FadeDemo:
-		move.w	#60,(v_demolength).w
+		move.w	#60,(v_demolength).w ; wait 1 second
 		move.w	#($80/2)-1,(v_pfade_start).w
 		clr.w	(v_palchgspeed).w
 
 Level_FDLoop:
-		move.w	#id_VB_06,(v_vbla_routine).w
+		move.w	#VBla_06,(v_vbla_routine).w
 		bsr.w	Process_Kos_Queue
 		bsr.w	WaitForVBla
 		bsr.w	Process_Kos_Module_Queue
@@ -2181,6 +2079,7 @@ Level_FDLoop:
 		jsr	(BuildSprites).l
 		jsr	(ObjPosLoad).l
 		jsr	(RingsManager).l
+		jsr	(AnimateLevelGfx).l
 		subq.w	#1,(v_palchgspeed).w
 		bpl.s	loc_3BC8
 		move.w	#2,(v_palchgspeed).w
@@ -2203,10 +2102,9 @@ loc_3BC8:
 
 
 ColIndexLoad:
-		moveq	#0,d0
-		move.b	(v_zone).w,d0
-		add.w	d0,d0					; multiply by 4
-		add.w	d0,d0
+		move.w	(v_zone).w,d0
+		ror.b	#2,d0
+		lsr.w	#4,d0
 		move.l	ColPointers_1(pc,d0.w),(v_colladdr1).w	; MJ: get first collision set
 		move.l	ColPointers_2(pc,d0.w),(v_colladdr2).w	; MJ: get second collision set
 		rts
@@ -2217,17 +2115,53 @@ ColIndexLoad:
 ; Collision index pointers
 ; ---------------------------------------------------------------------------
 ColPointers_1:	dc.l Col_GHZ_1	; MJ: each zone now has two entries
+		dc.l Col_GHZ_1
+		dc.l Col_GHZ_1
+		dc.l Col_GHZ_1
+		dc.l Col_LZ_1
+		dc.l Col_LZ_1
+		dc.l Col_LZ_1
 		dc.l Col_LZ_1
 		dc.l Col_MZ_1
+		dc.l Col_MZ_1
+		dc.l Col_MZ_1
+		dc.l Col_MZ_1
+		dc.l Col_SLZ_1
+		dc.l Col_SLZ_1
+		dc.l Col_SLZ_1
 		dc.l Col_SLZ_1
 		dc.l Col_SYZ_1
+		dc.l Col_SYZ_1
+		dc.l Col_SYZ_1
+		dc.l Col_SYZ_1
+		dc.l Col_SBZ_1
+		dc.l Col_SBZ_1
+		dc.l Col_SBZ_1
 		dc.l Col_SBZ_1
 
 ColPointers_2:	dc.l Col_GHZ_2
+		dc.l Col_GHZ_2
+		dc.l Col_GHZ_2
+		dc.l Col_GHZ_2
+		dc.l Col_LZ_2
+		dc.l Col_LZ_2
+		dc.l Col_LZ_2
 		dc.l Col_LZ_2
 		dc.l Col_MZ_2
+		dc.l Col_MZ_2
+		dc.l Col_MZ_2
+		dc.l Col_MZ_2
+		dc.l Col_SLZ_2
+		dc.l Col_SLZ_2
+		dc.l Col_SLZ_2
 		dc.l Col_SLZ_2
 		dc.l Col_SYZ_2
+		dc.l Col_SYZ_2
+		dc.l Col_SYZ_2
+		dc.l Col_SYZ_2
+		dc.l Col_SBZ_2
+		dc.l Col_SBZ_2
+		dc.l Col_SBZ_2
 		dc.l Col_SBZ_2
 
 		include	"_inc/Oscillatory Routines.asm"
@@ -2323,7 +2257,7 @@ LoadTilesAsYouMove_BGOnly:
 		lea	vdp_control_port-vdp_data_port(a6),a5
 		lea	(v_bg1_scroll_flags).w,a2
 		lea	(v_bgscreenposx).w,a3
-		lea	(Level_layout_main+2).w,a4
+		lea	(Level_layout_bg).w,a4
 		move.w	#$6000,d2
 		bsr.w	DrawBGScrollBlock1
 		lea	(v_bg2_scroll_flags).w,a2
@@ -2344,7 +2278,7 @@ LoadTilesAsYouMove:
 		; First, update the background
 		lea	(v_bg1_scroll_flags_dup).w,a2	; Scroll block 1 scroll flags
 		lea	(v_bgscreenposx_dup).w,a3	; Scroll block 1 X coordinate
-		lea	(Level_layout_main+2).w,a4
+		lea	(Level_layout_bg).w,a4
 		move.w	#$6000,d2			; VRAM thing for selecting Plane B
 		bsr.w	DrawBGScrollBlock1
 		lea	(v_bg2_scroll_flags_dup).w,a2	; Scroll block 2 scroll flags
@@ -2547,7 +2481,9 @@ locj_6E28:
 		move.l	(sp)+,d4
 		move.l	(sp)+,d5
 		bsr.w	DrawBlocks_LR
-		bra.s	locj_6E72
+		tst.b	(a2)
+		bne.s	locj_6E78
+		rts
 ;===============================================================================
 locj_6E5E:
 		moveq	#0,d5
@@ -2643,7 +2579,9 @@ locj_6F66:
 		move.l	(sp)+,d4
 		move.l	(sp)+,d5
 		bsr.w	DrawBlocks_LR
-		bra.s	locj_6FAE
+		tst.b	(a2)
+		bne.s	locj_6FB4
+		rts
 ;===============================================================================
 locj_6F9A:
 		moveq	#0,d5
@@ -3041,18 +2979,19 @@ locj_72da:
 		bra.w	DrawBlocks_LR_3
 
 ; ---------------------------------------------------------------------------
-; Subroutine to load 8x8 level tiles
+; Subroutine to load basic level data
 ; ---------------------------------------------------------------------------
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
 
-LevelLoadTiles:
-		moveq	#0,d0
-		move.b	(v_zone).w,d0
-		lsl.w	#4,d0
+LevelDataLoad:
+		move.w	(v_zone).w,d0
+		ror.b	#2,d0
+		lsr.w	#2,d0
 		lea	(LevelHeaders).l,a2
 		lea	(a2,d0.w),a2
+		move.l	a2,-(sp)
 		movea.l	(a2)+,a0
 		lea	(v_128x128).l,a1
 		bsr.w	KosPlusDec
@@ -3071,28 +3010,11 @@ LevelLoadTiles:
 		lsr.l	#1,d1
 		bsr.w	QueueDMATransfer
 		move.w	d7,-(sp)
-		move.w	#id_VB_08,(v_vbla_routine).w
+		move.w	#VBla_08,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		move.w	(sp)+,d7
 		move.w	#$800,d3
 		dbf	d7,.loop
-		rts
-
-; ---------------------------------------------------------------------------
-; Subroutine to load basic level data
-; ---------------------------------------------------------------------------
-
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
-
-LevelDataLoad:
-		moveq	#0,d0
-		move.b	(v_zone).w,d0
-		lsl.w	#4,d0
-		lea	(LevelHeaders).l,a2
-		lea	(a2,d0.w),a2
-		move.l	a2,-(sp)
-		addq.l	#4,a2
 		movea.l	(a2)+,a0
 		lea	(v_16x16).w,a1	; RAM address for 16x16 mappings
 		moveq	#make_art_tile(ArtTile_Level,0,FALSE),d0
@@ -3103,18 +3025,7 @@ LevelDataLoad:
 		lea	(v_128x128).l,a1 ; RAM address for 128x128 mappings
 		bsr.w	KosPlusDec
 		bsr.s	LevelLayoutLoad
-		moveq	#0,d0
 		move.b	(a2),d0
-		cmpi.w	#(id_LZ<<8)+3,(v_zone).w ; is level SBZ3 (LZ4) ?
-		bne.s	.notSBZ3	; if not, branch
-		moveq	#palid_SBZ3,d0	; use SB3 palette
-
-.notSBZ3:
-		cmpi.w	#(id_SBZ<<8)+0,(v_zone).w ; is level SBZ1?
-		bne.s	.normalpal	; if not, branch
-		moveq	#palid_SBZ1,d0	; use SBZ1 palette
-
-.normalpal:
 		bsr.w	PalLoad_Fade	; load palette (based on d0)
 		movea.l	(sp)+,a2
 		addq.w	#4,a2		; read number for 2nd PLC
@@ -3137,11 +3048,9 @@ LevelLayoutLoad:
 		lea	(Level_Index).l,a0
 		movea.l	(a0,d0.w),a0
 		lea	(Level_layout_header).w,a1
-		move.w	#bytesToLcnt(Level_layout_main_end-Level_layout_header),d2
-
-.loop:
+	rept (Level_layout_main_end-Level_layout_header)/4
 		move.l	(a0)+,(a1)+
-		dbf	d2,.loop
+	endr
 		rts
 ; End of function LevelLayoutLoad
 
@@ -3323,7 +3232,23 @@ MvSonicOnPtfm:
 		lea	(v_player).w,a1
 		move.w	obY(a0),d0
 		sub.w	d3,d0
-		bra.s	MvSonic2
+		tst.b	(f_playerctrl).w
+		bmi.s	.locret
+		cmpi.b	#6,(v_player+obRoutine).w
+		bhs.s	.locret
+	if DebuggingMode
+		tst.w	(v_debuguse).w
+		bne.s	.locret
+	endif
+		moveq	#0,d1
+		move.b	obHeight(a1),d1
+		sub.w	d1,d0
+		move.w	d0,obY(a1)
+		sub.w	obX(a0),d2
+		sub.w	d2,obX(a1)
+
+.locret:
+		rts
 ; End of function MvSonicOnPtfm
 
 ; ---------------------------------------------------------------------------
@@ -3396,7 +3321,13 @@ loc_8486:
 ; ===========================================================================
 
 loc_84AA:
-		bsr.w	FindFreeObj
+		lea	(v_lvlobjspace).w,a1 ; start address for object RAM
+		moveq	#(v_lvlobjend-v_lvlobjspace)/object_size-1,d0
+
+.loop:
+		lea	object_size(a1),a1
+		tst.l	obID(a1)
+		dbeq	d0,.loop
 		bne.s	loc_84F2
 		addq.w	#6,a3
 
@@ -4569,7 +4500,7 @@ Sonic_Main:	; Routine 0
 
 Sonic_Control:	; Routine 2
 	if DebuggingMode
-		tst.w	(f_debugmode).w	; is debug cheat enabled?
+		tst.b	(f_debugmode).w	; is debug cheat enabled?
 		beq.s	loc_12C58	; if not, branch
 		btst	#bitB,(v_jpadpress).w ; is button B pressed?
 		beq.s	loc_12C58	; if not, branch
@@ -4694,12 +4625,7 @@ SonicDynPLC:	include	"_maps/Sonic - Dynamic Gfx Script.asm"
 ResumeMusic:
 		cmpi.w	#12,(v_air).w	; more than 12 seconds of air left?
 		bhi.s	.over12		; if yes, branch
-		moveq	#bgm_LZ,d0	; play LZ music
-		cmpi.w	#(id_LZ<<8)+3,(v_zone).w ; check if level is 0103 (SBZ3)
-		bne.s	.notsbz
-		moveq	#bgm_SBZ,d0	; play SBZ music
-
-.notsbz:
+		move.b	(v_saved_music).w,d0	; play saved music
 		tst.b	(v_invinc).w ; is Sonic invincible?
 		beq.s	.notinvinc ; if not, branch
 		moveq	#bgm_Invincible,d0
@@ -5212,7 +5138,7 @@ Map_Cred:	include	"_maps/Credits.asm"
 
 BossDefeated:
 		moveq	#7,d0
-		and.b	(v_vbla_byte).w,d0
+		and.b	(v_framebyte).w,d0
 		bne.s	locret_178A2
 		jsr	(FindFreeObj).l
 		bne.s	locret_178A2
@@ -5611,37 +5537,37 @@ KosP_GHZ_1st:	binclude	"artkosp/8x8 - Title.kosp"	; GHZ primary patterns
 		even
 KosP_GHZ_2nd:	binclude	"artkosp/8x8 - GHZ.kosp"	; GHZ secondary patterns
 		even
-Blk256_GHZ:	binclude	"map128/GHZ.kosp"
+Blk128_GHZ:	binclude	"map128/GHZ.kosp"
 		even
 Blk16_LZ:	binclude	"map16/LZ.eni"
 		even
 KosP_LZ:	binclude	"artkosp/8x8 - LZ.kosp"	; LZ primary patterns
 		even
-Blk256_LZ:	binclude	"map128/LZ.kosp"
+Blk128_LZ:	binclude	"map128/LZ.kosp"
 		even
 Blk16_MZ:	binclude	"map16/MZ.eni"
 		even
 KosP_MZ:	binclude	"artkosp/8x8 - MZ.kosp"	; MZ primary patterns
 		even
-Blk256_MZ:	binclude	"map128/MZ.kosp"
+Blk128_MZ:	binclude	"map128/MZ.kosp"
 		even
 Blk16_SLZ:	binclude	"map16/SLZ.eni"
 		even
 KosP_SLZ:	binclude	"artkosp/8x8 - SLZ.kosp"	; SLZ primary patterns
 		even
-Blk256_SLZ:	binclude	"map128/SLZ.kosp"
+Blk128_SLZ:	binclude	"map128/SLZ.kosp"
 		even
 Blk16_SYZ:	binclude	"map16/SYZ.eni"
 		even
 KosP_SYZ:	binclude	"artkosp/8x8 - SYZ.kosp"	; SYZ primary patterns
 		even
-Blk256_SYZ:	binclude	"map128/SYZ.kosp"
+Blk128_SYZ:	binclude	"map128/SYZ.kosp"
 		even
 Blk16_SBZ:	binclude	"map16/SBZ.eni"
 		even
 KosP_SBZ:	binclude	"artkosp/8x8 - SBZ.kosp"	; SBZ primary patterns
 		even
-Blk256_SBZ:	binclude	"map128/SBZ.kosp"
+Blk128_SBZ:	binclude	"map128/SBZ.kosp"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - bosses

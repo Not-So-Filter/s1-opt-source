@@ -129,7 +129,8 @@ loc_B798:	; Routine 2
 		movea.l	a2,a0
 
 CStom_Display:
-		bra.w	CStom_ChkDel
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite
 ; ===========================================================================
 
 loc_B7E2:	; Routine 8
@@ -155,8 +156,8 @@ CStom_ChkDel:
 ; ===========================================================================
 
 CStom_Types:
-		move.b	obSubtype(a0),d0
-		andi.w	#$F,d0
+		moveq	#$F,d0
+		and.b	obSubtype(a0),d0
 		add.w	d0,d0
 		move.w	CStom_TypeIndex(pc,d0.w),d1
 		jmp	CStom_TypeIndex(pc,d1.w)
@@ -184,8 +185,8 @@ CStom_Type00:
 loc_B872:
 		tst.w	objoff_32(a0)
 		beq.s	loc_B8A0
-		move.b	(v_vbla_byte).w,d0
-		andi.b	#$F,d0
+		moveq	#$F,d0
+		and.b	(v_framebyte).w,d0
 		bne.s	loc_B892
 		tst.b	obRender(a0)
 		bpl.s	loc_B892
@@ -198,7 +199,11 @@ loc_B892:
 
 loc_B8A0:
 		move.w	#0,obVelY(a0)
-		bra.s	CStom_Restart
+		moveq	#0,d0
+		move.b	objoff_32(a0),d0
+		add.w	objoff_30(a0),d0
+		move.w	d0,obY(a0)
+		rts
 ; ===========================================================================
 
 loc_B8A8:
@@ -230,12 +235,16 @@ CStom_Type01:
 		tst.w	objoff_38(a0)
 		beq.s	loc_B902
 		subq.w	#1,objoff_38(a0)
-		bra.w	loc_B97C
+		moveq	#0,d0
+		move.b	objoff_32(a0),d0
+		add.w	objoff_30(a0),d0
+		move.w	d0,obY(a0)
+		rts
 ; ===========================================================================
 
 loc_B902:
-		move.b	(v_vbla_byte).w,d0
-		andi.b	#$F,d0
+		moveq	#$F,d0
+		and.b	(v_framebyte).w,d0
 		bne.s	loc_B91C
 		tst.b	obRender(a0)
 		bpl.s	loc_B91C
@@ -243,32 +252,42 @@ loc_B902:
 
 loc_B91C:
 		subi.w	#$80,objoff_32(a0)
-		bcc.s	loc_B97C
+		bcc.s	.restart
 		move.w	#0,objoff_32(a0)
 		move.w	#0,obVelY(a0)
 		move.w	#0,objoff_36(a0)
-		bra.s	loc_B97C
+		
+.restart:
+		moveq	#0,d0
+		move.b	objoff_32(a0),d0
+		add.w	objoff_30(a0),d0
+		move.w	d0,obY(a0)
+		rts
 ; ===========================================================================
 
 loc_B938:
 		move.w	objoff_34(a0),d1
 		cmp.w	objoff_32(a0),d1
-		beq.s	loc_B97C
+		beq.s	.restart
 		move.w	obVelY(a0),d0
 		addi.w	#$70,obVelY(a0)	; make object fall
 		add.w	d0,objoff_32(a0)
 		cmp.w	objoff_32(a0),d1
-		bhi.s	loc_B97C
+		bhi.s	.restart
 		move.w	d1,objoff_32(a0)
 		move.w	#0,obVelY(a0)	; stop object falling
 		move.w	#1,objoff_36(a0)
 		move.w	#$3C,objoff_38(a0)
 		tst.b	obRender(a0)
-		bpl.s	loc_B97C
+		bpl.s	.restart
 		playsound sfx_ChainStomp,sfx
-
-loc_B97C:
-		bra.w	CStom_Restart
+		
+.restart:
+		moveq	#0,d0
+		move.b	objoff_32(a0),d0
+		add.w	objoff_30(a0),d0
+		move.w	d0,obY(a0)
+		rts
 ; ===========================================================================
 
 CStom_Type03:
@@ -279,8 +298,12 @@ CStom_Type03:
 
 loc_B98C:
 		cmpi.w	#$90,d0
-		bhs.s	loc_B996
+		bhs.s	.restart
 		addq.b	#1,obSubtype(a0)
-
-loc_B996:
-		bra.w	CStom_Restart
+		
+.restart:
+		moveq	#0,d0
+		move.b	objoff_32(a0),d0
+		add.w	objoff_30(a0),d0
+		move.w	d0,obY(a0)
+		rts

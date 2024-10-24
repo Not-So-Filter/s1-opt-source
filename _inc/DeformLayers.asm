@@ -47,7 +47,7 @@ Deform_GHZ:
 		ext.l	d4
 		asl.l	#5,d4
 		move.l	d4,d1
-		asl.l	#1,d4
+		add.l	d4,d4
 		add.l	d1,d4
 		moveq	#0,d6
 		bsr.w	BGScroll_Block3
@@ -70,7 +70,7 @@ Deform_GHZ:
 		move.w	d0,d4
 		move.w	d0,(v_bgscrposy_vdp).w
 		move.w	(v_screenposx).w,d0
-		cmpi.w	#id_Title,(v_gamemode).w
+		cmpi.w	#GM_Title,(v_gamemode).w
 		bne.s	.notTitle
 		moveq	#0,d0	; reset foreground position in title screen
 	.notTitle:
@@ -240,7 +240,7 @@ Deform_MZ:
 		ext.l	d4
 		asl.l	#6,d4
 		move.l	d4,d1
-		asl.l	#1,d4
+		add.l	d4,d4
 		add.l	d1,d4
 		moveq	#2,d6
 		bsr.w	BGScroll_Block1
@@ -450,7 +450,7 @@ Deform_SYZ:
 		ext.l	d5
 		asl.l	#4,d5
 		move.l	d5,d1
-		asl.l	#1,d5
+		add.l	d5,d5
 		add.l	d1,d5
 		bsr.w	Bg_Scroll_Y
 		move.w	(v_bgscreenposy).w,(v_bgscrposy_vdp).w
@@ -572,7 +572,7 @@ Deform_SBZ:
 		ext.l	d4
 		asl.l	#5,d4
 		move.l	d4,d1
-		asl.l	#1,d4
+		add.l	d4,d4
 		add.l	d1,d4
 		moveq	#4,d6
 		bsr.w	BGScroll_Block2
@@ -720,7 +720,12 @@ SH_Behind16:
 		cmp.w	(v_limitleft2).w,d0
 		bgt.s	SH_SetScreen
 		move.w	(v_limitleft2).w,d0
-		bra.s	SH_SetScreen
+		move.w	d0,d1
+		sub.w	(v_screenposx).w,d1
+		asl.w	#8,d1
+		move.w	d0,(v_screenposx).w ; set new screen position
+		move.w	d1,(v_scrshiftx).w ; set distance for screen movement
+		rts
 ; End of function MoveScreenHoriz
 
 ; ---------------------------------------------------------------------------
@@ -749,7 +754,8 @@ SV_NotRolling:
 		bcc.s	loc_6696
 		tst.b	(f_bgscrollvert).w
 		bne.s	loc_66A8
-		bra.s	loc_6656
+		clr.w	(v_scrshifty).w
+		rts
 ; ===========================================================================
 
 loc_664A:

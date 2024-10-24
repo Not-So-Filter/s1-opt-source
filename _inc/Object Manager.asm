@@ -18,7 +18,7 @@ OPL_Index:	bra.w	OPL_Main
 OPL_Main:
 		addq.w	#4,(v_opl_routine).w
 
-		clearRAM Object_respawn_table, Object_respawn_table_End
+		clearRAM Object_respawn_table
 
 		move.w	(v_zone).w,d0
 		ror.b	#2,d0
@@ -28,13 +28,13 @@ OPL_Main:
 		move.l	a0,(Object_load_addr_front).w
 		move.l	a0,(Object_load_addr_back).w
 		lea	(Object_respawn_table).w,a3
-		move.w	(v_screenposx).w,d6
+		moveq	#-$80,d6
+		and.w	(v_screenposx).w,d6
 		subi.w	#$80,d6
 		bcc.s	loc_1B79A
 		moveq	#0,d6
 
 loc_1B79A:
-		andi.w	#-$80,d6
 		movea.l	(Object_load_addr_front).w,a0
 
 loc_1B7A2:

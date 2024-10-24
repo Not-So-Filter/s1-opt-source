@@ -37,8 +37,8 @@ But_Pressed:	; Routine 2
 		move.w	obX(a0),d4
 		bsr.w	SolidObject
 		bclr	#0,obFrame(a0)	; use "unpressed" frame
-		move.b	obSubtype(a0),d0
-		andi.w	#$F,d0
+		moveq	#$F,d0
+		and.b	obSubtype(a0),d0
 		lea	(f_switch).w,a3
 		lea	(a3,d0.w),a3
 		moveq	#0,d3

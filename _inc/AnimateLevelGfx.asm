@@ -6,9 +6,9 @@
 
 
 AnimateLevelGfx:
-		moveq	#0,d0
-		move.b	(v_zone).w,d0
-		add.w	d0,d0
+		move.w	(v_zone).w,d0
+		ror.b	#2,d0
+		lsr.w	#5,d0
 		move.w	DynAnimCue_Index(pc,d0.w),d1
 		lea	DynCue_Index(pc,d1.w),a2
 		move.w	DynCue_Index(pc,d0.w),d0
@@ -24,20 +24,56 @@ AnimateLevelGfx:
 ; can be found, alongside HPZ's art listed from $08 (its ID in the final).
 ; ---------------------------------------------------------------------------
 DynCue_Index:
-		dc.w Dynamic_Normal-DynCue_Index
-		dc.w Dynamic_Null-DynCue_Index
-		dc.w Dynamic_Normal-DynCue_Index
-		dc.w Dynamic_Null-DynCue_Index
-		dc.w Dynamic_Null-DynCue_Index
-		dc.w Dynamic_Normal-DynCue_Index
+		dc.w Dynamic_Normal-DynCue_Index	; Green Hill Zone Act 1
+		dc.w Dynamic_Normal-DynCue_Index	; Green Hill Zone Act 2
+		dc.w Dynamic_Normal-DynCue_Index	; Green Hill Zone Act 3
+		dc.w Dynamic_Normal-DynCue_Index	; Green Hill Zone Act 4
+		dc.w Dynamic_Null-DynCue_Index	; Labyrinth Zone Act 1
+		dc.w Dynamic_Null-DynCue_Index	; Labyrinth Zone Act 2
+		dc.w Dynamic_Null-DynCue_Index	; Labyrinth Zone Act 3
+		dc.w Dynamic_Null-DynCue_Index	; Scrap Brain Zone Act 3
+		dc.w Dynamic_Normal-DynCue_Index	; Marble Zone Act 1
+		dc.w Dynamic_Normal-DynCue_Index	; Marble Zone Act 2
+		dc.w Dynamic_Normal-DynCue_Index	; Marble Zone Act 3
+		dc.w Dynamic_Normal-DynCue_Index	; Marble Zone Act 4
+		dc.w Dynamic_Null-DynCue_Index	; Star Light Zone Act 4
+		dc.w Dynamic_Null-DynCue_Index	; Star Light Zone Act 4
+		dc.w Dynamic_Null-DynCue_Index	; Star Light Zone Act 4
+		dc.w Dynamic_Null-DynCue_Index	; Star Light Zone Act 4
+		dc.w Dynamic_Null-DynCue_Index	; Spring Yard Zone Act 4
+		dc.w Dynamic_Null-DynCue_Index	; Spring Yard Zone Act 4
+		dc.w Dynamic_Null-DynCue_Index	; Spring Yard Zone Act 4
+		dc.w Dynamic_Null-DynCue_Index	; Spring Yard Zone Act 4
+		dc.w Dynamic_Normal-DynCue_Index	; Scrap Brain Zone Act 1
+		dc.w Dynamic_Normal-DynCue_Index	; Scrap Brain Zone Act 2
+		dc.w Dynamic_Normal-DynCue_Index	; Final Zone
+		dc.w Dynamic_Normal-DynCue_Index	; Scrap Brain Zone Act 4
 
 DynAnimCue_Index:
-		dc.w AnimCue_GHZ-DynCue_Index
-		dc.w AnimCue_Null-DynCue_Index
-		dc.w AnimCue_MZ-DynCue_Index
-		dc.w AnimCue_Null-DynCue_Index
-		dc.w AnimCue_Null-DynCue_Index
-		dc.w AnimCue_SBZ-DynCue_Index
+		dc.w AnimCue_GHZ-DynCue_Index	; Green Hill Zone Act 1
+		dc.w AnimCue_GHZ-DynCue_Index	; Green Hill Zone Act 2
+		dc.w AnimCue_GHZ-DynCue_Index	; Green Hill Zone Act 3
+		dc.w AnimCue_GHZ-DynCue_Index	; Green Hill Zone Act 4
+		dc.w AnimCue_Null-DynCue_Index	; Labyrinth Zone Act 1
+		dc.w AnimCue_Null-DynCue_Index	; Labyrinth Zone Act 2
+		dc.w AnimCue_Null-DynCue_Index	; Labyrinth Zone Act 3
+		dc.w AnimCue_Null-DynCue_Index	; Scrap Brain Zone Act 3
+		dc.w AnimCue_MZ-DynCue_Index	; Marble Zone Act 1
+		dc.w AnimCue_MZ-DynCue_Index	; Marble Zone Act 2
+		dc.w AnimCue_MZ-DynCue_Index	; Marble Zone Act 3
+		dc.w AnimCue_MZ-DynCue_Index	; Marble Zone Act 4
+		dc.w AnimCue_Null-DynCue_Index	; Star Light Zone Act 1
+		dc.w AnimCue_Null-DynCue_Index	; Star Light Zone Act 2
+		dc.w AnimCue_Null-DynCue_Index	; Star Light Zone Act 3
+		dc.w AnimCue_Null-DynCue_Index	; Star Light Zone Act 4
+		dc.w AnimCue_Null-DynCue_Index	; Spring Yard Zone Act 1
+		dc.w AnimCue_Null-DynCue_Index	; Spring Yard Zone Act 2
+		dc.w AnimCue_Null-DynCue_Index	; Spring Yard Zone Act 3
+		dc.w AnimCue_Null-DynCue_Index	; Spring Yard Zone Act 4
+		dc.w AnimCue_SBZ-DynCue_Index	; Scrap Brain Zone Act 1
+		dc.w AnimCue_SBZ-DynCue_Index	; Scrap Brain Zone Act 2
+		dc.w AnimCue_SBZ-DynCue_Index	; Final Zone
+		dc.w AnimCue_SBZ-DynCue_Index	; Scrap Brain Zone Act 4
 
 ; ===========================================================================
 

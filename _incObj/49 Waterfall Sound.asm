@@ -18,7 +18,7 @@ WSnd_Main:	; Routine 0
 
 WSnd_PlaySnd:	; Routine 2
 		moveq	#$3F,d0
-		and.b	(v_vbla_byte).w,d0 ; get low byte of VBlank counter
+		and.b	(v_framebyte).w,d0 ; get low byte of VBlank counter
 		bne.s	WSnd_ChkDel
 		playsound sfx_Waterfall,sfx
 

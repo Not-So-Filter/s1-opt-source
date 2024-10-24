@@ -40,23 +40,6 @@ vram_hscroll:	equ $FC00	; horizontal scroll table
 tile_size:	equ 8*8/2
 plane_size_64x32:	equ 64*32*2
 
-; Game modes
-id_Sega:	equ ptr_GM_Sega-GameModeArray	; $00
-id_Title:	equ ptr_GM_Title-GameModeArray	; $04
-id_Demo:	equ ptr_GM_Demo-GameModeArray	; $08
-id_Level:	equ ptr_GM_Level-GameModeArray	; $0C
-id_Menu:	equ ptr_GM_Menu-GameModeArray	; $10
-
-; Vertical interrupt modes
-id_VB_00:	equ ptr_VB_00-VBla_Index	; $00
-id_VB_02:	equ ptr_VB_02-VBla_Index	; $02
-id_VB_04:	equ ptr_VB_04-VBla_Index	; $04
-id_VB_06:	equ ptr_VB_06-VBla_Index	; $06
-id_VB_08:	equ ptr_VB_08-VBla_Index	; $08
-id_VB_0A:	equ ptr_VB_0A-VBla_Index	; $0A
-id_VB_0C:	equ ptr_VB_0C-VBla_Index	; $0C
-VintID_Menu:	equ ptr_VB_0E-VBla_Index	; $0E
-
 ; Levels
 id_GHZ:		equ 0
 id_LZ:		equ 1

@@ -1,245 +1,325 @@
-; ---------------------------------------------------------------------------
-; Enigma decompression algorithm
+; ----------------------------------------------------------------------
+; Decompress Enigma tilemap data
+; ----------------------------------------------------------------------
+; Format details: https://segaretro.org/Enigma_compression
+; ----------------------------------------------------------------------
+; PARAMETERS:
+;	a0.l - Pointer to source tilemap data
+;	a1.l - Pointer to destination buffer
+;	d0.w - Base tile properties
+; ----------------------------------------------------------------------
+; RETURNS:
+;	a0.l - Pointer to end of source tilemap data
+;	a1.l - Pointer to end of destination buffer
+; ----------------------------------------------------------------------
+; Copyright (c) 2024 Devon Artmeier
+;
+; Permission to use, copy, modify, and/or distribute this software
+; for any purpose with or without fee is hereby granted.
+;
+; THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL
+; WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIE
+; WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE
+; AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+; DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+; PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+; TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+; PERFORMANCE OF THIS SOFTWARE.
+; ----------------------------------------------------------------------
 
-; input:
-;	d0 = starting art tile (added to each 8x8 before writing to destination)
-;	a0 = source address
-;	a1 = destination address
-
-; usage:
-;	lea	(source).l,a0
-;	lea	(destination).l,a1
-;	move.w	#arttile,d0
-;	bsr.w	EniDec
-
-; See http://www.segaretro.org/Enigma_compression for format description
-; ---------------------------------------------------------------------------
-
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
+; ----------------------------------------------------------------------
+; Enigma decompression function
+; ----------------------------------------------------------------------
 
 EniDec:
-		movea.w	d0,a3		; store starting art tile
-		move.b	(a0)+,d0
-		ext.w	d0
-		movea.w	d0,a5		; store number of bits in inline copy value
-		move.b	(a0)+,d4
-		lsl.b	#3,d4		; store PCCVH flags bitfield
-		movea.w	(a0)+,a2
-		adda.w	a3,a2		; store incremental copy word
-		movea.w	(a0)+,a4
-		adda.w	a3,a4		; store literal copy word
-		move.w	(a0)+,d5	; get first word in format list
-		moveq	#16,d6		; initial shift value
-; loc_173E:
-Eni_Loop:
-		moveq	#7,d0		; assume a format list entry is 7 bits
-		move.w	d6,d7
-		sub.w	d0,d7
-		move.w	d5,d1
-		lsr.w	d7,d1
-		andi.w	#$7F,d1		; get format list entry
-		move.w	d1,d2		; and copy it
-		cmpi.w	#$40,d1		; is the high bit of the entry set?
-		bhs.s	.sevenbitentry
-		moveq	#6,d0		; if it isn't, the entry is actually 6 bits
-		lsr.w	#1,d2
-; loc_1758:
-.sevenbitentry:
-		bsr.w	EniDec_FetchByte
-		andi.w	#$F,d2		; get repeat count
-		lsr.w	#4,d1
-		add.w	d1,d1
-		jmp	EniDec_Index(pc,d1.w)
-; End of function EniDec
+	movea.w	d0,a2					; Save base tile properties
 
-; ===========================================================================
-; loc_1768:
-EniDec_00:
-.loop:		move.w	a2,(a1)+	; copy incremental copy word
-		addq.w	#1,a2		; increment it
-		dbf	d2,.loop	; repeat
-		bra.s	Eni_Loop
-; ===========================================================================
-; loc_1772:
-EniDec_01:
-.loop:		move.w	a4,(a1)+	; copy literal copy word
-		dbf	d2,.loop	; repeat
-		bra.s	Eni_Loop
-; ===========================================================================
-; loc_177A:
-EniDec_100:
-		bsr.s	EniDec_FetchInlineValue
-; loc_177E:
-.loop:		move.w	d1,(a1)+	; copy inline value
-		dbf	d2,.loop	; repeat
+	moveq	#0,d4					; Get number of tile bits
+	move.b	(a0)+,d4
+	move.b	(a0)+,d0				; Get tile flags
+	lsl.b	#3,d0
+	movea.w	d0,a3
+	movea.w	(a0)+,a4				; Get incrementing tile
+	adda.w	a2,a4
+	movea.w	(a0)+,a5				; Get static tile
+	adda.w	a2,a5
 
-		bra.s	Eni_Loop
-; ===========================================================================
-; loc_1786:
-EniDec_101:
-		bsr.s	EniDec_FetchInlineValue
-; loc_178A:
-.loop:		move.w	d1,(a1)+	; copy inline value
-		addq.w	#1,d1		; increment
-		dbf	d2,.loop	; repeat
+	move.w	(a0)+,d5				; Get first word
+	moveq	#16,d6
 
-		bra.s	Eni_Loop
-; ===========================================================================
-; loc_1794:
-EniDec_110:
-		bsr.s	EniDec_FetchInlineValue
-; loc_1798:
-.loop:		move.w	d1,(a1)+	; copy inline value
-		subq.w	#1,d1		; decrement
-		dbf	d2,.loop	; repeat
+; ----------------------------------------------------------------------
 
-		bra.s	Eni_Loop
-; ===========================================================================
-; loc_17A2:
-EniDec_111:
-		cmpi.w	#$F,d2
-		beq.s	EniDec_Done
-; loc_17A8:
-.loop:		bsr.s	EniDec_FetchInlineValue	; fetch new inline value
-		move.w	d1,(a1)+	; copy it
-		dbf	d2,.loop	; and repeat
+EniDec_GetCode:
+	subq.w	#1,d6					; Does the next code involve using an inline tile?
+	rol.w	#1,d5
+	bcs.s	.InlineTileCode				; If so, branch
 
-		bra.s	Eni_Loop
-; ===========================================================================
-; loc_17B4:
-EniDec_Index:
-		bra.s	EniDec_00
-		bra.s	EniDec_00
-		bra.s	EniDec_01
-		bra.s	EniDec_01
-		bra.s	EniDec_100
-		bra.s	EniDec_101
-		bra.s	EniDec_110
-		bra.s	EniDec_111
-; ===========================================================================
-; loc_17C4:
+	subq.w	#1,d6					; Should we copy the static tile?
+	rol.w	#1,d5
+	bcs.s	.Mode01					; If so, branch
+
+.Mode00:
+	subq.w	#4,d6					; Get copy length
+	rol.w	#4,d5
+	move.w	d5,d0
+	andi.w	#$F,d0
+
+.Mode00Copy:
+	move.w	a4,(a1)+				; Copy incrementing tile
+	addq.w	#1,a4					; Increment
+	dbf	d0,.Mode00Copy				; Loop until enough is copied
+	cmpi.w	#8,d6					; Should we get another byte?
+	bhi.s	EniDec_GetCode				; If not, branch
+
+	move.w	d6,d7					; Get number of bits read past byte
+	subq.w	#8,d7
+	neg.w	d7
+
+	ror.w	d7,d5					; Read another byte
+	move.b	(a0)+,d5
+	rol.w	d7,d5
+	addq.w	#8,d6
+	bra.s	EniDec_GetCode				; Process next code
+
+.Mode01:
+	subq.w	#4,d6					; Get copy length
+	rol.w	#4,d5
+	move.w	d5,d0
+	andi.w	#$F,d0
+
+.Mode01Copy:
+	move.w	a5,(a1)+				; Copy static tile
+	dbf	d0,.Mode01Copy				; Loop until enough is copied
+
+.NextCode:
+	cmpi.w	#8,d6					; Should we get another byte?
+	bhi.s	EniDec_GetCode				; If not, branch
+
+	move.w	d6,d7					; Get number of bits read past byte
+	subq.w	#8,d7
+	neg.w	d7
+
+	ror.w	d7,d5					; Read another byte
+	move.b	(a0)+,d5
+	rol.w	d7,d5
+	addq.w	#8,d6
+	bra.s	EniDec_GetCode				; Process next code
+
+.InlineTileCode:
+	subq.w	#2,d6					; Get code
+	rol.w	#2,d5
+	move.w	d5,d1
+	andi.w	#%11,d1
+
+	subq.w	#4,d6					; Get copy length
+	rol.w	#4,d5
+	move.w	d5,d0
+	andi.w	#$F,d0
+
+	cmpi.w	#8,d6					; Should we get another byte?
+	bhi.s	.HandleCode				; If not, branch
+
+	move.w	d6,d7					; Get number of bits read past byte
+	subq.w	#8,d7
+	neg.w	d7
+
+	ror.w	d7,d5					; Read another byte
+	move.b	(a0)+,d5
+	rol.w	d7,d5
+	addq.w	#8,d6
+
+.HandleCode:
+	add.w	d1,d1					; Handle code
+	jsr	.InlineCodes(pc,d1.w)
+
+	bra.w	EniDec_GetCode				; Process next code
+
+; ----------------------------------------------------------------------
+
+.InlineCodes:
+	bra.s	EniDec_InlineMode00
+	bra.s	EniDec_InlineMode01
+	bra.s	EniDec_InlineMode10
+	
+; ----------------------------------------------------------------------
+
+EniDec_InlineMode11:
+	cmpi.w	#$F,d0					; Are we at the end?
+	beq.s	EniDec_Done				; If so, branch
+
+.Copy:
+	bsr.s	EniDec_GetInlineTile			; Get tile
+	move.w	d1,(a1)+				; Store tile
+	dbf	d0,.Copy				; Loop until enough is copied
+	rts
+	
+; ----------------------------------------------------------------------
+
 EniDec_Done:
-		cmpi.b	#16,d6		; were we going to start on a completely new byte?
-		bne.s	.notnewbyte	; if not, branch
-		subq.w	#1,a0		; and another one if needed
-; loc_17CE:
-.notnewbyte:
-		move.w	a0,d0
-		andi.w	#-2,d0
-		movea.w	d0,a0
-		rts
+	addq.w	#4,sp					; Discard return address
+	
+	subq.w	#1,a0					; Discard trailing byte
+	cmpi.w	#16,d6					; Are there 2 trailing bytes?
+	bne.s	.End					; If not, branch
+	subq.w	#1,a0					; If so, discard the other byte
+	
+.End:
+	rts
 
-; ---------------------------------------------------------------------------
-; Part of the Enigma decompressor
-; Fetches an inline copy value and stores it in d1
-; ---------------------------------------------------------------------------
+; ----------------------------------------------------------------------
 
-; =============== S U B R O U T I N E =======================================
+EniDec_InlineMode00:
+	bsr.s	EniDec_GetInlineTile			; Get tile
 
-; loc_17DC:
-EniDec_FetchInlineValue:
-		move.w	a3,d3		; copy starting art tile
-		move.b	d4,d1		; copy PCCVH bitfield
-		add.b	d1,d1		; is the priority bit set?
-		bcc.s	.skippriority	; if not, branch
-		subq.b	#1,d6
-		btst	d6,d5		; is the priority bit set in the inline render flags?
-		beq.s	.skippriority	; if not, branch
-		ori.w	#$8000,d3	; otherwise set priority bit in art tile
-; loc_17EE:
-.skippriority:
-		add.b	d1,d1		; is the high palette line bit set?
-		bcc.s	.skiphighpal	; if not, branch
-		subq.b	#1,d6
-		btst	d6,d5
-		beq.s	.skiphighpal
-		addi.w	#$4000,d3	; set second palette line bit
-; loc_17FC:
-.skiphighpal:
-		add.b	d1,d1		; is the low palette line bit set?
-		bcc.s	.skiplowpal	; if not, branch
-		subq.b	#1,d6
-		btst	d6,d5
-		beq.s	.skiplowpal
-		addi.w	#$2000,d3	; set first palette line bit
-; loc_180A:
-.skiplowpal:
-		add.b	d1,d1		; is the vertical flip flag set?
-		bcc.s	.skipyflip	; if not, branch
-		subq.b	#1,d6
-		btst	d6,d5
-		beq.s	.skipyflip
-		ori.w	#$1000,d3	; set Y-flip bit
-; loc_1818:
-.skipyflip:
-		add.b	d1,d1		; is the horizontal flip flag set?
-		bcc.s	.skipxflip	; if not, branch
-		subq.b	#1,d6
-		btst	d6,d5
-		beq.s	.skipxflip
-		ori.w	#$800,d3	; set X-flip bit
-; loc_1826:
-.skipxflip:
-		move.w	d5,d1
-		move.b	d6,d7
-		sub.w	a5,d7		; subtract length in bits of inline copy value
-		bcc.s	.enoughbits	; branch if a new word doesn't need to be read
-		move.b	d7,d6
-		addi.b	#16,d6
-		neg.w	d7		; calculate bit deficit
-		lsl.w	d7,d1		; and make space for that many bits
-		move.b	(a0),d5		; get next byte
-		rol.b	d7,d5		; and rotate the required bits into the lowest positions
-		add.w	d7,d7
-		and.w	EniDec_Masks-2(pc,d7.w),d5
-		add.w	d5,d1		; combine upper bits with lower bits
-; loc_1844:
-.maskvalue:
-		move.w	a5,d0		; get length in bits of inline copy value
-		add.w	d0,d0
-		and.w	EniDec_Masks-2(pc,d0.w),d1	; mask value appropriately
-		add.w	d3,d1		; add starting art tile
-		move.b	(a0)+,-(sp)
-		move.w	(sp)+,d5
-		move.b	(a0)+,d5	; get next word
-		rts
-; ===========================================================================
-; loc_1856:
-.enoughbits:
-		beq.s	.justenough	; if the word has been exactly exhausted, branch
-		lsr.w	d7,d1	; get inline copy value
-		move.w	a5,d0
-		add.w	d0,d0
-		and.w	EniDec_Masks-2(pc,d0.w),d1	; and mask it appropriately
-		add.w	d3,d1	; add starting art tile
-		move.w	a5,d0
-		bra.s	EniDec_FetchByte
-; ===========================================================================
-; loc_1868:
-.justenough:
-		moveq	#16,d6	; reset shift value
-		bra.s	.maskvalue
-; ===========================================================================
-; word_186C:
-EniDec_Masks:
-		dc.w	 1,    3,    7,   $F
-		dc.w   $1F,  $3F,  $7F,  $FF
-		dc.w  $1FF, $3FF, $7FF, $FFF
-		dc.w $1FFF,$3FFF,$7FFF,$FFFF
+.Copy:
+	move.w	d1,(a1)+				; Copy tile
+	dbf	d0,.Copy				; Loop until enough is copied
+	rts
+	
+; ----------------------------------------------------------------------
 
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
+EniDec_InlineMode01:
+	bsr.s	EniDec_GetInlineTile			; Get tile
 
-; sub_188C:
-EniDec_FetchByte:
-		sub.b	d0,d6	; subtract length of current entry from shift value so that next entry is read next time around
-		cmpi.b	#9,d6	; does a new byte need to be read?
-		bhs.s	.locret	; if not, branch
-		addq.b	#8,d6
-		move.b	d5,-(sp)
-		move.w	(sp)+,d5
-		clr.b	d5
-		move.b	(a0)+,d5
-.locret:
-		rts
-; End of function EniDec_FetchByte
+.Copy:
+	move.w	d1,(a1)+				; Copy tile
+	addq.w	#1,d1					; Increment
+	dbf	d0,.Copy				; Loop until enough is copied
+	rts
+	
+; ----------------------------------------------------------------------
+
+EniDec_InlineMode10:
+	bsr.s	EniDec_GetInlineTile			; Get tile
+
+.Copy:
+	move.w	d1,(a1)+				; Copy tile
+	subq.w	#1,d1					; Decrement
+	dbf	d0,.Copy				; Loop until enough is copied
+	rts
+
+; ----------------------------------------------------------------------
+
+EniDec_GetInlineTile:
+	move.w	a3,d7					; Get tile flags
+	move.w	a2,d3					; Get base tile properties
+
+	add.b	d7,d7					; Is the priority flag set?
+	bcc.s	.CheckPalette0				; If not, branch
+	subq.w	#1,d6					; Does this tile have its priority flag set?
+	rol.w	#1,d5
+	bcc.s	.CheckPalette0				; If not, branch
+	ori.w	#1<<15,d3				; Set priority flag in base tile properties
+
+.CheckPalette0:
+	add.b	d7,d7					; Is the high palette bit set?
+	bcc.s	.CheckPalette1				; If not, branch
+	subq.w	#1,d6					; Does this tile have its high palette bit set?
+	rol.w	#1,d5
+	bcc.s	.CheckPalette1				; If not, branch
+	addi.w	#1<<14,d3				; Offset palette in base tile properties
+
+.CheckPalette1:
+	add.b	d7,d7					; Is the low palette bit set?
+	bcc.s	.CheckYFlip				; If not, branch
+	subq.w	#1,d6					; Does this tile have its low palette bit set?
+	rol.w	#1,d5
+	bcc.s	.CheckYFlip				; If not, branch
+	addi.w	#1<<13,d3				; Offset palette in base tile properties
+
+.CheckYFlip:
+	add.b	d7,d7					; Is the Y flip flag set?
+	bcc.s	.CheckXFlip				; If not, branch
+	subq.w	#1,d6					; Does this tile have its Y flip bit set?
+	rol.w	#1,d5
+	bcc.s	.CheckXFlip				; If not, branch
+	ori.w	#1<<12,d3				; Set Y flip flag in base tile properties
+
+.CheckXFlip:
+	add.b	d7,d7					; Is the X flip flag set?
+	bcc.s	.GotFlags				; If not, branch
+	subq.w	#1,d6					; Does this tile have its X flip bit set?
+	rol.w	#1,d5
+	bcc.s	.GotFlags				; If not, branch
+	ori.w	#1<<11,d3				; Set X flip flag in base tile properties
+
+.GotFlags:
+	cmpi.w	#8,d6					; Should we get another byte?
+	bhi.s	.GetTileID				; If not, branch
+
+	move.w	d6,d7					; Get number of bits read past byte
+	subq.w	#8,d7
+	neg.w	d7
+	
+	ror.w	d7,d5					; Read another byte
+	move.b	(a0)+,d5
+	rol.w	d7,d5
+	addq.w	#8,d6
+
+.GetTileID:
+	moveq	#0,d2					; Reset upper bits
+	move.w	d4,d1					; Get number of bits in a tile ID
+	cmpi.w	#8,d1					; Is it more than 8 bits?
+	bls.s	.GotTileID				; If not, branch
+	
+	rol.w	#8,d5					; Get first 8 bits of tile ID
+	move.b	d5,d2
+	
+	subq.w	#8,d1					; Get remaining number of bits
+	lsl.w	d1,d2
+	
+	move.w	d6,d7					; Get number of bits read past byte
+	subi.w	#16,d7
+	neg.w	d7
+	
+	ror.w	d7,d5					; Read another byte
+	move.b	(a0)+,d5
+	rol.w	d7,d5
+
+.GotTileID:
+	sub.w	d1,d6					; Get tile ID bits
+	rol.w	d1,d5
+	
+	move.w	d1,d7					; Apply mask and base tile properties
+	add.w	d7,d7
+	move.w	d5,d1
+	and.w	.Masks-2(pc,d7.w),d1
+	or.w	d2,d1
+	add.w	d3,d1
+	
+	cmpi.w	#8,d6					; Should we get another byte?
+	bhi.s	.End					; If not, branch
+
+	move.w	d6,d7					; Get number of bits read past byte
+	subq.w	#8,d7
+	neg.w	d7
+	
+	ror.w	d7,d5					; Read another byte
+	move.b	(a0)+,d5
+	rol.w	d7,d5
+	addq.w	#8,d6
+
+.End:
+	rts
+
+; ----------------------------------------------------------------------
+
+.Masks:
+	dc.w	%0000000000000001
+	dc.w	%0000000000000011
+	dc.w	%0000000000000111
+	dc.w	%0000000000001111
+	dc.w	%0000000000011111
+	dc.w	%0000000000111111
+	dc.w	%0000000001111111
+	dc.w	%0000000011111111
+	dc.w	%0000000111111111
+	dc.w	%0000001111111111
+	dc.w	%0000011111111111
+	dc.w	%0000111111111111
+	dc.w	%0001111111111111
+	dc.w	%0011111111111111
+	dc.w	%0111111111111111
+	dc.w	%1111111111111111
+	
+; ----------------------------------------------------------------------

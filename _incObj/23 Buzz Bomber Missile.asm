@@ -33,7 +33,9 @@ Msl_Main:	; Routine 0
 		move.b	#8,obRoutine(a0) ; run "Msl_FromNewt" routine
 		move.b	#$87,obColType(a0)
 		move.b	#1,obAnim(a0)
-		bra.s	Msl_Animate2
+		lea	Ani_Missile(pc),a1
+		bsr.w	AnimateSprite
+		bra.w	DisplaySprite
 ; ===========================================================================
 
 Msl_Animate:	; Routine 2
@@ -54,7 +56,7 @@ Msl_ChkCancel:
 		movea.l	msl_parent(a0),a1
 		cmpi.l	#ExplosionItem,obID(a1) ; has Buzz Bomber been destroyed?
 		bne.s	.return
-		bsr.s	Msl_Delete
+		bsr.w	DeleteObject
 		moveq	#0,d0
 
 .return:
@@ -70,7 +72,7 @@ Msl_FromBuzz:	; Routine 4
 		move.w	(v_limitbtm2).w,d0
 		addi.w	#$E0,d0
 		cmp.w	obY(a0),d0	; has object moved below the level boundary?
-		blo.s	Msl_Delete	; if yes, branch
+		blo.w	DeleteObject	; if yes, branch
 		lea	Ani_Missile(pc),a1
 		bsr.w	AnimateSprite
 		bra.w	DisplaySprite
@@ -82,10 +84,8 @@ Msl_Delete:	; Routine 6
 
 Msl_FromNewt:	; Routine 8
 		tst.b	obRender(a0)
-		bpl.s	Msl_Delete
+		bpl.w	DeleteObject
 		bsr.w	SpeedToPos
-
-Msl_Animate2:
 		lea	Ani_Missile(pc),a1
 		bsr.w	AnimateSprite
 		bra.w	DisplaySprite

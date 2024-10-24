@@ -14,7 +14,7 @@ Buzz_Index:	dc.w Buzz_Main-Buzz_Index
 		dc.w Buzz_Delete-Buzz_Index
 
 buzz_timedelay = objoff_32
-buzz_buzzstatus = objoff_34
+buzz_buzzstatus = objoff_33
 buzz_parent = objoff_3C
 ; ===========================================================================
 
@@ -42,12 +42,12 @@ Buzz_Action:	; Routine 2
 ; ===========================================================================
 
 .move:
-		subq.w	#1,buzz_timedelay(a0) ; subtract 1 from time delay
+		subq.b	#1,buzz_timedelay(a0) ; subtract 1 from time delay
 		bpl.s	.noflip		; if time remains, branch
 		btst	#1,buzz_buzzstatus(a0) ; is Buzz Bomber near Sonic?
 		bne.s	.fire		; if yes, branch
 		addq.b	#2,ob2ndRout(a0)
-		move.w	#127,buzz_timedelay(a0) ; set time delay to just over 2 seconds
+		move.b	#127,buzz_timedelay(a0) ; set time delay to just over 2 seconds
 		move.w	#$400,obVelX(a0) ; move Buzz Bomber to the right
 		move.b	#1,obAnim(a0)	; use "flying" animation
 		btst	#0,obStatus(a0)	; is Buzz Bomber facing	left?
@@ -67,7 +67,7 @@ Buzz_Action:	; Routine 2
 		addi.w	#$1C,obY(a1)
 		move.w	#$200,obVelY(a1) ; move missile downwards
 		move.w	#$200,obVelX(a1) ; move missile to the right
-		moveq	#$18-4,d0
+		moveq	#$14,d0
 		btst	#0,obStatus(a0)	; is Buzz Bomber facing	left?
 		bne.s	.noflip2	; if not, branch
 		neg.w	d0
@@ -76,10 +76,10 @@ Buzz_Action:	; Routine 2
 .noflip2:
 		add.w	d0,obX(a1)
 		move.b	obStatus(a0),obStatus(a1)
-		move.w	#$E,buzz_timedelay(a1)
+		move.b	#14,buzz_timedelay(a1)
 		move.l	a0,buzz_parent(a1)
 		move.b	#1,buzz_buzzstatus(a0) ; set to "already fired" to prevent refiring
-		move.w	#59,buzz_timedelay(a0)
+		move.b	#59,buzz_timedelay(a0)
 		move.b	#2,obAnim(a0)	; use "firing" animation
 
 .fail:
@@ -87,7 +87,7 @@ Buzz_Action:	; Routine 2
 ; ===========================================================================
 
 .chknearsonic:
-		subq.w	#1,buzz_timedelay(a0) ; subtract 1 from time delay
+		subq.b	#1,buzz_timedelay(a0) ; subtract 1 from time delay
 		bmi.s	.chgdirection
 		bsr.w	SpeedToPos
 		tst.b	buzz_buzzstatus(a0)
@@ -103,14 +103,17 @@ Buzz_Action:	; Routine 2
 		tst.b	obRender(a0)
 		bpl.s	.keepgoing
 		move.b	#2,buzz_buzzstatus(a0) ; set Buzz Bomber to "near Sonic"
-		move.w	#29,buzz_timedelay(a0) ; set time delay to half a second
-		bra.s	.stop
+		move.b	#29,buzz_timedelay(a0) ; set time delay to half a second
+		subq.b	#2,ob2ndRout(a0)
+		move.w	#0,obVelX(a0)	; stop Buzz Bomber moving
+		move.b	#0,obAnim(a0)	; use "hovering" animation
+		rts
 ; ===========================================================================
 
 .chgdirection:
 		move.b	#0,buzz_buzzstatus(a0) ; set Buzz Bomber to "normal"
 		bchg	#0,obStatus(a0)	; change direction
-		move.w	#59,buzz_timedelay(a0)
+		move.b	#59,buzz_timedelay(a0)
 
 .stop:
 		subq.b	#2,ob2ndRout(a0)

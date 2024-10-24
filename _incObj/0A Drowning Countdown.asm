@@ -47,7 +47,7 @@ Drown_Main:	; Routine 0
 		move.w	#make_art_tile(ArtTile_LZ_Sonic_Drowning,0,0),obGfx(a0)
 		andi.w	#$7F,d0
 		move.b	d0,objoff_33(a0)
-		bra.w	Drown_Countdown
+		rts
 ; ===========================================================================
 
 .smallbubble:
@@ -69,7 +69,7 @@ Drown_ChkWater:	; Routine 4
 		cmpi.b	#$D,obAnim(a0)
 		bcs.s	Drown_Display
  		move.b	#$D,obAnim(a0)
-		bra.s	Drown_Display
+		rts
 ; ===========================================================================
 
 .wobble:

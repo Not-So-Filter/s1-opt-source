@@ -24,7 +24,13 @@ SmashObject:
 ; ===========================================================================
 
 .loop:
-		bsr.w	FindFreeObj
+		lea	(v_lvlobjspace).w,a1 ; start address for object RAM
+		moveq	#(v_lvlobjend-v_lvlobjspace)/object_size-1,d0
+
+.loop2:
+		lea	object_size(a1),a1
+		tst.l	obID(a1)
+		dbeq	d0,.loop2
 		bne.s	.playsnd
 		addq.w	#6,a3
 

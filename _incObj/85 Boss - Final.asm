@@ -242,13 +242,13 @@ loc_19FE6:
 		bpl.s	loc_1A000
 		clr.w	objoff_30(a0)
 		move.b	#-1,objoff_29(a1)
-		bsr.s	loc_1A020
+		playsound sfx_Electric,sfx
 
 loc_1A000:
 		moveq	#$F,d0
-		and.w	(v_vbla_word).w,d0
+		and.w	(v_framecount).w,d0
 		bne.s	loc_1A00A
-		bsr.s	loc_1A020
+		playsound sfx_Electric,sfx
 
 loc_1A00A:
 		tst.w	objoff_32(a0)
@@ -258,11 +258,6 @@ loc_1A00A:
 		clr.w	objoff_32(a0)
 
 locret_1A01E:
-		rts
-; ===========================================================================
-
-loc_1A020:
-		playsound sfx_Electric,sfx
 		rts
 ; ===========================================================================
 
@@ -440,7 +435,7 @@ loc_1A248:
 		blo.s	loc_1A260
 		tst.b	obRender(a0)
 		bmi.s	loc_1A260
-		move.w	#id_Sega,(v_gamemode).w
+		move.w	#GM_Sega,(v_gamemode).w
 		jmp	(DeleteObject).l
 ; ===========================================================================
 

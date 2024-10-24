@@ -210,5 +210,5 @@ Crab_BallMove:	; Routine 8
 		move.w	(v_limitbtm2).w,d0
 		addi.w	#$E0,d0
 		cmp.w	obY(a0),d0	; has object moved below the level boundary?
-		blo.s	Crab_Delete
+		blo.w	DeleteObject
 		bra.w	DisplaySprite

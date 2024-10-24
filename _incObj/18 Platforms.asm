@@ -61,7 +61,8 @@ loc_7EE0:
 Plat_Action:	; Routine 8
 		bsr.s	Plat_Move
 		bsr.s	Plat_Nudge
-		bra.w	Plat_ChkDel
+		out_of_range.w	DeleteObject_Respawn,objoff_32(a0)
+		bra.w	DisplaySprite
 ; ===========================================================================
 
 Plat_Action2:	; Routine 4
@@ -78,7 +79,8 @@ loc_7F06:
 		bsr.s	Plat_Nudge
 		move.w	(sp)+,d2
 		bsr.w	MvSonicOnPtfm2
-		bra.w	Plat_ChkDel
+		out_of_range.w	DeleteObject_Respawn,objoff_32(a0)
+		bra.w	DisplaySprite
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to	move platform slightly when you	stand on it
@@ -278,11 +280,6 @@ Plat_Move:
 .chgmotion:
 		move.b	(v_oscillate+$1A).w,objoff_26(a0) ; update platform-movement variable
 		rts
-; ===========================================================================
-
-Plat_ChkDel:
-		out_of_range.w	DeleteObject_Respawn,objoff_32(a0)
-		bra.w	DisplaySprite
 ; ===========================================================================
 
 Plat_Delete:	; Routine 6

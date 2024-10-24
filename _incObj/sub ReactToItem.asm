@@ -309,7 +309,7 @@ HurtSonic:
 ; ===========================================================================
 
 .norings:
-		tst.w	(f_debugmode).w	; is debug mode	cheat on?
+		tst.b	(f_debugmode).w	; is debug mode	cheat on?
 		bne.w	.hasshield	; if yes, branch
 
 ; ---------------------------------------------------------------------------
@@ -357,7 +357,7 @@ React_Special:
 		move.b	obColType(a1),d1
 		andi.b	#$3F,d1
 		cmpi.b	#$B,d1		; is collision type $CB	?
-		beq.s	.caterkiller	; if yes, branch
+		beq.w	React_Caterkiller	; if yes, branch
 		cmpi.b	#$C,d1		; is collision type $CC	?
 		beq.s	.yadrin		; if yes, branch
 		cmpi.b	#$17,d1		; is collision type $D7	?
@@ -367,14 +367,10 @@ React_Special:
 		rts
 ; ===========================================================================
 
-.caterkiller:
-		bra.w	React_Caterkiller
-; ===========================================================================
-
 .yadrin:
 		sub.w	d0,d5
 		cmpi.w	#8,d5
-		bhs.s	.normalenemy
+		bhs.w	React_Enemy
 		move.w	obX(a1),d0
 		subq.w	#4,d0
 		btst	#0,obStatus(a1)
@@ -385,20 +381,14 @@ React_Special:
 		sub.w	d2,d0
 		bcc.s	.loc_1B13C
 		addi.w	#$18,d0
-		bcs.s	.loc_1B140
-		bra.s	.normalenemy
+		bcs.w	React_ChkHurt
+		bra.w	React_Enemy
 ; ===========================================================================
 
 .loc_1B13C:
 		cmp.w	d4,d0
-		bhi.s	.normalenemy
-
-.loc_1B140:
+		bhi.w	React_Enemy
 		bra.w	React_ChkHurt
-; ===========================================================================
-
-.normalenemy:
-		bra.w	React_Enemy
 ; ===========================================================================
 
 .D7orE1:

@@ -94,7 +94,7 @@ RLoss_Index:	dc.w RLoss_Count-RLoss_Index
 		dc.w RLoss_Bounce-RLoss_Index
 		dc.w Ring_Collect-RLoss_Index
 		dc.w Ring_Sparkle-RLoss_Index
-		dc.w RLoss_Delete-RLoss_Index
+		dc.w Ring_Delete-RLoss_Index
 ; ===========================================================================
 
 RLoss_Count:	; Routine 0
@@ -166,7 +166,7 @@ RLoss_Bounce:	; Routine 2
 		bsr.w	SpeedToPos
 		addi.w	#$18,obVelY(a0)
 		bmi.s	.chkdel
-		move.b	(v_vbla_byte).w,d0
+		move.b	(v_framebyte).w,d0
 		add.b	d7,d0
 		andi.b	#7,d0
 		bne.s	.chkdel
@@ -181,14 +181,10 @@ RLoss_Bounce:	; Routine 2
 
 .chkdel:
 		tst.b	(v_ani2_time).w
-		beq.s	RLoss_Delete
+		beq.w	DeleteObject
 		move.w	(v_limitbtm2).w,d0
 		addi.w	#$E0,d0
 		cmp.w	obY(a0),d0	; has object moved below level boundary?
-		blo.s	RLoss_Delete	; if yes, branch
+		blo.w	DeleteObject	; if yes, branch
 		move.w	#3*$80,d0
 		bra.w	DisplaySprite2
-; ===========================================================================
-
-RLoss_Delete:	; Routine 8
-		bra.w	DeleteObject

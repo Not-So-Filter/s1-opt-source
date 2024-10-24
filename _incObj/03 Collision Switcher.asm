@@ -14,10 +14,12 @@ PathSwapper:
 		; like RememberState, but doesn't display (Sonic 2's MarkObjGone3)
 		out_of_range.w	DeleteObject_Respawn
 		rts
-		
+
+	if DebuggingMode
 .remember:
 		out_of_range.w	DeleteObject_Respawn
 		bra.w	DisplaySprite
+	endif
 ; ===========================================================================
 ; off_1FCF0:
 PSwapper_Index:
@@ -30,7 +32,7 @@ PSwapper_Init:
 		addq.b	#2,obRoutine(a0) ; => PSwapper_MainX
 	if DebuggingMode
 		move.l	#Map_PathSwapper,obMap(a0)
-		move.w	#$27B2,obGfx(a0)
+		move.w	#make_art_tile(ArtTile_Ring,1,0),obGfx(a0)
 		ori.b	#4,obRender(a0)
 		move.b	#$10,obActWid(a0)
 		move.w	#5*$80,obPriority(a0)
@@ -44,31 +46,31 @@ PSwapper_Init:
 		move.b	d0,obFrame(a0)
 		andi.w	#3,d0
 		add.w	d0,d0
-		move.w	word_1FD68(pc,d0.w),$32(a0)
+		move.w	word_1FD68(pc,d0.w),objoff_32(a0)
 		move.w	obY(a0),d1
 		lea	(v_player).w,a1 ; a1=character
 		cmp.w	obY(a1),d1
 		bhs.w	PSwapper_MainY
-		move.b	#1,$34(a0)
+		move.b	#1,objoff_34(a0)
 		bra.w	PSwapper_MainY
 ; ===========================================================================
 word_1FD68:
-	dc.w   $20
-	dc.w   $40	; 1
-	dc.w   $80	; 2
-	dc.w  $100	; 3
+		dc.w   $20
+		dc.w   $40	; 1
+		dc.w   $80	; 2
+		dc.w  $100	; 3
 ; ===========================================================================
 ; loc_1FD70:
 PSwapper_Init_CheckX:
 		andi.w	#3,d0
 		move.b	d0,obFrame(a0)
 		add.w	d0,d0
-		move.w	word_1FD68(pc,d0.w),$32(a0)
+		move.w	word_1FD68(pc,d0.w),objoff_32(a0)
 		move.w	obX(a0),d1
 		lea	(v_player).w,a1 ; a1=character
 		cmp.w	obX(a1),d1
 		bhs.s	.jump
-		move.b	#1,$34(a0)
+		move.b	#1,objoff_34(a0)
 .jump:
 
 ; loc_1FDA4:
@@ -78,7 +80,7 @@ PSwapper_MainX:
 		bne.w	.locret
 	endif
 		move.w	obX(a0),d1
-		lea	$34(a0),a2
+		lea	objoff_34(a0),a2
 		lea	(v_player).w,a1 ; a1=character
 		tst.b	(a2)+
 		bne.w	PSwapper_MainX_Alt
@@ -91,7 +93,7 @@ PSwapper_MainX:
 		move.b	#1,-1(a2)
 		move.w	obY(a0),d2
 		move.w	d2,d3
-		move.w	$32(a0),d4
+		move.w	objoff_32(a0),d4
 		sub.w	d4,d2
 		add.w	d4,d3
 		move.w	obY(a1),d4
@@ -133,7 +135,7 @@ PSwapper_MainX_Alt:
 		move.b	#0,-1(a2)
 		move.w	obY(a0),d2
 		move.w	d2,d3
-		move.w	$32(a0),d4
+		move.w	objoff_32(a0),d4
 		sub.w	d4,d2
 		add.w	d4,d3
 		move.w	obY(a1),d4
@@ -175,7 +177,7 @@ PSwapper_MainY:
 		bne.s	PSwapper_MainX_Alt.locret
 	endif
 		move.w	obY(a0),d1
-		lea	$34(a0),a2
+		lea	objoff_34(a0),a2
 		lea	(v_player).w,a1 ; a1=character
 		tst.b	(a2)+
 	if DebuggingMode
@@ -188,7 +190,7 @@ PSwapper_MainY:
 		move.b	#1,-1(a2)
 		move.w	obX(a0),d2
 		move.w	d2,d3
-		move.w	$32(a0),d4
+		move.w	objoff_32(a0),d4
 		sub.w	d4,d2
 		add.w	d4,d3
 		move.w	obX(a1),d4
@@ -230,7 +232,7 @@ PSwapper_MainY_Alt:
 		move.b	#0,-1(a2)
 		move.w	obX(a0),d2
 		move.w	d2,d3
-		move.w	$32(a0),d4
+		move.w	objoff_32(a0),d4
 		sub.w	d4,d2
 		add.w	d4,d3
 		move.w	obX(a1),d4

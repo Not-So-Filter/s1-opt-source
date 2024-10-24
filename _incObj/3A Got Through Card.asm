@@ -91,10 +91,8 @@ loc_C61A:
 
 Got_Wait:	; Routine 4, 8, $C
 		subq.w	#1,obTimeFrame(a0) ; subtract 1 from time delay
-		bne.s	Got_Display
+		bne.w	DisplaySprite
 		addq.b	#2,obRoutine(a0)
-
-Got_Display:
 		bra.w	DisplaySprite
 ; ===========================================================================
 
@@ -133,7 +131,7 @@ locret_C692:
 Got_AddBonus:
 		jsr	(AddPoints).l
 		moveq	#3,d0
-		and.b	(v_vbla_byte).w,d0
+		and.b	(v_framebyte).w,d0
 		bne.s	locret_C692
 		playsound sfx_Switch,sfx
 		rts
@@ -151,15 +149,13 @@ Got_NextLevel:	; Routine $A
 		move.w	d0,(v_zone).w	; set level number
 		tst.w	d0
 		bne.s	Got_ChkSS
-		move.w	#id_Sega,(v_gamemode).w
-		bra.s	Got_Display2
+		move.w	#GM_Sega,(v_gamemode).w
+		bra.w	DisplaySprite
 ; ===========================================================================
 
 Got_ChkSS:
 		clr.b	(v_lastlamp).w	; clear	lamppost counter
 		move.w	#1,(f_restart).w ; restart level
-
-Got_Display2:
 		bra.w	DisplaySprite
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -221,16 +217,14 @@ Got_ChgPos2:
 		bra.w	DisplaySprite
 ; ===========================================================================
 
-locret_C748:
-		rts
-; ===========================================================================
-
 Got_SBZ2:
 		cmpi.b	#4,obFrame(a0)
 		bne.w	DeleteObject
 		addq.b	#2,obRoutine(a0)
 		clr.b	(f_lockctrl).w	; unlock controls
 		playsound bgm_FZ,music
+
+locret_C748:
 		rts
 ; ===========================================================================
 

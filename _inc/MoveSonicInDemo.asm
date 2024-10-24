@@ -14,7 +14,7 @@ MoveSonicInDemo:
 MDemo_On:
 		tst.b	(v_jpadhold).w	; is start button pressed?
 		bpl.s	.dontquit	; if not, branch
-		move.w	#id_Title,(v_gamemode).w ; go to title screen
+		move.w	#GM_Title,(v_gamemode).w ; go to title screen
 
 .dontquit:
 		moveq	#0,d0

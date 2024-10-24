@@ -117,7 +117,8 @@ DynWater_LZ1:
 		cmpi.w	#$1500,d0
 		blo.s	.setwater
 		move.w	#$108,d1
-		bra.s	.setwater
+		move.w	d1,(v_waterpos3).w
+		rts
 ; ===========================================================================
 
 .routine2:
@@ -303,7 +304,7 @@ LZWindTunnels:
 		bhs.w	.chknext	; branch if Sonic is outside a range
 		move.w	d0,d1
 		moveq	#$3F,d0		; does VInt counter fall on 0, $40, $80 or $C0?
-		and.b	(v_vbla_byte).w,d0
+		and.b	(v_framebyte).w,d0
 		bne.s	.skipsound	; if not, branch
 		playsound sfx_Waterfall,sfx
 
@@ -425,7 +426,7 @@ loc_3F9A:
 		move.b	#id_WaterSlide,obAnim(a1) ; use Sonic's "sliding" animation
 		move.b	#1,(f_slidemode).w	; set water slide flag
 		moveq	#$1F,d0
-		and.b	(v_vbla_byte).w,d0
+		and.b	(v_framebyte).w,d0
 		bne.s	locret_3FBE
 		playsound sfx_Waterfall,sfx
 

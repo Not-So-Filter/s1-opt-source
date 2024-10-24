@@ -257,7 +257,8 @@ loc_F04C:
 		move.b	obAniFrame(a0),d0
 		add.b	d1,d0
 		move.b	d0,obFrame(a0)
-		bra.w	Geyser_ChkDel
+		out_of_range.w	DeleteObject_Respawn
+		bra.w	DisplaySprite
 ; ===========================================================================
 
 Geyser_Delete:	; Routine 6

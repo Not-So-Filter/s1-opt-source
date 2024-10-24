@@ -55,7 +55,7 @@ LGrass_Action:	; Routine 2
 		btst	#3,obStatus(a1)
 		bne.s	LGrass_Slope
 		clr.b	obSolid(a0)
-		bra.s	LGrass_Display
+		bra.w	LGrass_ChkDel
 ; ===========================================================================
 
 LGrass_Slope:
@@ -65,7 +65,7 @@ LGrass_Slope:
 		movea.l	objoff_30(a0),a2
 		move.w	obX(a0),d2
 		bsr.w	SlopeObject2
-		bra.s	LGrass_Display
+		bra.w	LGrass_ChkDel
 ; ===========================================================================
 
 LGrass_Solid:
@@ -80,17 +80,14 @@ LGrass_Solid:
 loc_AF8E:
 		movea.l	objoff_30(a0),a2
 		bsr.w	SolidObject2F
-
-LGrass_Display:
 		bra.w	LGrass_ChkDel
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
 
 
 LGrass_Types:
-		moveq	#0,d0
-		move.b	obSubtype(a0),d0
-		andi.w	#7,d0
+		moveq	#7,d0
+		and.b	obSubtype(a0),d0
 		add.w	d0,d0
 		move.w	LGrass_TypeIndex(pc,d0.w),d1
 		jmp	LGrass_TypeIndex(pc,d1.w)

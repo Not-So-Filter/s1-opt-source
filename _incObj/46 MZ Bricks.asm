@@ -29,9 +29,8 @@ Brick_Main:	; Routine 0
 Brick_Action:	; Routine 2
 		tst.b	obRender(a0)
 		bpl.s	.chkdel
-		moveq	#0,d0
-		move.b	obSubtype(a0),d0 ; get object type
-		andi.w	#7,d0		; read only the	1st digit
+		moveq	#7,d0		; read only the	1st digit
+		and.b	obSubtype(a0),d0 ; get object type
 		add.w	d0,d0
 		move.w	Brick_TypeIndex(pc,d0.w),d1
 		jsr	Brick_TypeIndex(pc,d1.w)

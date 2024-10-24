@@ -7,9 +7,9 @@
 
 PaletteCycle:
 		moveq	#0,d2
-		moveq	#0,d0
-		move.b	(v_zone).w,d0	; get level number
-		add.w	d0,d0
+		move.w	(v_zone).w,d0
+		ror.b	#2,d0
+		lsr.w	#5,d0
 		movea.w	PalCycle_Index(pc,d0.w),a0
 		jmp	(a0) ; jump to relevant palette routine
 ; End of function PaletteCycle
@@ -18,12 +18,31 @@ PaletteCycle:
 ; ---------------------------------------------------------------------------
 ; Palette cycling routines
 ; ---------------------------------------------------------------------------
-PalCycle_Index:	dc.w PalCycle_GHZ
-		dc.w PalCycle_LZ
-		dc.w PalCycle_MZ
-		dc.w PalCycle_SLZ
-		dc.w PalCycle_SYZ
-		dc.w PalCycle_SBZ
+PalCycle_Index:
+		dc.w PalCycle_GHZ	; Green Hill Zone Act 1
+		dc.w PalCycle_GHZ	; Green Hill Zone Act 2
+		dc.w PalCycle_GHZ	; Green Hill Zone Act 3
+		dc.w PalCycle_GHZ	; Green Hill Zone Act 4
+		dc.w PalCycle_LZ	; Labyrinth Zone Act 1
+		dc.w PalCycle_LZ	; Labyrinth Zone Act 2
+		dc.w PalCycle_LZ	; Labyrinth Zone Act 3
+		dc.w PalCycle_LZ	; Scrap Brain Zone Act 3
+		dc.w PalCycle_MZ	; Marble Zone Act 1
+		dc.w PalCycle_MZ	; Marble Zone Act 2
+		dc.w PalCycle_MZ	; Marble Zone Act 3
+		dc.w PalCycle_MZ	; Marble Zone Act 4
+		dc.w PalCycle_SLZ	; Star Light Zone Act 1
+		dc.w PalCycle_SLZ	; Star Light Zone Act 2
+		dc.w PalCycle_SLZ	; Star Light Zone Act 3
+		dc.w PalCycle_SLZ	; Star Light Zone Act 4
+		dc.w PalCycle_SYZ	; Spring Yard Zone Act 1
+		dc.w PalCycle_SYZ	; Spring Yard Zone Act 2
+		dc.w PalCycle_SYZ	; Spring Yard Zone Act 3
+		dc.w PalCycle_SYZ	; Spring Yard Zone Act 4
+		dc.w PalCycle_SBZ	; Scrap Brain Zone Act 1
+		dc.w PalCycle_SBZ	; Scrap Brain Zone Act 2
+		dc.w PalCycle_SBZ	; Final Zone
+		dc.w PalCycle_SBZ	; Scrap Brain Zone Act 4
 
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||

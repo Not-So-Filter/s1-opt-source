@@ -119,7 +119,12 @@ Process_Kos_Module_Queue:
 	bhs.s	.done					; branch if the Kosinski decompression queue is full
 	movea.l	(Kos_module_queue).w,a1
 	lea	(Kos_decomp_buffer).w,a2
-	bsr.w	Queue_Kos				; add current module to decompression queue
+	move.w	(Kos_decomp_queue_count).w,d0
+	lsl.w	#3,d0
+	lea	(Kos_decomp_queue).w,a3
+	move.l	a1,(a3,d0.w)			; store source
+	move.l	a2,4(a3,d0.w)			; store destination
+	addq.w	#1,(Kos_decomp_queue_count).w
 	ori.w	#$8000,(Kos_modules_left).w	; and set bit to signify decompression in progress
 	rts
 ; ---------------------------------------------------------------------------
@@ -215,12 +220,10 @@ Process_Kos_Queue:
 
 .Main:
 	ori.w	#$8000,(Kos_decomp_queue_count).w	; set sign bit to signify decompression in progress
-	movea.l	(Kos_decomp_source).w,a0
-	movea.l	(Kos_decomp_destination).w,a1
+	movem.l	(Kos_decomp_source).w,a0-a1
 
 	include "KosinskiPlus Internal.asm"
-	move.l	a0,(Kos_decomp_source).w
-	move.l	a1,(Kos_decomp_destination).w
+	movem.l	a0-a1,(Kos_decomp_source).w
 	andi.w	#$7FFF,(Kos_decomp_queue_count).w	; clear decompression in progress bit
 	subq.w	#1,(Kos_decomp_queue_count).w
 	beq.s	.Done								; branch if there aren't any entries remaining in the queue

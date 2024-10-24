@@ -40,7 +40,7 @@ Anim_Next:
 		addq.b	#1,obAniFrame(a0) ; next frame number
 
 Anim_Wait:
-		rts	
+		rts
 ; ===========================================================================
 
 Anim_End_FF:
@@ -48,7 +48,17 @@ Anim_End_FF:
 		bne.s	Anim_End_FE	; if not, branch
 		clr.b	obAniFrame(a0) ; restart the animation
 		move.b	1(a1),d0	; read sprite number
-		bra.s	Anim_Next
+		move.b	d0,d1
+		andi.b	#$1F,d0
+		move.b	d0,obFrame(a0)	; load sprite number
+		move.b	obStatus(a0),d0
+		rol.b	#3,d1
+		eor.b	d0,d1
+		andi.b	#3,d1
+		andi.b	#$FC,obRender(a0)
+		or.b	d1,obRender(a0)
+		addq.b	#1,obAniFrame(a0) ; next frame number
+		rts
 ; ===========================================================================
 
 Anim_End_FE:
@@ -58,7 +68,17 @@ Anim_End_FE:
 		sub.b	d0,obAniFrame(a0) ; jump back d0 bytes in the script
 		sub.b	d0,d1
 		move.b	1(a1,d1.w),d0	; read sprite number
-		bra.s	Anim_Next
+		move.b	d0,d1
+		andi.b	#$1F,d0
+		move.b	d0,obFrame(a0)	; load sprite number
+		move.b	obStatus(a0),d0
+		rol.b	#3,d1
+		eor.b	d0,d1
+		andi.b	#3,d1
+		andi.b	#$FC,obRender(a0)
+		or.b	d1,obRender(a0)
+		addq.b	#1,obAniFrame(a0) ; next frame number
+		rts
 ; ===========================================================================
 
 Anim_End_FD:

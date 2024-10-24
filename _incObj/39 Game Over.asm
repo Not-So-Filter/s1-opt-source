@@ -57,7 +57,7 @@ Over_Wait:	; Routine 4
 		andi.b	#btnABC,d0	; is button A, B or C pressed?
 		bne.s	Over_ChgMode	; if yes, branch
 		btst	#0,obFrame(a0)
-		bne.s	Over_Display
+		bne.w	DisplaySprite
 		tst.w	obTimeFrame(a0)	; has time delay reached zero?
 		beq.s	Over_ChgMode	; if yes, branch
 		subq.w	#1,obTimeFrame(a0) ; subtract 1 from time delay
@@ -67,8 +67,8 @@ Over_Wait:	; Routine 4
 Over_ChgMode:
 		tst.b	(f_timeover).w	; is time over flag set?
 		bne.s	Over_ResetLvl	; if yes, branch
-		move.w	#id_Sega,(v_gamemode).w ; set mode to 0 (Sega screen)
-		bra.s	Over_Display
+		move.w	#GM_Sega,(v_gamemode).w ; set mode to 0 (Sega screen)
+		bra.w	DisplaySprite
 ; ===========================================================================
 
 Over_ResetLvl:

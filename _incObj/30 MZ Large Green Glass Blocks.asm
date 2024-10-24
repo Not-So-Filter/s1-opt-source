@@ -108,9 +108,8 @@ Glass_Reflect34:
 
 
 Glass_Types:
-		moveq	#0,d0
-		move.b	obSubtype(a0),d0
-		andi.w	#7,d0
+		moveq	#7,d0
+		and.b	obSubtype(a0),d0
 		add.w	d0,d0
 		move.w	Glass_TypeIndex(pc,d0.w),d1
 		jmp	Glass_TypeIndex(pc,d1.w)

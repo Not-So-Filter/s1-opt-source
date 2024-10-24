@@ -40,7 +40,7 @@ Moto_Main:	; Routine 0
 
 .smoke:
 		addq.b	#4,obRoutine(a0) ; goto Moto_Animate next
-		bra.w	Moto_Animate
+		rts
 ; ===========================================================================
 
 Moto_Action:	; Routine 2

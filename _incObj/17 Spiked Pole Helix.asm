@@ -80,26 +80,13 @@ Hel_NotCentre:
 		dbf	d1,Hel_Build ; repeat d1 times (helix length)
 
 Hel_Action:	; Routine 2
-		bsr.s	Hel_RotateSpikes
-		bra.s	Hel_ChkDel
-
-; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
-
-
-Hel_RotateSpikes:
 		move.b	(v_ani0_frame).w,d0
 		move.b	#0,obColType(a0) ; make object harmless
 		add.b	hel_frame(a0),d0
 		andi.b	#7,d0
 		move.b	d0,obFrame(a0)	; change current frame
-		bne.s	locret_7DA6
+		bne.s	Hel_ChkDel
 		move.b	#$84,obColType(a0) ; make object harmful
-
-locret_7DA6:
-		rts
-; End of function Hel_RotateSpikes
-
-; ===========================================================================
 
 Hel_ChkDel:
 		out_of_range.s	Hel_DelAll
@@ -111,7 +98,7 @@ Hel_DelAll:
 		lea	obSubtype(a0),a2 ; move helix length to a2
 		move.b	(a2)+,d2	; move helix length to d2
 		subq.b	#2,d2
-		bcs.s	Hel_Delete
+		bcs.w	DeleteObject
 
 Hel_DelLoop:
 		moveq	#0,d0
@@ -131,5 +118,11 @@ Hel_Delete:	; Routine 6
 ; ===========================================================================
 
 Hel_Display:	; Routine 4
-		bsr.s	Hel_RotateSpikes
+		move.b	(v_ani0_frame).w,d0
+		move.b	#0,obColType(a0) ; make object harmless
+		add.b	hel_frame(a0),d0
+		andi.b	#7,d0
+		move.b	d0,obFrame(a0)	; change current frame
+		bne.w	DisplaySprite
+		move.b	#$84,obColType(a0) ; make object harmful
 		bra.w	DisplaySprite

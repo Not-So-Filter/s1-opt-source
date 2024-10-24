@@ -124,15 +124,13 @@ locret_C412:
 
 Card_ChangeArt:
 		cmpi.b	#4,obRoutine(a0)
-		bne.s	Card_Delete
+		bne.w	DeleteObject
 		moveq	#plcid_Explode,d0
 		jsr	(AddPLC).w	; load explosion patterns
 		moveq	#0,d0
 		move.b	(v_zone).w,d0
 		addi.w	#plcid_GHZAnimals,d0
 		jsr	(AddPLC).w	; load animal patterns
-
-Card_Delete:
 		bra.w	DeleteObject
 ; ===========================================================================
 Card_ItemData:	dc.w $D0	; y-axis position
