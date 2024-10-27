@@ -374,7 +374,9 @@ fr_Stand:	ds.b 1 ;  1
 fr_Wait1:	ds.b 1 ;  2
 fr_Wait2:	ds.b 1 ;  3
 fr_Wait3:	ds.b 1 ;  4
-fr_LookUp:	ds.b 1 ;  5
+fr_Wait4:	ds.b 1 ;  4
+fr_LookUp1:	ds.b 1 ;  5
+fr_LookUp2:	ds.b 1 ;  5
 fr_Walk11:	ds.b 1 ;  6
 fr_Walk12:	ds.b 1 ;  7
 fr_Walk13:	ds.b 1 ;  8
@@ -422,9 +424,14 @@ fr_Roll4:	ds.b 1 ;  $31
 fr_Roll5:	ds.b 1 ;  $32
 fr_Stop1:	ds.b 1 ;  $37
 fr_Stop2:	ds.b 1 ;  $38
-fr_Duck:	ds.b 1 ;  $39
+fr_Stop3:	ds.b 1 ;  $38
+fr_Stop4:	ds.b 1 ;  $38
+fr_Duck1:	ds.b 1 ;  $39
+fr_Duck2:	ds.b 1 ;  $39
 fr_Balance1:	ds.b 1 ;  $3A
 fr_Balance2:	ds.b 1 ;  $3B
+fr_Balance3:	ds.b 1 ;  $3B
+fr_Balance4:	ds.b 1 ;  $3B
 fr_Float1:	ds.b 1 ;  $3C
 fr_Float2:	ds.b 1 ;  $3D
 fr_Float3:	ds.b 1 ;  $3E
@@ -445,6 +452,10 @@ fr_Float6:	ds.b 1 ;  $54
 fr_Injury:	ds.b 1 ;  $55
 fr_GetAir:	ds.b 1 ;  $56
 fr_WaterSlide:	ds.b 1 ;  $57
+fr_Balance5:	ds.b 1 ;  $3B
+fr_Balance6:	ds.b 1 ;  $3B
+fr_Balance7:	ds.b 1 ;  $3B
+fr_Balance8:	ds.b 1 ;  $3B
 	dephase
 	!org 0
 

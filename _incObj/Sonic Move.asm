@@ -40,10 +40,10 @@ Sonic_Move:
 		move.b	obActWid(a1),d1
 		move.w	d1,d2
 		add.w	d2,d2
-		subq.w	#4,d2
+		subq.w	#2,d2
 		add.w	obX(a0),d1
 		sub.w	obX(a1),d1
-		cmpi.w	#4,d1
+		cmpi.w	#2,d1
 		blt.s	loc_12F6A
 		cmp.w	d2,d1
 		bge.s	loc_12F5A
@@ -58,8 +58,10 @@ Sonic_Balance:
 		bne.s	loc_12F62
 
 loc_12F5A:
-		bclr	#0,obStatus(a0)
-		bra.s	loc_12F70
+		btst	#0,obStatus(a0)	; Are we facing left?
+		bne.s	SonBalanceAniBackwards
+		move.b	#id_Balance1,obAnim(a0) ; use "balancing" animation
+		bra.s	Sonic_ResetScr
 ; ===========================================================================
 
 loc_12F62:
@@ -67,10 +69,15 @@ loc_12F62:
 		bne.s	Sonic_LookUp
 
 loc_12F6A:
-		bset	#0,obStatus(a0)
+		btst	#0,obStatus(a0)	; Are we facing left?
+		bne.s	SonBalanceAniForwards
 
-loc_12F70:
-		move.b	#id_Balance,obAnim(a0) ; use "balancing" animation
+SonBalanceAniBackwards:
+		move.b	#id_Balance2,obAnim(a0) ; use "balancing" animation
+		bra.s	Sonic_ResetScr
+		
+SonBalanceAniForwards:
+		move.b	#id_Balance1,obAnim(a0) ; use "balancing" animation
 		bra.s	Sonic_ResetScr
 ; ===========================================================================
 

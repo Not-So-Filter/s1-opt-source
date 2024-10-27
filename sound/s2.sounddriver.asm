@@ -1368,17 +1368,13 @@ CmdPtr__End:
 zPlaySegaSound:
 	; reset panning (don't want Sega sound playing on only one speaker)
 	ld	a,0B6h		; Set Panning / AMS / FMS
-	ld	c,0C0h		; default Panning / AMS / FMS settings (only stereo L/R enabled)
-	; Write reg/data pair to part II; 'a' is register, 'c' is data
 	ld	(zYM2612_A1),a
-	ld	a,c
+	ld	a,0C0h		; default Panning / AMS / FMS settings (only stereo L/R enabled)
 	ld	(zYM2612_D1),a
 
 	ld	a,2Bh		; DAC enable/disable register
-	ld	c,80h		; Command to enable DAC
-	; Write reg/data pair to part I; 'a' is register, 'c' is data
 	ld	(zYM2612_A0),a
-	ld	a,c
+	ld	a,80h		; Command to enable DAC
 	ld	(zYM2612_D0),a
 
 	bankswitch Snd_Sega	; We want the Sega sound
@@ -1408,12 +1404,11 @@ zPlaySegaSound:
 
 .stop:
 	bankswitch MusicPoint
-	ld	c,(ix+zVar.DACEnabled)
+	ld	a,(ix+zVar.DACEnabled)
+	ld	(zYM2612_D0),a
 	ld	a,2Bh			; DAC enable/disable register
 	; Write reg/data pair to part I; 'a' is register, 'c' is data
 	ld	(zYM2612_A0),a
-	ld	a,c
-	ld	(zYM2612_D0),a
 	ret
 ; ---------------------------------------------------------------------------
 ; zloc_73D
@@ -2318,7 +2313,9 @@ zFMNoteOff:
 	and	14h				; Are bits 4 (no attack) or 2 (SFX overriding) set?
 	ret	nz				; If they are, return
 	ld	a,28h				; Otherwise, send a KEY ON/OFF
-	ld	c,(ix+zTrack.VoiceControl)	; Track's data for this key operation
+	ld	(zYM2612_A0),a
+	ld	a,(ix+zTrack.VoiceControl)	; Track's data for this key operation
+	ld	(zYM2612_D0),a
 
 	; Format of key on/off:
 	; 4321 .ccc
@@ -2326,9 +2323,6 @@ zFMNoteOff:
 	; and ccc is which channel (0-2 for channels 1-3, 4-6 for channels 4-6 WATCH BIT GAP)
 
 	; Write reg/data pair to part I; 'a' is register, 'c' is data
-	ld	(zYM2612_A0),a
-	ld	a,c
-	ld	(zYM2612_D0),a
 	ret
 ; End of function zFMNoteOff
 
@@ -3080,16 +3074,12 @@ cfJumpToGosub:
 ; zloc_FCC
 cfOpF9:
 	ld	a,88h		; D1L/RR of Operator 3
-	ld	c,0Fh		; Loaded with fixed value (max RR, 1TL)
-	; Write reg/data pair to part I; 'a' is register, 'c' is data
 	ld	(zYM2612_A0),a
-	ld	a,c
+	ld	a,0Fh		; Loaded with fixed value (max RR, 1TL)
 	ld	(zYM2612_D0),a
 	ld	a,8Ch		; D1L/RR of Operator 4
-	ld	c,0Fh		; Loaded with fixed value (max RR, 1TL)
-	; Write reg/data pair to part I; 'a' is register, 'c' is data
 	ld	(zYM2612_A0),a
-	ld	a,c
+	ld	a,0Fh		; Loaded with fixed value (max RR, 1TL)
 	ld	(zYM2612_D0),a
 	dec	hl		; Doesn't take an arg, so put back one byte
 	ret

@@ -212,7 +212,7 @@ Touch_Rings:
 		move.b	obHeight(a0),d5
 		subq.b	#3,d5
 		sub.w	d5,d3	; subtract (Y radius - 3) from Y pos
-		cmpi.b	#fr_Duck,obAnim(a0)
+		cmpi.b	#id_Duck,obAnim(a0)
 		bne.s	.notducking	; if you're not ducking, branch
 		addi.w	#$C,d3
 		moveq	#$A,d5
