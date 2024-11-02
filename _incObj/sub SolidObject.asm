@@ -286,8 +286,8 @@ Solid_ResetFloor:
 		beq.s	.notonobj	; if not, branch
 
 		movea.w	standonobject(a1),a3	; get object being stood on
-		bclr	#3,obStatus(a2)	; clear object's standing flags
-		clr.b	obSolid(a2)
+		bclr	#3,obStatus(a3)	; clear object's standing flags
+		clr.b	obSolid(a3)
 
 .notonobj:
 		move.w	a0,standonobject(a1)	; set object being stood on

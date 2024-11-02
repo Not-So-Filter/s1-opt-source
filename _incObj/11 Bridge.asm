@@ -136,11 +136,9 @@ Obj11_Unload:
 		bsr.w	DeleteChild
 +
 		move.w	obRespawnNo(a0),d0
-		beq.s	.delete
+		beq.w	DeleteObject
 		movea.w	d0,a2
 		bclr	#7,(a2)
-
-.delete:
 		bra.w	DeleteObject
 ; ===========================================================================
 ; loc_F80C: BranchTo_DisplaySprite:
