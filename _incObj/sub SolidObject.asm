@@ -285,28 +285,12 @@ Solid_ResetFloor:
 		btst	#3,obStatus(a1)	; is Sonic standing on something?
 		beq.s	.notonobj	; if not, branch
 
-		moveq	#0,d0
-		move.b	standonobject(a1),d0	; get object being stood on
-	if object_size=$40
-		lsl.w	#object_size_bits,d0
-	else
-		mulu.w	#object_size,d0
-	endif
-		addi.l	#v_objspace,d0
-		movea.l	d0,a2
+		movea.w	standonobject(a1),a3	; get object being stood on
 		bclr	#3,obStatus(a2)	; clear object's standing flags
 		clr.b	obSolid(a2)
 
 .notonobj:
-		move.w	a0,d0
-		subi.w	#v_objspace,d0
-	if object_size=$40
-		lsr.w	#object_size_bits,d0
-	else
-		divu.w	#object_size,d0
-	endif
-		andi.w	#$7F,d0
-		move.b	d0,standonobject(a1)	; set object being stood on
+		move.w	a0,standonobject(a1)	; set object being stood on
 		move.b	#0,obAngle(a1)	; clear Sonic's angle
 		move.w	#0,obVelY(a1)	; stop Sonic
 		move.w	obVelX(a1),obInertia(a1)

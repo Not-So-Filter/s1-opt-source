@@ -704,7 +704,9 @@ SH_Ahead16:
 SH_SetScreen:
 		move.w	d0,d1
 		sub.w	(v_screenposx).w,d1
-		asl.w	#8,d1
+		move.b	d1,-(sp)
+		move.w	(sp)+,d1
+		clr.b	d1
 		move.w	d0,(v_screenposx).w ; set new screen position
 		move.w	d1,(v_scrshiftx).w ; set distance for screen movement
 		rts
@@ -722,7 +724,9 @@ SH_Behind16:
 		move.w	(v_limitleft2).w,d0
 		move.w	d0,d1
 		sub.w	(v_screenposx).w,d1
-		asl.w	#8,d1
+		move.b	d1,-(sp)
+		move.w	(sp)+,d1
+		clr.b	d1
 		move.w	d0,(v_screenposx).w ; set new screen position
 		move.w	d1,(v_scrshiftx).w ; set distance for screen movement
 		rts

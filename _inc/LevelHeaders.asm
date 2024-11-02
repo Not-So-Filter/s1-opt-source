@@ -4,7 +4,7 @@
 
 LevelHeaders:
 
-lhead:	macro plc1,lvlgfx,plc2,sixteen,onetwoeight,pal,music
+lhead:	macro plc1,lvlgfx,plc2,sixteen,onetwoeight,pal
 	dc.l (plc1<<24)|lvlgfx
 	dc.l (plc2<<24)|sixteen
 	dc.l onetwoeight
