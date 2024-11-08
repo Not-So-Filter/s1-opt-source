@@ -157,9 +157,10 @@ Process_Kos_Module_Queue:
 	; otherwise, shift all entries up
 	lea	(Kos_module_queue).w,a0
 	lea	(Kos_module_queue+6).w,a1
-	rept 24
+	rept (Kos_module_queue_End-(Kos_module_queue+6))/4
 		move.l	(a1)+,(a0)+
 	endm
+		move.w	(a1)+,(a0)+
 	moveq	#0,d0
 	move.l	d0,(a0)+				; and mark the last slot as free
 	move.w	d0,(a0)+
