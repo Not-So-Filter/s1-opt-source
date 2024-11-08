@@ -1386,6 +1386,7 @@ WaitForVBla:
 
 GM_Sega:
 		playsound bgm_Stop,music
+		clearRAM Kos_decomp_stored_registers, Kos_module_end
 		bsr.w	PaletteFadeOut
 		lea	(vdp_control_port).l,a6
 		move.w	#$8004,(a6)	; use 8-colour mode
@@ -1395,7 +1396,6 @@ GM_Sega:
 		move.w	#$8B00,(a6)	; full-screen vertical scrolling
 		clr.b	(f_wtr_state).w
 		disable_ints
-		clearRAM Kos_decomp_stored_registers, Kos_module_end
 		displayOff
 		bsr.w	ClearScreen
 		lea	(KosP_SegaLogo).l,a0 ; load Sega	logo patterns
@@ -1461,6 +1461,7 @@ Sega_GotoTitle:
 
 GM_Title:
 		playsound bgm_Stop,music
+		clearRAM Kos_decomp_stored_registers, Kos_module_end
 		bsr.w	PaletteFadeOut
 		disable_ints
 		lea	(vdp_control_port).l,a6
@@ -1474,7 +1475,6 @@ GM_Title:
 		clr.b	(f_wtr_state).w
 		bsr.w	ClearScreen
 
-		clearRAM Kos_decomp_stored_registers, Kos_module_end
 		clearRAM v_objspace
 
 		lea	(KosPM_JapNames).l,a1 ; load Japanese credits
@@ -1554,7 +1554,7 @@ GM_Title:
 		bsr.w	DrawChunks
 		lea	(Eni_Title).l,a0 ; load	title screen mappings
 		lea	(v_128x128_end).w,a1
-		moveq	#0,d0
+		moveq	#make_art_tile(ArtTile_Level,0,FALSE),d0
 		bsr.w	EniDec
 
 		copyTilemap	v_128x128_end,vram_fg+$208,34,22
