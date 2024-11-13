@@ -45,7 +45,7 @@ Sonic_Animate:
 .end_FF:
 		addq.b	#1,d0		; is the end flag = $FF	?
 		bne.s	.end_FE		; if not, branch
-		move.b	#0,obAniFrame(a0) ; restart the animation
+		clr.b	obAniFrame(a0) ; restart the animation
 		move.b	1(a1),obFrame(a0) ; read and load sprite number
 		addq.b	#1,obAniFrame(a0) ; next frame number
 		rts
@@ -120,8 +120,7 @@ Sonic_Animate:
 		moveq	#0,d2		; max animation speed
 
 .belowmax:
-;		lsr.w	#8,d2
-		move.w	d2,-(sp)		; (save 2 cycles, waste 4 bytes)
+		move.w	d2,-(sp)
 		clr.w	d2
 		move.b	(sp)+,d2
 		move.b	d2,obTimeFrame(a0) ; modify frame duration
@@ -150,8 +149,7 @@ Sonic_Animate:
 		moveq	#0,d2
 
 .belowmax2:
-;		lsr.w	#8,d2
-		move.w	d2,-(sp)		; (save 2 cycles, waste 4 bytes)
+		move.w	d2,-(sp)
 		clr.w	d2
 		move.b	(sp)+,d2
 		move.b	d2,obTimeFrame(a0) ; modify frame duration
