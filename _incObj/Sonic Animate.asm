@@ -46,8 +46,9 @@ Sonic_Animate:
 		addq.b	#1,d0		; is the end flag = $FF	?
 		bne.s	.end_FE		; if not, branch
 		move.b	#0,obAniFrame(a0) ; restart the animation
-		move.b	1(a1),d0	; read sprite number
-		bra.s	.next
+		move.b	1(a1),obFrame(a0) ; read and load sprite number
+		addq.b	#1,obAniFrame(a0) ; next frame number
+		rts
 ; ===========================================================================
 
 .end_FE:
@@ -56,8 +57,9 @@ Sonic_Animate:
 		move.b	2(a1,d1.w),d0	; read the next	byte in	the script
 		sub.b	d0,obAniFrame(a0) ; jump back d0 bytes in the script
 		sub.b	d0,d1
-		move.b	1(a1,d1.w),d0	; read sprite number
-		bra.s	.next
+		move.b	1(a1,d1.w),obFrame(a0)	; read and load sprite number
+		addq.b	#1,obAniFrame(a0) ; next frame number
+		rts
 ; ===========================================================================
 
 .end_FD:
