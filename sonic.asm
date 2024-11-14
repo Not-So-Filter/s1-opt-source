@@ -1609,10 +1609,7 @@ GM_Title:
 
 Tit_MainLoop:
 		move.w	#VBla_04,(v_vbla_routine).w
-		bsr.w	Process_Kos_Queue
 		bsr.w	WaitForVBla
-		bsr.w	ProcessDMAQueue
-		bsr.w	Process_Kos_Module_Queue
 		jsr	(ExecuteObjects).l
 		bsr.w	DeformLayers
 		jsr	(BuildSprites).l

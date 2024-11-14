@@ -7,7 +7,7 @@
 
 PauseGame:
 		tst.b	(v_lives).w	; do you have any lives	left?
-		beq.w	Unpause		; if not, branch
+		beq.s	Unpause		; if not, branch
 		tst.b	(f_pause).w	; is game already paused?
 		bne.s	Pause_StopGame	; if yes, branch
 		tst.b	(v_jpadpress).w ; is Start button pressed?
@@ -30,6 +30,8 @@ Pause_Loop:
 		stopZ80
 		move.b	#MusID_Unpause,(z80_ram+zAbsVar.StopMusic).l	; unpause the music
 		startZ80
+
+Unpause:
 		clr.b	(f_pause).w	; unpause the game
 
 Pause_DoNothing:
@@ -50,8 +52,6 @@ Pause_EndMusic:
 		stopZ80
 		move.b	#MusID_Unpause,(z80_ram+zAbsVar.StopMusic).l	; unpause the music
 		startZ80
-
-Unpause:
 		clr.b	(f_pause).w	; unpause the game
 		rts
 ; ===========================================================================
