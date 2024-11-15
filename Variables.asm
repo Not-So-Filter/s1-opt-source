@@ -79,7 +79,7 @@ Object_respawn_table_end:
 v_spritequeue:		SpriteQueue		; sprite display queue, in order of priority
 v_spritequeue_end:
 
-; $300 is the standard limit, change depending on how many chunks you need
+; $300 is the standard limit, change depending on how many blocks you need
 ; luckily for Sonic 1 only $25A is used, but to keep things save we'll use $280
 v_16x16:		ds.w	4*$280		; 16x16 tile mappings
 			ds.b	$400		; unused
