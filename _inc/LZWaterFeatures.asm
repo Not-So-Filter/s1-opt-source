@@ -168,7 +168,7 @@ DynWater_LZ3:
 		bhs.s	.setwaterlz3	; if not, branch
 
 		move.w	#$4C8,d1	; set new water height
-;		move.l	#Level_LZ3,(v_lvllayoutfg).w ; MJ: Set normal version of act 3's layout to be read
+		move.l	#$F8F9F8F9,(Level_layout_header+$1F2).w
 		move.b	#1,(v_wtr_routine).w ; use second routine next
 		playsound sfx_Rumbling,sfx
 

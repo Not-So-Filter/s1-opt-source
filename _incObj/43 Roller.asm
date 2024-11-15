@@ -52,11 +52,9 @@ Roll_Action:	; Routine 2
 
 Roll_ChkGone:
 		move.w	obRespawnNo(a0),d0
-		beq.s	Roll_Delete
+		beq.w	DeleteObject
 		movea.w	d0,a2
 		bclr	#7,(a2)
-
-Roll_Delete:
 		bra.w	DeleteObject
 ; ===========================================================================
 Roll_Index2:	dc.w Roll_RollChk-Roll_Index2

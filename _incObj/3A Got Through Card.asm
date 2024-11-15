@@ -123,8 +123,6 @@ Got_ChkBonus:
 
 Got_SetDelay:
 		move.w	#180,obTimeFrame(a0) ; set time delay to 3 seconds
-
-locret_C692:
 		rts
 ; ===========================================================================
 
@@ -134,6 +132,8 @@ Got_AddBonus:
 		and.b	(v_framebyte).w,d0
 		bne.s	locret_C692
 		playsound sfx_Switch,sfx
+
+locret_C692:
 		rts
 ; ===========================================================================
 

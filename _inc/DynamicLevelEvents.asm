@@ -551,12 +551,13 @@ locret_7322:
 
 DLE_FZ:
 		move.w	(v_dle_routine).w,d0
-		move.w	off_72D8(pc,d0.w),d0
 		jmp	off_72D8(pc,d0.w)
 ; ===========================================================================
-off_72D8:	dc.w DLE_FZmain-off_72D8, DLE_FZboss-off_72D8
-		dc.w DLE_FZend-off_72D8, locret_7322-off_72D8
-		dc.w loc_72C2-off_72D8
+off_72D8:	bra.s DLE_FZmain
+		bra.s DLE_FZboss
+		bra.s DLE_FZend
+		bra.s locret_7322
+		bra.s loc_72C2
 ; ===========================================================================
 
 DLE_FZmain:

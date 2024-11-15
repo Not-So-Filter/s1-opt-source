@@ -31,7 +31,7 @@ ramaddr function x,(-(x&$80000000)<<1)|x
 	phase ramaddr ( $FFFF0000 )
 v_ram_start:
 
-v_128x128:		ds.b	256*128		; 128x128 tile mappings ($FF chunks)
+v_128x128:		ds.w	64*$100		; 128x128 tile mappings ($FF chunks)
 v_128x128_end:
 
 Level_layout_header:	ds.b	8		; first word = chunks per FG row, second word = chunks per BG row, third word = FG rows, fourth word = BG rows
@@ -78,7 +78,11 @@ Object_respawn_table_end:
 
 v_spritequeue:		SpriteQueue		; sprite display queue, in order of priority
 v_spritequeue_end:
-v_16x16:		ds.b	16*384		; 16x16 tile mappings
+
+; $300 is the standard limit, change depending on how many chunks you need
+; luckily for Sonic 1 only $25A is used, but to keep things save we'll use $280
+v_16x16:		ds.w	4*$280		; 16x16 tile mappings
+			ds.b	$400		; unused
 
 VDP_Command_Buffer:	ds.w	7*$12		; $FC bytes
 

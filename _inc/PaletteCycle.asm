@@ -6,7 +6,6 @@
 
 
 PaletteCycle:
-		moveq	#0,d2
 		move.w	(v_zone).w,d0
 		ror.b	#2,d0
 		lsr.w	#5,d0

@@ -16,8 +16,7 @@ Scen_Main:	; Routine 0
 		addq.b	#2,obRoutine(a0)
 		moveq	#0,d0
 		move.b	obSubtype(a0),d0 ; copy object subtype to d0
-;		mulu.w	#$A,d0		; multiply by $A
-		move.w	d0,d1
+		move.w	d0,d1		; multiply by $A
 		add.w	d0,d0
 		add.w	d0,d0
 		add.w	d1,d0

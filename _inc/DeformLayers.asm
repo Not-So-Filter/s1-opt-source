@@ -96,32 +96,32 @@ Deform_GHZ:
 		move.w	(v_bgscroll_buffer+4).w,d0
 		add.w	(v_bg3screenposx).w,d0
 		neg.w	d0
-		moveq	#16-1,d1
-	.cloudLoop2:		; middle cloud (16px)
+;	.cloudLoop2:		; middle cloud (16px)
+	rept 16
 		move.l	d0,(a1)+
-		dbf	d1,.cloudLoop2
+	endr
 
 		move.w	(v_bgscroll_buffer+8).w,d0
 		add.w	(v_bg3screenposx).w,d0
 		neg.w	d0
-		moveq	#16-1,d1
-	.cloudLoop3:		; lower cloud (16px)
+;	.cloudLoop3:		; lower cloud (16px)
+	rept 16
 		move.l	d0,(a1)+
-		dbf	d1,.cloudLoop3
+	endr
 
-		moveq	#48-1,d1
 		move.w	(v_bg3screenposx).w,d0
 		neg.w	d0
-	.mountainLoop:		; distant mountains (48px)
+;	.mountainLoop:		; distant mountains (48px)
+	rept 48
 		move.l	d0,(a1)+
-		dbf	d1,.mountainLoop
+	endr
 
-		moveq	#40-1,d1
 		move.w	(v_bg2screenposx).w,d0
 		neg.w	d0
-	.hillLoop:			; hills & waterfalls (40px)
+;	.hillLoop:			; hills & waterfalls (40px)
+	rept 40
 		move.l	d0,(a1)+
-		dbf	d1,.hillLoop
+	endr
 
 		move.w	(v_bg2screenposx).w,d0
 		move.w	(v_screenposx).w,d2
@@ -293,7 +293,7 @@ Deform_MZ:
 		moveq	#0,d3
 		move.w	d2,d3
 		asr.w	#1,d3
-		moveq	#4,d1
+		moveq	#5-1,d1
 	.cloudLoop:
 		move.w	d3,(a1)+
 		swap	d3
@@ -303,21 +303,21 @@ Deform_MZ:
 
 		move.w	(v_bg3screenposx).w,d0
 		neg.w	d0
-		moveq	#1,d1
+		moveq	#2-1,d1
 	.mountainLoop:
 		move.w	d0,(a1)+
 		dbf	d1,.mountainLoop
 
 		move.w	(v_bg2screenposx).w,d0
 		neg.w	d0
-		moveq	#8,d1
+		moveq	#9-1,d1
 	.bushLoop:
 		move.w	d0,(a1)+
 		dbf	d1,.bushLoop
 
 		move.w	(v_bgscreenposx).w,d0
 		neg.w	d0
-		moveq	#$F,d1
+		moveq	#16-1,d1
 	.interiorLoop:
 		move.w	d0,(a1)+
 		dbf	d1,.interiorLoop
@@ -365,7 +365,7 @@ Deform_SLZ:
 		asl.l	#8,d0
 		moveq	#0,d3
 		move.w	d2,d3
-		moveq	#$1B,d1
+		moveq	#$1C-1,d1
 	.starLoop:
 		move.w	d3,(a1)+
 		swap	d3
@@ -378,21 +378,21 @@ Deform_SLZ:
 		move.w	d0,d1
 		asr.w	#1,d1
 		add.w	d1,d0
-		moveq	#4,d1
+		moveq	#5-1,d1
 	.buildingLoop1:		; distant black buildings
 		move.w	d0,(a1)+
 		dbf	d1,.buildingLoop1
 
 		move.w	d2,d0
 		asr.w	#2,d0
-		moveq	#4,d1
+		moveq	#5-1,d1
 	.buildingLoop2:		; closer buildings
 		move.w	d0,(a1)+
 		dbf	d1,.buildingLoop2
 
 		move.w	d2,d0
 		asr.w	#1,d0
-		moveq	#$1D,d1
+		moveq	#$1E-1,d1
 	.bottomLoop:		; bottom part of background
 		move.w	d0,(a1)+
 		dbf	d1,.bottomLoop
@@ -407,7 +407,7 @@ Deform_SLZ:
 ;-------------------------------------------------------------------------------
 Bg_Scroll_X:
 		lea	(v_hscrolltablebuffer).w,a1
-		moveq	#$E,d1
+		moveq	#15-1,d1
 		move.w	(v_screenposx).w,d0
 		neg.w	d0
 		swap	d0
@@ -470,7 +470,7 @@ Deform_SYZ:
 		moveq	#0,d3
 		move.w	d2,d3
 		asr.w	#1,d3
-		moveq	#7,d1
+		moveq	#8-1,d1
 	.cloudLoop:
 		move.w	d3,(a1)+
 		swap	d3
@@ -480,14 +480,14 @@ Deform_SYZ:
 
 		move.w	d2,d0
 		asr.w	#3,d0
-		moveq	#4,d1
+		moveq	#5-1,d1
 	.mountainLoop:
 		move.w	d0,(a1)+
 		dbf	d1,.mountainLoop
 
 		move.w	d2,d0
 		asr.w	#2,d0
-		moveq	#5,d1
+		moveq	#6-1,d1
 	.buildingLoop:
 		move.w	d0,(a1)+
 		dbf	d1,.buildingLoop
@@ -534,7 +534,7 @@ Deform_SBZ2:;loc_68A2:
 		move.w	(v_bgscreenposy).w,(v_bgscrposy_vdp).w
 	; copy fg & bg x-position to hscroll table
 		lea	(v_hscrolltablebuffer).w,a1
-		move.w	#223,d1
+		move.w	#224-1,d1
 		move.w	(v_screenposx).w,d0
 		neg.w	d0
 		swap	d0
@@ -602,13 +602,14 @@ Deform_SBZ:
 		sub.w	d2,d0
 		ext.l	d0
 		asl.l	#3,d0
-		divs.w	#4,d0
+		asr.w	#2,d0
+;		divs.w	#4,d0
 		ext.l	d0
 		asl.l	#4,d0
 		asl.l	#8,d0
 		moveq	#0,d3
 		move.w	d2,d3
-		moveq	#3,d1
+		moveq	#4-1,d1
 	.cloudLoop:
 		move.w	d3,(a1)+
 		swap	d3
@@ -618,21 +619,21 @@ Deform_SBZ:
 
 		move.w	(v_bg3screenposx).w,d0
 		neg.w	d0
-		moveq	#9,d1
+		moveq	#10-1,d1
 	.buildingLoop1:		; distant brown buildings
 		move.w	d0,(a1)+
 		dbf	d1,.buildingLoop1
 
 		move.w	(v_bg2screenposx).w,d0
 		neg.w	d0
-		moveq	#6,d1
+		moveq	#7-1,d1
 	.buildingLoop2:		; upper black buildings
 		move.w	d0,(a1)+
 		dbf	d1,.buildingLoop2
 
 		move.w	(v_bgscreenposx).w,d0
 		neg.w	d0
-		moveq	#$A,d1
+		moveq	#11-1,d1
 	.buildingLoop3:		; lower black buildings
 		move.w	d0,(a1)+
 		dbf	d1,.buildingLoop3

@@ -24,8 +24,8 @@ Surf_Main:	; Routine 0
 		move.w	obX(a0),surf_origX(a0)
 
 Surf_Action:	; Routine 2
-		move.w	(v_screenposx).w,d1
-		andi.w	#-$20,d1
+		moveq	#-$20,d1
+		and.w	(v_screenposx).w,d1
 		add.w	surf_origX(a0),d1
 		btst	#bitStart,(v_jpadpress).w ; is Start button pressed?
 		bne.s	.even	; if yes, branch

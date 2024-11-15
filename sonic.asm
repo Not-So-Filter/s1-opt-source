@@ -406,6 +406,7 @@ VBla_0C:
 
 VBla_04:
 		readjoypads
+		bsr.w	ProcessDMAQueue
 		tst.b	(f_wtr_state).w ; is water above top of screen?
 		bne.s	.waterabove	; if yes, branch
 		writeCRAM	v_palette,0
@@ -599,6 +600,8 @@ VDPSetupGame:
 		move.w	VDPSetupArray+2(pc),(v_vdp_buffer1).w
 		move.w	#$8A00+224-1,(v_hbla_hreg).w	; H-INT every 224th scanline
 		moveq	#0,d0
+		move.l	#$40000010,(vdp_control_port).l ; set VDP to VRAM write
+		move.l	d0,(a1)
 		move.l	#$C0000000,(vdp_control_port).l ; set VDP to CRAM write
 	rept (v_palette_end-v_palette)/4
 		move.l	d0,(a1)
@@ -1609,7 +1612,9 @@ GM_Title:
 
 Tit_MainLoop:
 		move.w	#VBla_04,(v_vbla_routine).w
+		bsr.w	Process_Kos_Queue
 		bsr.w	WaitForVBla
+		bsr.w	Process_Kos_Module_Queue
 		jsr	(ExecuteObjects).l
 		bsr.w	DeformLayers
 		jsr	(BuildSprites).l
