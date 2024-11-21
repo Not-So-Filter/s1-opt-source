@@ -100,8 +100,6 @@ Sign_SonicRun:	; Routine 6
 		tst.w	(v_debuguse).w	; is debug mode	on?
 		bne.w	locret_ECEE	; if yes, branch
 	endif
-		tst.b	(v_player+obID).w	; Check if Sonic's object has been deleted (because he entered the giant ring)
-		beq.s	loc_EC86
 		btst	#1,(v_player+obStatus).w
 		bne.w	locret_ECEE
 		move.b	#1,(f_lockctrl).w ; lock controls
@@ -124,7 +122,7 @@ loc_EC86:
 
 
 GotThroughAct:
-		tst.b	(v_endcard).w
+		tst.l	(v_endcard).w
 		bne.w	locret_ECEE
 		move.w	(v_limitright2).w,(v_limitleft2).w
 		moveq	#0,d0
@@ -151,7 +149,6 @@ GotThroughAct:
 		add.w	d0,d0
 		move.w	TimeBonuses(pc,d0.w),(v_timebonus).w ; set time bonus
 		move.w	(v_rings).w,d0	; load number of rings
-;		mulu.w	#10,d0		; multiply by 10
 		move.w	d0,d1
 		add.w	d0,d0
 		add.w	d0,d0

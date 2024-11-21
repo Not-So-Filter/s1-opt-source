@@ -407,7 +407,7 @@ Deform_SLZ:
 ;-------------------------------------------------------------------------------
 Bg_Scroll_X:
 		lea	(v_hscrolltablebuffer).w,a1
-		moveq	#15-1,d1
+		moveq	#224/16+1-1,d1
 		move.w	(v_screenposx).w,d0
 		neg.w	d0
 		swap	d0
@@ -603,7 +603,6 @@ Deform_SBZ:
 		ext.l	d0
 		asl.l	#3,d0
 		asr.w	#2,d0
-;		divs.w	#4,d0
 		ext.l	d0
 		asl.l	#4,d0
 		asl.l	#8,d0

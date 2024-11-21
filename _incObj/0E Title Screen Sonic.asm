@@ -38,10 +38,8 @@ TSon_Delay:	;Routine 2
 TSon_Move:	; Routine 4
 		subq.w	#8,obScreenY(a0) ; move Sonic up
 		cmpi.w	#$96,obScreenY(a0) ; has Sonic reached final position?
-		bne.s	.display	; if not, branch
+		bne.w	DisplaySprite	; if not, branch
 		addq.b	#2,obRoutine(a0)
-
-.display:
 		bra.w	DisplaySprite
 ; ===========================================================================
 
